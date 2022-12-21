@@ -1,0 +1,2247 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:media="http://search.yahoo.com/mrss/">
+    <channel>
+        <title></title>
+        <atom:link href="https://dropbox.tech/feed" rel="self" type="application/rss+xml"/>
+        <link></link>
+        <description></description>
+        <lastBuildDate>Wed, 19 Oct 2022 07:30:00 -0700</lastBuildDate>
+        <language>en</language>
+        <sy:updatePeriod>hourly</sy:updatePeriod>
+        <sy:updateFrequency>1</sy:updateFrequency>
+        <image>
+            <url></url>
+            <title></title>
+            <link></link>
+        </image>
+        
+            <item>
+                <title>Using OAuth 2.0 with offline access</title>
+                <link>https://dropbox.tech/developers/using-oauth-2-0-with-offline-access</link>
+                <dc:creator>Dropbox Platform Team</dc:creator>
+                <category>OAuth flow</category><category>Authorization</category><category>Sample Apps</category><category>Oauth</category>
+                <guid>https://dropbox.tech/developers/using-oauth-2-0-with-offline-access</guid>
+                <description><![CDATA[Learn how to use the Dropbox OAuth 2.0 app authorization flow with offline access]]></description>
+                <pubDate>Wed, 19 Oct 2022 07:30:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The <a href="https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens">Dropbox API now returns short-lived access tokens</a>, and optionally returns refresh tokens. This post will cover how and when to retrieve and use refresh tokens. We suggest checking out <a href="https://developers.dropbox.com/oauth-guide">the OAuth Guide</a> for background first, if you haven’t already.<br />
+<br />
+We recommend using one of <a href="https://www.dropbox.com/developers/documentation#sdks">the official Dropbox SDKs</a> whenever possible, as they’ll handle most of the work of using the OAuth app authorization flow for you. If you’re using one of the official Dropbox SDKs, refer to its documentation for information on how to use it to process the authorization flow.<br />
+<br />
+Otherwise, read on for information on how to implement the OAuth app authorization flow using <a href="https://www.dropbox.com/developers/documentation/http/documentation#authorization">the Dropbox OAuth authorization endpoints</a> directly.  </p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="choosing-online-or-offline-access">
+    <h2 class="dr-article-content__section-title">Choosing online or offline access</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>If your app only needs access for a short period of time, or only needs to operate when the user is present, then you only need to use “online” access.  For example, a web app that only interacts with a user’s Dropbox files when the user is actively interacting with the app would only need “online” access.</p>
+<p>In that case, the app receives a short-lived access token when the user processes the authorization flow. If the app needs further access after the short-lived access token expires, the app can send the user through the app authorization flow again. If a user has previously authorized an app, re-authorization is typically a single click or automatically redirected.</p>
+<p>Here’s an example of what the “online” flow looks like:</p>
+<p><b>Step 1: Begin authorization</b></p>
+<p>Construct the <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize">/oauth2/authorize</a> URL like the following and direct the user there:<br />
+<span class="dr-code">https://www.dropbox.com/oauth2/authorize?client_id=&lt;APP KEY&gt;&amp;response_type=code&amp;token_access_type=online&amp;state=&lt;STATE&gt;&amp;redirect_uri=&lt;REDIRECT URI&gt;</span><br />
+</p>
+<p>After the user has authorized your app, they’ll be sent to your redirect URI, with a few query parameters:<br />
+<span class="dr-code">&lt;REDIRECT URI&gt;?code=&lt;AUTHORIZATION CODE&gt;&amp;state=&lt;STATE&gt;</span><br />
+</p>
+<p><b>Step 2: Obtain an access token</b></p>
+<p>Exchange the resulting authorization code for an access token, by calling <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">the /oauth2/token endpoint</a>. Here’s an example of calling this endpoint using curl:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 bash">curl https://api.dropbox.com/oauth2/token \
+    -d code=&lt;AUTHORIZATION CODE&gt; \
+    -d grant_type=authorization_code \
+    -d client_id=&lt;APP KEY&gt; \
+    -d client_secret=&lt;APP SECRET&gt; \
+    -d redirect_uri=&lt;REDIRECT URI&gt;</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The response will look like this:<br />
+<span class="dr-code">{&quot;access_token&quot;: &quot;&lt;ACCESS TOKEN&gt;&quot;, &quot;expires_in&quot;: &quot;&lt;EXPIRATION&gt;&quot;, &quot;token_type&quot;: &quot;bearer&quot;, &quot;scope&quot;: &quot;&lt;SCOPES&gt;&quot;, &quot;account_id&quot;: &quot;&lt;ACCOUNT ID&gt;&quot;, &quot;uid&quot;: &quot;&lt;USER ID&gt;&quot;}</span></p>
+<p><br />
+<b>Step 3: Call the API</b></p>
+<p>Use the resulting access token to call the API, with the access token as a “Bearer” token in the “Authorization” header, like this:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 bash">curl -X POST https://api.dropboxapi.com/2/users/get_current_account \
+    --header &quot;Authorization: Bearer &lt;ACCESS TOKEN&gt;&quot;</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>If your app needs to be able to operate long-term without the user present, continue reading to see how to use “offline” access instead. For example, an app that operates in the background to receive status updates or automatically perform operations on a user’s Dropbox account over long periods of time even when the user isn’t actively interacting with the app would need “offline” access.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="using-offline-access">
+    <h2 class="dr-article-content__section-title">Using offline access</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Here’s an example of what the “offline” flow looks like:</p>
+<p><b>Step 1: Begin authorization</b></p>
+<p>Construct the <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize">/oauth2/authorize</a> URL like the following, with <span class="dr-code">token_access_type=offline</span> , and direct the user there:<br />
+<span class="dr-code">https://www.dropbox.com/oauth2/authorize?client_id=&amp;response_type=code&amp;token_access_type=offline&amp;state=&amp;redirect_uri=</span><br />
+</p>
+<p>After the user has authorized your app, they’ll be sent to your redirect URI, with a few query parameters:<br />
+<span class="dr-code">&lt;REDIRECT URI&gt;?code=&lt;AUTHORIZATION CODE&gt;&amp;state=&lt;STATE&gt;</span><br />
+</p>
+<p><b>Step 2: Obtain an access token and refresh token</b></p>
+<p>Exchange the resulting authorization code for an access token and refresh token, by calling <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">the /oauth2/token endpoint</a>. Here’s an example of calling this endpoint using curl:<a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token"></a></p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 bash">curl https://api.dropbox.com/oauth2/token \
+    -d code=&lt;AUTHORIZATION CODE&gt; \
+    -d grant_type=authorization_code \
+    -d client_id=&lt;APP KEY&gt; \
+    -d client_secret=&lt;APP SECRET&gt; \
+    -d redirect_uri=&lt;REDIRECT URI&gt;</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The response will look like this:<br />
+<span class="dr-code">{&quot;access_token&quot;: &quot;&lt;ACCESS TOKEN&gt;&quot;, &quot;expires_in&quot;: &quot;&lt;EXPIRATION&gt;&quot;, &quot;token_type&quot;: &quot;bearer&quot;, &quot;scope&quot;: &quot;&lt;SCOPES&gt;&quot;, &quot;refresh_token&quot;: &quot;&lt;REFRESH TOKEN&gt;&quot;, &quot;account_id&quot;: &quot;&lt;ACCOUNT ID&gt;&quot;, &quot;uid&quot;: &quot;&lt;USER ID&gt;&quot;}</span><br />
+<br />
+<b>Step 3: Store the returned refresh token</b><br />
+<br />
+The refresh token can be repeatedly re-used and doesn't expire automatically (though it can be revoked on demand). Securely store the refresh token for later use.<br />
+<br />
+<b>Step 4. Call the API</b><br />
+<br />
+Use the resulting access token to call the API, with the access token as a “Bearer” token in the “Authorization” header, like this:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 bash">curl -X POST https://api.dropboxapi.com/2/users/get_current_account \
+    --header &quot;Authorization: Bearer &lt;ACCESS TOKEN&gt;&quot;</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The short-lived access token can be used until it expires (or is revoked).<br />
+<br />
+<b>Step 5: Retrieve a new short-lived access token</b><br />
+<br />
+Once the current short-lived access token expires, call <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">the /oauth2/token endpoint</a> with the refresh token to get a new short-lived access token, like this: </p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 bash">curl https://api.dropbox.com/oauth2/token \
+   -d refresh_token=&lt;REFRESH TOKEN&gt; \
+   -d grant_type=refresh_token \
+   -d client_id=&lt;APP KEY&gt; \
+   -d client_secret=&lt;APP SECRET&gt;</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The response will look like this:<br />
+<span class="dr-code">{&quot;access_token&quot;: &quot;&lt;NEW ACCESS TOKEN&gt;&quot;, &quot;expires_in&quot;: &quot;&lt;EXPIRATION&gt;&quot;, &quot;token_type&quot;: &quot;bearer&quot;}</span><br />
+</p>
+<p>Repeat steps 4 and 5 programmatically as needed.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="tips-and-pointers">
+    <h2 class="dr-article-content__section-title">Tips and pointers</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<ul>
+<li>Dropbox <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize">supports both</a> <span class="dr-code">response_type=code</span> and <span class="dr-code">response_type=token</span>. However, <span class="dr-code">response_type=token</span> is considered legacy and no longer recommended. The use of <span class="dr-code">response_type=code</span> is necessary for offline access; <span class="dr-code">response_type=token</span> does not support offline access.</li>
+<li>Server-side apps should use <span class="dr-code">response_type=code</span> and client-side apps should use <span class="dr-code">response_type=code</span> with <a href="https://dropbox.tech/developers/pkce--what-and-why-">PKCE</a>. Either can use offline access.</li>
+<li>When using <span class="dr-code">response_type=code</span>, a redirect URI is optional, regardless of using offline access or not (or using PKCE or not).</li>
+<li>While the use of a redirect URI is optional, apps must be consistent in specifying or not specifying it during a given authorization flow. If the app sets <span class="dr-code">redirect_uri</span> when configuring the <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize">/oauth2/authorize</a> URL, it must also set the same <span class="dr-code">redirect_uri<a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize"></a></span> when calling <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">/oauth2/token</a> with <span class="dr-code">grant_type=authorization_code</span> to exchange the resulting authorization code. If the app does not set <span class="dr-code">redirect_uri</span> on the <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-authorize">/oauth2/authorize</a> URL, it must not set <span class="dr-code">redirect_uri</span> when calling <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">/oauth2/token</a> with <span class="dr-code">grant_type=authorization_code</span> to exchange the resulting authorization code. In either case, setting <span class="dr-code">redirect_uri</span> is not expected when calling <a href="https://www.dropbox.com/developers/documentation/http/documentation#oauth2-token">/oauth2/token</a> with <span class="dr-code">grant_type=refresh_token</span>.<br />
+</li>
+<li>The terms “app key”, “app secret”, &quot;authorization code”, “access token”, and “refresh token” describe distinct objects which are not interchangeable.</li>
+<li>Authorization codes can only be used once each and expire after a very short period of time. New access tokens are short-lived, meaning they expire after a short period of time. Refresh tokens are long-lived and do not expire automatically. Access tokens and refresh tokens can be revoked on demand though, by the app or user. For example, users can unlink apps from their account using <a href="https://www.dropbox.com/account/connected_apps">the Connected apps page</a>, and team admins can unlink apps from their teams using <a href="https://www.dropbox.com/team/admin/settings/team_apps">the Team apps page</a>. Apps can revoke an access token (and corresponding refresh token, if any) using <a href="https://www.dropbox.com/developers/documentation/http/documentation#auth-token-revoke">the /2/auth/token/revoke endpoint</a>.</li>
+<li>Refresh tokens are app- and user-specific. Developers with multiple app registrations will need to keep track of which app each refresh token is for. Attempting to use the wrong app key/secret when using a refresh token will fail.</li>
+</ul>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png" medium="image">
+                    <media:title type="html">Using OAuth 2.0 with offline access</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>Everything in its write place: Cloud storage abstraction with Object Store</title>
+                <link>https://dropbox.tech/infrastructure/abstracting-cloud-storage-backends-with-object-store</link>
+                <dc:creator>Lawrence Xing</dc:creator>
+                <category>Object Store</category><category>encryption</category><category>Magic Pocket</category><category>Mysql</category><category>storage</category>
+                <guid>https://dropbox.tech/infrastructure/abstracting-cloud-storage-backends-with-object-store</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Tue, 11 Oct 2022 06:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Dropbox originally used Amazon S3 and the Hadoop Distributed File System (HDFS) as the backbone of its data storage infrastructure. Although we migrated user file data to our internal block storage system Magic Pocket in 2015, Dropbox continued to use S3 and HDFS as a general-purpose store for other internal products and tools. Among these use cases were crash traces, build artifacts, test logs, and image caching.</p>
+<p>Using these two legacy systems as generic blob storage caused many pain points—the worst of which was the cost inefficiency of using S3’s API. For instance, crash traces wrote many objects which were rarely accessed unless specifically needed for an investigation, generating a large PUT bill. Caches built against S3 burned pricey GET requests with each cache miss.</p>
+<p>Looking at the bigger picture, S3 was simply an expensive default choice among many competitors—including our <a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket">own M</a><a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket">agic </a><a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket" target="_blank">P</a><a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket">ocket</a><a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket"> block store</a>. What we really desired was the ability to expose a meta-store, transparently backed by different cloud providers’ storage offerings. As pricing plans, access patterns, and security requirements change over time and across use cases, having this extra layer would allow us to flexibly route traffic between options without migrations.</p>
+<p>Another desirable side effect of routing all blob traffic through a single service was centralization. At the service layer, we could provide additional features like granular per-object encryption, usage and performance monitoring, retention policies, and dedicated support for on-call upkeep. </p>
+<p>We built this service in 2020 and gave it the pedestrian name <b>Object Store</b>—but its impact has been anything but. Thanks to Object Store, we’ve been able to save millions of dollars in annual operating costs.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="how-object-store-works">
+    <h2 class="dr-article-content__section-title">How Object Store works</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Object Store doesn’t directly implement data storage. Instead, it acts as an abstraction over multiple storage backends, routing PUTs to the most cost-efficient store and GETs to the correct store. It is backed by a MySQL database to track object placements in these persistent stores.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%201-@2x.png/_jcr_content/renditions/Diagram%201-@2x.webp" data-aem-asset-id="eb606c24-d647-4507-81aa-30acc50fa5c4:Diagram 1-@2x.png" data-trackable="true" height="310" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>A simplified diagram of Object Store’s architecture</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The API is equivalent to a simplified S3 API with PUT, GET, DELETE, and LIST. Access is segregated by pails, which are analogous to S3 buckets—containers for objects with shared configuration and ACLs.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="put-and-get">
+    <h2 class="dr-article-content__section-title">PUT and GET</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Object Store cuts costs by batching writes. On receiving a <span class="dr-code">PUT(key, blob)</span>, the request servicing layer enqueues the blob in memory with other PUTs to the same pail. Upon queue timeout or reaching a certain aggregate request size, the queue’s requests are concatenated into a single batched blob and written to persistent storage—whether that be S3, Magic Pocket, or some other service in the future. Once this write completes, Object Store records the metadata in two MySQL tables:</p>
+<ul>
+<li>A <b>batch</b> row to record the batched blob’s key in the persistent store</li>
+<li>One or more <b>object<i> </i></b>rows representing the original blobs submitted in each PUT request, which map object keys to start and end offsets in the batched blob, as well as the batch row itself</li>
+</ul>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%202-@2x.png/_jcr_content/renditions/Diagram%202-@2x.webp" alt="One batch contains many objects and corresponds to an underlying store blob. Objects are identified in the batch by length and offset" data-aem-asset-id="7ebab5d8-5133-4feb-8ee3-0f135d43c351:Diagram 2-@2x.png" data-trackable="true" height="273" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>One batch contains many objects and corresponds to an underlying store blob. Objects are identified in the batch by length and offset</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Each <span class="dr-code">GET(key)</span> involves a fetch and a slice. Object Store recovers the object and batch metadata from the key, then performs a ranged read on the batched blob in persistent storage using the object’s start and end offset as range delimiters.</p>
+<p>This design solves our two biggest cost inefficiencies in accessing S3. A quick inspection of <a href="https://aws.amazon.com/s3/pricing/" target="_blank">S3 pricing</a> shows that users pay per gigabyte stored and per API request. By reducing the number of PUT requests for the same total volume of data, we save money. And when we use S3 as a cache, Object Store short-circuits S3 GETs during the nonexistent read case, cutting more API requests.</p>
+<p>The MySQL and service clusters don’t run for free, but their cost is still a fraction of the API costs saved. In fact, by rerouting some writes from S3 to Magic Pocket, and making our remaining S3 requests more cost efficient, Object Store has helped us save millions of dollars each year.</p>
+<p>The batched write model is not only useful for reducing our S3 costs, but is also necessary to shape stable traffic patterns to our internal blob store Magic Pocket, which was designed to run optimally with a homogenous 1-4 MB object size. By batching small PUTs we get closer to that optimal size, while also reducing the request rate to Magic Pocket servers.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="encryption">
+    <h2 class="dr-article-content__section-title">Encryption</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Encryption is handled by Object Store, regardless of the underlying storage destination. For every write, there are two levels of encryption that take place:</p>
+<ul>
+<li>Raw object blob data is padded and encrypted with the AES-256 cipher and a 256-bit block encryption key (BEK) before it is written to the underlying store. Each BEK is unique per object</li>
+<li>The BEK is encrypted (wrapped) by a versioned global key encryption key (KEK). This encrypted BEK is stored as part of object metadata in MySQL</li>
+</ul>
+<p>Encrypting the BEK before storing it as metadata adds an additional layer of security. With this scheme, Object Store data can only be accessed with all three of the following: (1) the stored encrypted data (2) the encrypted BEK from metadata (3) the KEK. </p>
+<p>The second advantage of encrypting the BEK is that it allows us to rotate encryption keys regularly. If we stored the raw BEK, key rotation would require reading and rewriting encrypted object data—a costly operation. With encrypted BEKs, key rotation can be done by decrypting the original BEKs, then encrypting them with a new KEK. This operates purely on metadata and is much cheaper—cheap enough that we regularly rotate KEKs as a matter of security hygiene.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%203-@2x.png/_jcr_content/renditions/Diagram%203-@2x.webp" alt="Encrypted keys are stored as part of object metadata" data-aem-asset-id="038d24f6-7fe0-49a6-be2f-f7eb0a09bd95:Diagram 3-@2x.png" data-trackable="true" height="225" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Encrypted keys are stored as part of object metadata</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="delete">
+    <h2 class="dr-article-content__section-title">DELETE</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Batching adds complexity to the deletion path. Deletion typically means rendering an object inaccessible to reads. When storing personally-identifiable user information, Dropbox uses a stricter definition: not only must the object be unreadable from a client-facing API, but the data itself must be purged from Dropbox infrastructure and S3 within a certain deadline after the DELETE request. This means every object blob PUT into S3 or Magic Pocket must have a corresponding DELETE, negating the advantages of batched PUTs. It doesn’t matter how efficiently we cut down PUT volume if high DELETE volume becomes the dominating cost.</p>
+<p>One possible solution is to also apply batching to DELETEs—which is what the first Object Store iteration did. Object Store marked the object metadata as deleted and failed any incoming reads. Simultaneously, we ran an asynchronous walker that picked out batched blobs whose objects were all deleted, and purged them from S3. This removed the overhead of multiple DELETEs and ensured DELETEs maintained cost parity with PUTs.</p>
+<p>However, the objects in a blob weren’t guaranteed to all be deleted within the same time window. Therefore there was also a second asynchronous compaction walker that found batches containing one or more deleted objects nearing the purge deadline. These batched blobs could not wait for their remaining live objects to be deleted; everything had to go immediately. The batched blobs were compacted: broken down into live objects, merged into fresh new blobs, and rewritten both in metadata and to persistent storage.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%204-@2x.png/_jcr_content/renditions/Diagram%204-@2x.webp" alt="Batching meant our initial approach to object deletion involved compaction" data-aem-asset-id="c103bc46-b652-4eae-b9f8-08efe4c6dd9f:Diagram 4-@2x.png" data-trackable="true" height="772" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Batching meant our initial approach to object deletion involved compaction</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Batched deletion with compaction worked but was difficult to maintain. Compaction bugs required forensics to reconstruct and undo. Batched deletions weren’t guaranteed and compaction itself generated PUTs, so costs weren’t optimal. Lastly, our deletion policy hinged on the compaction walker running regularly and quickly, which ate up maintenance effort. </p>
+<p>As an alternative, per-object encryption let us simply implement deletions using the original naive approach of wiping the object metadata. Without the key, the object’s information is effectively wiped from persistent store…but without making an explicit data DELETE request. No deadline management, no compaction—instead, DELETEs occur synchronously with a MySQL operation. This technique, called crypto-shredding, provides instantaneous deletion for compliance purposes while asynchronous space reclamation works through at a slower cadence.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%205-@2x.png/_jcr_content/renditions/Diagram%205-@2x.webp" data-aem-asset-id="4795ee72-101e-4c08-9bd1-421bd1520d4c:Diagram 5-@2x.png" data-trackable="true" height="399" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Eventually, we settled on a crypto-shredding approach to object deletion—no compaction needed</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="chunking">
+    <h2 class="dr-article-content__section-title">Chunking</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>We’ve described how Object Store batches small PUT requests and slices the corresponding GETs. What about slicing a single large PUT request and combining the corresponding GETs? Originally this wasn’t necessary, as fewer small PUTs meant lower AWS costs. Upon shifting our workload to Magic Pocket, though, we found that the 4MB size constraint made storing larger objects cost-ineffective and even infeasible. This led to a dark period where our routing code crudely operated as:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 python">if object.length &gt; 4 * MB:
+  store = STORE_S3
+else:
+  store = STORE_MP</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>To squeeze out further performance from the Magic Pocket write path, we implemented object chunking. This breaks objects larger than 4MB into 4MB chunks and stores them in Magic Pocket separately. At read time, Object Store fetches the component chunks in parallel from Magic Pocket and reconstructs them into the original object. To avoid creating more metadata overhead to track the multiple Magic Pocket chunks, the system instead stores a base key and deterministically computes the Magic Pocket keys from that base at read and write time.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%206-@2x.png/_jcr_content/renditions/Diagram%206-@2x.webp" data-aem-asset-id="21222c2e-5c52-4170-8e8f-4318701b67e4:Diagram 6-@2x.png" data-trackable="true" height="337" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Chunking objects means not only can we store many objects in one blob—we can also store one object across many blobs. Magic Pocket keys are derived deterministically from a single database key</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>This last optimization, completed recently at the end of 2021, elevated Object Store to a general purpose system that accepts data of any size and repackages it into optimally-sized chunks for backend storage. With this powerful chunking support we deprecated the majority of our HDFS usage at Dropbox, saving us millions of dollars in annual operating costs.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-whats-next-for-object-store">
+    <h2 class="dr-article-content__section-title"> What’s next for Object Store</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Object Store is an important strategic pivot for Dropbox’s data storage infrastructure. It gives us a standardized interface under which we can transparently shuffle data between various cloud providers depending on pricing models and compliance requirements, while also providing optimizations and features of its own. We originally designed the system explicitly for non-file data—raw Magic Pocket is the primary store for user file blocks—but after seeing how useful it’s been, we’re planning to migrate subsets of user file data to Object Store. Future directions include:</p>
+<ul>
+<li>Lambda functions support for object writes and modifications</li>
+<li>Using Object Store as a backend for storage systems like Cassandra or RocksDB. This will allow us to run these systems on diskless compute hosts while using Object Store as an exabyte scale remote disk</li>
+<li>Using Object Store as a backend for third-party systems that allow pluggable object storage, like Apache Pinot and Loki</li>
+</ul>
+<p>From this tour of Dropbox’s internal systems, it should be clear that we enjoy getting to work on interesting technical problems. If building innovative products, experiences, and infrastructure excites you too, come build the future with us! Visit <a href="https://dropbox.com/jobs" target="_blank">dropbox.com/jobs</a> to see our open roles, and follow @LifeInsideDropbox on <a href="https://www.instagram.com/lifeinsidedropbox/?hl=en" target="_blank">Instagram</a> and <a href="https://www.facebook.com/lifeinsidedropbox/" target="_blank">Facebook</a> to see what it's like to create a more enlightened way of working. </p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/ObjectStore-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/ObjectStore-1440x305-light.png" medium="image">
+                    <media:title type="html">Everything in its write place: Cloud storage abstraction with Object Store</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>Defending against SSRF attacks (with help from our bug bounty program)</title>
+                <link>https://dropbox.tech/security/bug-bounty-program-ssrf-attack</link>
+                <dc:creator>Po-Ning Tseng</dc:creator>
+                <category>Bug Bounty Program</category><category>authentication</category><category>Sharing</category><category>Security</category><category>application security</category><category>SSRF</category><category>vulnerabilities</category><category>secure by default</category>
+                <guid>https://dropbox.tech/security/bug-bounty-program-ssrf-attack</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Tue, 20 Sep 2022 13:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Over the past few years, server-side request forgery (SSRF) has received an increasing amount of attention from security researchers. With SSRF, an attacker can retarget a request to internal services and exploit the implicit trust within the network. It often escalates into a critical vulnerability, and in 2021 it was among <a href="https://owasp.org/www-project-top-ten/" target="_blank">the top ten web application security risks</a> identified by the Open Web Application Security Project. At Dropbox, it’s the Application Security team’s responsibility to guard against and address SSRF in a scalable manner, so that our engineers can deliver products securely and with as little friction as possible.</p>
+<p>On February 19, 2021, HackerOne user <a href="https://hackerone.com/detroitsmash?type=user" target="_blank">Kumar Saurabh</a> reported a critical SSRF vulnerability to us through <a href="https://dropbox.tech/security/dropbox-bug-bounty-program-has-paid-out-over--1-000-000" target="_blank">our bug bounty program</a>. With this vulnerability, an attacker could make an HTTP GET request to internal endpoints within the production environment and read the response. After reproducing the vulnerability, we immediately declared <a href="https://dropbox.tech/infrastructure/lessons-learned-in-incident-management">an</a><a href="https://dropbox.tech/infrastructure/lessons-learned-in-incident-management" target="_blank"> internal security incident</a>, worked on a quick fix to close the hole, and pushed the fix to production in around eight hours. (We have no reason to believe this vulnerability was ever actively exploited, and no user data was at risk.)</p>
+<p>Since most of our internal services speak <a href="https://grpc.io/" target="_blank">gRPC</a>, a modern RPC framework with built-in authentication mechanisms, communication over plain GET is not possible. This means an attacker’s access would be limited. Even so, based on our research into the potential impact, we calculated the bounty to be worth $27,000.</p>
+<p>In this blog post, we will share how this particular vulnerability worked in practice, and what we did in response to substantially reduce the risk of SSRF attacks going forward.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-bug">
+    <h2 class="dr-article-content__section-title">The bug</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Dropbox has a feature called <a href="https://help.dropbox.com/files-folders/share/branded-sharing" target="_blank">branded sharing</a>. This feature allows Dropbox teams and Pro users to upload a logo and background image that will populate across all their shared links and in-band shared emails.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/07/ssrf/Branded_sharing_Team%20Admin_new_495x400.png/_jcr_content/renditions/Branded_sharing_Team%20Admin_new_495x400.webp" alt="" data-aem-asset-id="d330b16a-ba6e-4c29-ac90-d344511331c6:Branded_sharing_Team Admin_new_495x400.png" data-trackable="true" height="800" width="990"/>
+    
+
+            
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>When configuring this feature, the client first makes a request to <span class="dr-code">/team/admin/team_logo/save</span> or <span class="dr-code">/team/admin/team_background/save</span> with an <span class="dr-code">img_url</span> argument. These endpoints then invoke <span class="dr-code">curl</span> to fetch the image data from the given URL. The given <span class="dr-code">img_url</span> is supposed to have <span class="dr-code">dl-web.dropbox.com</span> as the domain—and while we do validate the authority of the URL, differences in URL parsing between the two libraries we use and the lazy validation of our URL API left room for exploitation.</p>
+<p>In practice, <span class="dr-code">curl</span> could be tricked into making requests to arbitrary URLs—including the internal network—and made to save the resulting data into a database. Then, the saved data could be read out from <span class="dr-code">https://www.dropbox.com/team/team_logo/[dbtid]</span> or <span class="dr-code">https://www.dropbox.com/team/team_background/[dbtid]</span>.</p>
+<p>Here is an illustration of the vulnerable code:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 python">parsed_url = URI.parse(img_url)
+if BLOCK_CLUSTER != parsed_url.authority:
+    raise HttpStatusBadRequestException()
+conn, url = CurlConnection.build_connection_url(img_url)
+response = conn.perform(&quot;GET&quot;, url)</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p><span class="dr-code">URI</span> is a library we built to handle URI parsing, modification, construction, serialization, and some additional validation. It uses a regex to parse the URI according to <a href="https://datatracker.ietf.org/doc/html/rfc3986#appendix-B" target="_blank">RFC 3986 Appendix B</a> with a slight modification to maintain compatibility with browsers. <span class="dr-code">CurlConnection</span> is another helper library we built for making requests with <span class="dr-code">pycurl</span>. Inside the <span class="dr-code">build_connection_url</span>, a standard Python library, <span class="dr-code">urllib.parse</span>, is used to parse the URL.</p>
+<p>The inconsistent URL parsing left us open to the kind of SSRF vulnerability described <a href="https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf" target="_blank">in this Black Hat talk from 2017</a>. An example payload is <span class="dr-code">https://dl-web.dropbox.com\@&lt;host&gt;:&lt;port&gt;</span>. Parsing it with the <span class="dr-code">URI</span> library will return the part before <span class="dr-code">\@</span> as the authority and pass the check:<br />
+</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 python">In [1]: URI.parse('https://dl-web.dropbox.com\@127.0.0.1:8080').authority
+Out[1]: 'dl-web.dropbox.com'</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>However, parsing it with <span class="dr-code">urlsplit</span> would treat the part after <span class="dr-code">\@</span> as the hostname and direct the request to an attacker-specified address:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 python">In [1]: urlsplit(&quot;https://dl-web.dropbox.com\@127.0.0.1:8080&quot;).hostname
+Out[1]: '127.0.0.1'
+</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-fix">
+    <h2 class="dr-article-content__section-title">The fix</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The main goal of the <span class="dr-code">URI</span> class is normalization. Thus, if we apply <span class="dr-code">str</span> to the <span class="dr-code">parsed_url</span>, we can actually block the malicious payload because <span class="dr-code">URI</span> will conduct validation during the serialization and reject some uncommon patterns. The most straightforward fix would be:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 diff"> parsed_url = URI.parse(img_url)
++try:
++    safe_url = str(parsed_url)
++except Exception as e:
++    raise HttpStatusBadRequestException()
+ if BLOCK_CLUSTER != parsed_url.authority:
+     raise HttpStatusBadRequestException()
+-conn, url = CurlConnection.build_connection_url(img_url)
++conn, url = CurlConnection.build_connection_url(safe_url)</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>But a slightly better solution is to construct the URL with the intended domain instead of verifying that the user input has a valid one. This way, we’re not making requests to a raw user-provided URL. This solution looks like:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 python">try:
+    safe_uri = str(
+        URI(
+            scheme=&quot;https&quot;,
+            authority=BLOCK_CLUSTER,
+            path=args.path,
+            query=args.query,
+        )
+    )
+    conn, url = CurlConnection.build_connection_url(safe_url)
+except Exception as e:
+    raise HttpStatusBadRequestException()</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="secure-by-default">
+    <h2 class="dr-article-content__section-title">Secure by default</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>After fixing the immediate vulnerability, a few teams came together in a postmortem meeting and discussed how we could reduce the risk of SSRF vulnerabilities across Dropbox even further. W<span style="">e decided to build a framework for making web requests that’s secure by default.</span></p>
+<p>Our ultimate goal is to prevent outgoing HTTP requests from accidentally hitting internal private addresses. Theoretically, we can resolve a URL and check whether it belongs to the private address space, but there are some caveats:<br />
+</p>
+<ul>
+<li><b>Inconsistent URL parsing.</b> If the validation and the actual request library adopt different URL parsers, they might interpret a URL differently due to the ambiguity of the spec. An attacker can craft a polyglot URL to bypass validation.</li>
+<li><b>HTTP redirection.</b> If we only validate the initial request, an attacker can redirect it to an internal address and bypass validation of subsequent requests.</li>
+<li><b>DNS rebinding.</b> Suppose the validation and the actual request library each resolve a URL to an IP on their own. In this case, an attacker can return a safe IP in the first DNS lookup and a private IP in the second lookup to bypass validation.</li>
+</ul>
+<p>To address these issues, we must ensure there is a central place to consistently parse URLs, validate IP addresses, and make the actual request—a place that can’t be bypassed. </p>
+<p>Some libraries, such as <a href="https://github.com/JordanMilne/Advocate" target="_blank">Advocate</a>, implement this in the application layer. At Dropbox, we deploy the mitigation in a lower network/proxy layer for the following reasons:</p>
+<ul>
+<li>We can have a central configuration. At Dropbox, we accomplish this with Envoy and an HTTP RBAC filter.</li>
+<li>We don't have to figure out a solution for every language we support.</li>
+<li>It covers third-party libraries or binaries, which we have no control over.</li>
+<li>We don't need to worry about discrepancies between a programming language’s URL parser and a request library’s URL parser.</li>
+<li>It is easier to configure customized, finer-grained ACLs for different purposes. For example, we have a proxy with a short list of allowed targets for requests to our corporate network, and we block some additional Dropbox assets from receiving webhook requests.</li>
+<li>We can enforce the usage of our proxy by blocking direct outgoing requests.</li>
+</ul>
+<p>One final caveat is special protocols. If validation only happens for HTTP requests, an attacker can leverage URL schemes such as <span class="dr-code">file://</span>, <span class="dr-code">gopher://</span>, etc. to carry out the exploitation. (Note that some older libraries would follow the HTTP redirection to these special protocols, so only validating the initial request might again be insufficient.) </p>
+<p>One solution would be to disable all protocols other than HTTP/HTTPS. Dropbox uses <span class="dr-code">curl</span>-based libraries, and we could do so by configuring the options such as <span class="dr-code">CURLOPT_PROTOCOLS</span> or <span class="dr-code">CURLOPT_REDIR_PROTOCOLS</span>. Instead we chose to recompile <span class="dr-code">libcurl</span> to get rid of other protocol supports because it is more bulletproof and easier to integrate with our system.</p>
+<p>We had already adopted these defenses for our webhook requests. After this incident, we extended it to every outgoing request and migrated all incompatible use cases. Now, SSRF attacks can't target sensitive internal networks by default.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="further-hardening">
+    <h2 class="dr-article-content__section-title">Further hardening</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The above protection against SSRF is effective in isolating our internal network as a whole, but we wanted to take things a step further and reduce the attack surface in our production network, too. Most of our production services speak gRPC and have a default-deny access control policy, making them difficult to be exploited by SSRF attacks. However, to provide a safety net for anything that might fall through the cracks—such as an errant HTTP listener with sensitive capabilities—we aimed for a holistic solution that would meet our secure by default framework. </p>
+<p>The project we came up with is called <b>Auth Everywhere</b>, which mandates that all connections in production should be authenticated, authorized, and auditable. To achieve this, we deployed a sidecar proxy along with an HTTP service to only accept mTLS connections from clients within the ACL. Auth Everywhere takes a defense-in-depth approach to handling SSRF vulnerabilities; it hardens our production infrastructure with the least privilege principle, and limits the impact of a production host being compromised in general.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="conclusion">
+    <h2 class="dr-article-content__section-title">Conclusion</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>SSRF has been one of our top concerns after we saw some novel techniques in recent talks. Thanks to the help of security researchers from our bug bounty program, we were able to fix the critical vulnerability detailed here before it could be exploited by bad actors. And in the process of fixing this particular case of SSRF, we used the opportunity to harden our systems more generally, substantially reducing the risk of SSRF going forward.</p>
+<p>If being rewarded for finding vulnerabilities excites you, be sure to check out our <a href="https://hackerone.com/dropbox" target="_blank">bug bounty program</a>. And if you want to build innovative products, experiences, and infrastructure, come build the future with us! Visit <a href="https://dropbox.com/jobs" target="_blank">dropbox.com/jobs</a> to see our open roles, and follow @LifeInsideDropbox on <a href="https://www.instagram.com/lifeinsidedropbox/?hl=en" target="_blank">Instagram</a> and <a href="https://www.facebook.com/lifeinsidedropbox/" target="_blank">Facebook</a> to see what it's like to create a more enlightened way of working.<br />
+</p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/07/ssrf/SSRFAttacks-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/07/ssrf/SSRFAttacks-1440x305-light.png" medium="image">
+                    <media:title type="html">Defending against SSRF attacks (with help from our bug bounty program)</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>We’re using TTVC to measure performance on the web—and now you can too</title>
+                <link>https://dropbox.tech/frontend/measuring-ttvc-web-performance-metric-open-source-library</link>
+                <dc:creator>Andrew Hyndman</dc:creator>
+                <category>TTVC</category><category>Web</category><category>Open Source</category><category>Testing</category><category>metrics</category><category>Performance</category><category>Front end</category><category>Monitoring</category>
+                <guid>https://dropbox.tech/frontend/measuring-ttvc-web-performance-metric-open-source-library</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Wed, 31 Aug 2022 06:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Nobody likes waiting for software. Snappy, responsive interfaces make us happy, and research shows there’s a relationship between responsiveness and attention<a href="#footnote-one"><sup>1</sup></a>. But maintaining fast-feeling websites often requires tradeoffs. This might mean diverting resources from the development of new features, paying off technical debt, or other engineering work. The key to justifying such diversions is by connecting the dots between performance and business outcomes—something we can do through measurement.</p>
+<p>Over the last year, we’ve been rethinking the way we track page load performance on the web at Dropbox. After identifying a few gaps in our existing metrics, we decided we needed a more objective, user-focused way to define page load performance so that we could more reliably and meaningfully compare experiences across products. We thought a relatively new page load metric called Time To Visually Complete (TTVC) could work well.</p>
+<p>There was just one problem: Browsers don’t yet report the moment a page becomes visually complete. If we wanted to adopt TTVC as our new primary performance metric, we would have to fill that gap. So we built a small library to allow us to track TTVC as our users experience it in the real world. That library is <span class="dr-code">@dropbox/ttvc</span>—and we’re excited to be open-sourcing this work!</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-advantages-of-ttvc">
+    <h2 class="dr-article-content__section-title"> Advantages of TTVC</h2>
+</div>
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-1.png/_jcr_content/renditions/ttvc-diagram-1.webp" alt="" data-aem-asset-id="ed649c87-0abe-4566-bc0a-ba4ffe792c77:ttvc-diagram-1.png" data-trackable="true" height="525" width="720"/>
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Some common pageload performance metrics</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>When monitoring a page load, there are several useful milestones (<a href="https://web.dev/vitals/" target="_blank">Google’s</a><a href="https://web.dev/vitals/"> </a><a href="https://web.dev/vitals/">W</a><a href="https://web.dev/vitals/">eb</a><a href="https://web.dev/vitals/"> Vi</a><a href="https://web.dev/vitals/">tals</a> project has recently popularized a few). Each of these metrics are measured from the moment the browser first issues a new request:</p>
+<ul>
+<li><b>Time to First Byte (TTFB):</b> The time it takes for the web server to deliver the first byte to the browser</li>
+<li><b>First Contentful Paint (FCP):</b> The timestamp of the first render frame with visible content</li>
+<li><b>Largest Contentful Paint (LCP): </b>The timestamp of the render frame which introduced the largest visible block-level element</li>
+<li><b>Time to Visually Complete (TTVC)<i>: </i></b>The time of the <i>last</i> visible paint event. Nothing on the user’s screen should change without user input</li>
+<li><b>Time to Interactive (TTI):</b> The time at which the page becomes consistently responsive to user input. This is a <a href="https://developer.mozilla.org/en-US/docs/Glossary/Time_to_interactive" target="_blank">less well-defined milestone</a>, but is sometimes calculated as the point when the CPU and network both become idle</li>
+</ul>
+<p>A few years ago, Dropbox made a big investment in aligning on and optimizing our web product for Largest Contentful Paint (LCP). This was successful, and by isolating and prioritizing our core UI elements, we were able to respond to inputs with usable interfaces much more quickly.</p>
+<p>However, by focusing narrowly on LCP, we sometimes did so <i>at the cost</i> of page stability and secondary content and features. Prioritizing the largest element on your page means de-prioritizing secondary content. This is often why users experience the dreaded <a href="https://css-tricks.com/content-jumping-avoid/" target="_blank">content jump</a>.</p>
+<p>When re-assessing the situation last year, we decided that a good way out was to identify a more objective, user-focused metric to align on: Time to Visually Complete (TTVC). With this metric, a page is considered visually complete at the moment that the pixels within the viewport finish rendering (i.e. stop changing). This is easy to develop an intuition for, it’s a meaningful milestone for the user, and it encourages layout stability.</p>
+<p>Once we knew TTVC was a good fit for our requirements, we had to figure out how to measure it.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="measuring-ttvc-in-the-field">
+    <h2 class="dr-article-content__section-title">Measuring TTVC in the field</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The most straightforward way to capture any performance metric is to run a lab test. This means setting up a device—preferably ensuring that CPU, memory and network resources are consistent between tests—and loading a web page, recording the page load, and identifying the timestamp for each milestone.</p>
+<p>Of course, a lab environment is never going to accurately represent the broad range of devices, usage patterns, and network conditions your users will face in the wild. To capture that information, you really want to be field testing—sometimes referred to as <a href="https://en.wikipedia.org/wiki/Real_user_monitoring" target="_blank">Real User Monitoring</a><a href="https://en.wikipedia.org/wiki/Real_user_monitoring"> </a><a href="https://en.wikipedia.org/wiki/Real_user_monitoring">(</a><a href="https://en.wikipedia.org/wiki/Real_user_monitoring">RU</a><a href="https://en.wikipedia.org/wiki/Real_user_monitoring">M)</a>.</p>
+<p>There are a variety of tools available today that help you capture, collect and monitor the performance of page load metrics as your customers really experience them. While several existing tools offer automated lab testing of TTVC, we could not find any that supported field measurement.</p>
+<p>Fortunately, our team found that the addition of two recent browser APIs—<a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank"><span class="dr-code">MutationObserver</span></a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank"><span class="dr-code">IntersectionObserver</span></a>—give us a way to approximate this pretty well, and without much overhead! This gave us the confidence to try building a new measurement library for field testing of TTVC.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-2.png/_jcr_content/renditions/ttvc-diagram-2.webp" alt="" data-aem-asset-id="dd4ce1a6-c32e-4da0-b973-e618541d7941:ttvc-diagram-2.png" data-trackable="true" height="277" width="720"/>
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>TTVC can only be reported retroactively</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>TTVC can only be captured retroactively. This means we need to know when the page is done loading. Only then can we can look backward, identify the time of the last visible update, and finally, report it. We consider the page done when we observe network and main thread activity to be simultaneously idle for at least two seconds.</p>
+<p>There are actually quite a few things a webpage can do that might modify the pixels in your viewport. It might load stylesheets, fonts, or images, or it could perform DOM mutations or canvas paint events (among other things). In the interest of minimizing overhead, we only monitor two types of updates: DOM mutations and image loading<sup><a href="#footnote-two">2</a></sup>. In practice, we have found this to capture the vast majority of use cases.</p>
+<p>With this in mind, the <span class="dr-code">@dropbox/ttvc</span> library implements the following three components:</p>
+<ul>
+<li><b>requestAllIdleCallback: </b><span>To detect that the browser is idle, we implemented a new function, </span><span class="dr-code">requestAllIdleCallback</span><span>. This wraps the browser API </span><span class="dr-code">requestIdleCallback</span><span> and combines it with some clever load event instrumentation to identify periods of network and CPU inactivity<br />
+ </span></li>
+<li><b>InViewportMutationObserver: </b><span>By combining </span><span class="dr-code">MutationObserver</span><span> and </span><span class="dr-code">IntersectionObserver</span><span>, we can construct an </span><span class="dr-code">InViewportMutationObserver</span><i>. </i><span>Using a </span><span class="dr-code">MutationObserver</span><span> instance, we first detect and enqueue mutation events for processing by </span><span class="dr-code">IntersectionObserver</span><span>. The </span><span class="dr-code">IntersectionObserver</span><span> instance can report whether the node(s) associated with each mutation intersect with the viewport. Finally, we surface the timestamp associated with each mutation, and keep only the most recent value<br />
+ </span></li>
+<li><b>InViewportImageObserver: </b>To track loading images, we implement a similar structure, called <span class="dr-code">InViewportImageObserver</span>. This observer uses a single, capture-phase load event listener on the document as the initial source of events, which we then feed to <span class="dr-code">IntersectionObserver</span></li>
+</ul>
+<p><span>Once we have visibility into DOM mutations, image loading, and browser activity, assembling the three pieces is straightforward. First we subscribe to loading images and mutations within the viewport. Next, we keep track of the most recent timestamp observed. And finally, we wait until the browser is idle, and report the most recent timestamp recorded.</span></p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-3.png/_jcr_content/renditions/ttvc-diagram-3.webp" alt="" data-aem-asset-id="b9ba8cc0-7b73-4b43-8913-3bc3b003596f:ttvc-diagram-3.png" data-trackable="true" height="504" width="720"/>
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>The TTVC measurement algorithm</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>However, there are still some edge cases we need to account for:</p>
+<ul>
+<li><b>User interaction. </b>Once a user interacts with the page, we can no longer safely assume that visual changes are not the results of that interaction. In these cases, we simply abort the measurement and do not report TTVC. (We consider user interaction to consist of click/touch and keydown events. We do <i>not </i>consider scroll events to be user interaction, since it is fairly common practice to drive scroll positions programmatically on page load)</li>
+<li><b>Background tabs. </b>Similar to user interaction, if a loading page is backgrounded, we have no guarantees that the browser will continue to execute code or fetch resources for that page. Rather than report very long load times that have no relation to the implementation of the page, we throw out the measurement</li>
+<li><b>Viewport sizes. </b>With <span class="dr-code">IntersectionObserver</span>, we can instrument exactly what a user sees. This means that the content which is visible may change from device to device. Additionally, scrolling <i>will</i> impact which parts of a page are considered visible</li>
+</ul>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="measuring-ttvc-in-your-own-projects">
+    <h2 class="dr-article-content__section-title">Measuring TTVC in your own projects</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>You can find <span class="dr-code">@dropbox/ttvc</span> <a href="https://github.com/dropbox/ttvc" target="_blank">on GitHub</a>, or you can add it to your project <a href="https://www.npmjs.com/package/@dropbox/ttvc" target="_blank">from npm</a> with:</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 ">$ npm install @dropbox/ttvc</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The API is composed of two primary methods. Call <span class="dr-code">init()</span> as early in page load as possible to set up instrumentation. Then, call <span class="dr-code">getTTVC()</span> to subscribe to TTVC metric events.</p>
+<p><b>Basic usage</b></p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 javascript">import {init, getTTVC} from '@dropbox/ttvc';
+
+// Call this as early in page load as possible to set up instrumentation.
+init();
+
+// Reports the last visible change for each navigation that
+// occurs during the life of this document.
+const unsubscribe = getTTVC((measurement) =&gt; {
+  console.log('TTVC:', measurement.duration);
+});</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p><b>Instrumenting AJAX requests</b></p>
+<p>We monitor CPU activity and asset loading automatically. But to help avoid detecting that the page is done prematurely, we also export two helper functions that allow you to instrument AJAX requests in your application. Here’s a quick example illustrating how to use them to instrument the native fetch API.</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 javascript">
+import {incrementAjaxCount, decrementAjaxCount} from '@dropbox/ttvc';
+
+// patch window.fetch
+const nativeFetch = window.fetch;
+
+window.fetch = (...args) =&gt; {
+  incrementAjaxCount();
+  return nativeFetch(...args).finally(decrementAjaxCount);
+};</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>For a complete walkthrough of the API and common usage patterns, <a href="https://www.npmjs.com/package/@dropbox/ttvc" target="_blank">check out the official documentation on NPM</a>.<br />
+ </p>
+<p><b>Single-page applications</b></p>
+<p>One additional bonus of adopting TTVC is that it turns out it is equally well-defined for traditional page load and single-page app navigation! The only addition we needed to make to our library to support this was to allow applications to trigger a new measurement when starting a new single-page app navigation.</p>
+
+</div>
+<div class="dr-code-container aem-GridColumn aem-GridColumn--default--12">
+
+
+
+
+<div class="dr-code-container--title" />
+<div class="dr-code-container-inner">
+
+    <button class="dr-code-container__copy-button dr-button dr-typography-t17">
+        Copy
+    </button>
+    <pre class="dr-code-container__pre"><code class="dr-code-container__code dr-typography-t5 javascript">
+// app.js
+import {start} from '@dropbox/ttvc';
+import React, {useEffect} from 'react';
+import ReactDOM from 'react-dom';
+import {BrowserRouter, useLocation} from 'react-router-dom';
+
+ReactDOM.render(
+  &lt;BrowserRouter&gt;
+    &lt;App /&gt;
+  &lt;/BrowserRouter&gt;,
+  document.getElementById('root')
+);
+
+const App = () =&gt; {
+  const location = useLocation();
+
+  useEffect(() =&gt; {
+    // Option 1: If you have access to the ttvc library, import it and
+    // call start().
+    start();
+
+    // Option 2: Dispatch a custom 'locationchange' event. @dropbox/ttvc subscribes to
+    // this and will call start() for you.
+    window.dispatchEvent(new Event('locationchange'));
+  }, [location]);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;h1&gt;Welcome to React Router!&lt;/h1&gt;
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={&lt;Home /&gt;} /&gt;
+        {/* ... more routes */}
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+
+
+</div>
+<div class="dr-code-container-rte" />
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="how-you-can-get-involved">
+    <h2 class="dr-article-content__section-title">How you can get involved</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>In the future, we hope that browsers consider reporting TTVC to us directly. That will always be more performant and more accurate than anything we can do with JavaScript. But until then, <span class="dr-code">@dropbox/ttvc</span> provides a mechanism for computing the TTVC metric in real time, allowing us to incorporate this objective, user-focused milestone into our performance monitoring.</p>
+<p>We are excited for this chance to share our work with the open-source community. If you’d like to measure TTVC in your own projects, you can find <span class="dr-code">@dropbox/ttvc</span> on <a href="https://www.npmjs.com/package/@dropbox/ttvc" target="_blank">npm</a> and <a href="https://github.com/dropbox/ttvc" target="_blank">GitHub</a>.</p>
+<p>While this should still be considered beta software, we are confident enough in our work to have begun setting TTVC goals in our quarterly planning processes. If you’d like to get involved, we would be very happy to see bug reports or contributions that help us improve the accuracy and performance of the library.</p>
+<p>Does building innovative products, experiences, and infrastructure excite you? Come build the future with us! Visit <a href="https://dropbox.com/jobs" target="_blank">dropbox.com/jobs</a> to see our open roles, and follow @LifeInsideDropbox on <a href="https://www.instagram.com/lifeinsidedropbox/?hl=en" target="_blank">Instagram</a> and <a href="https://www.facebook.com/lifeinsidedropbox/" target="_blank">Facebook</a> to see what it's like to create a more enlightened way of working. <br />
+</p>
+
+</div>
+<div class="video aem-GridColumn aem-GridColumn--default--12"><div class="dr-video__container">
+    <iframe class="dr-video__iframe" frameborder="0" src="https://www.youtube.com/embed/d6EF5lEeeWE"></iframe>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p> </p>
+<p><i><sup><a id="footnote-one"></a>1</sup> <a href="https://www.nngroup.com/articles/response-times-3-important-limits/" target="_blank">https://www.nngroup.com/articles/response-times-3-important-limits/</a><br />
+ <sup><a></a><a id="footnote-two"></a>2</sup> If we only tracked DOM mutations, we might report TTVC prematurely on a page with a lot of image content (imagine a photo gallery, or the Netflix homepage).</i></p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-1440x305-light.png" medium="image">
+                    <media:title type="html">We’re using TTVC to measure performance on the web—and now you can too</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>Uploading file data in a performant manner</title>
+                <link>https://dropbox.tech/developers/performant-upload</link>
+                <dc:creator>Dropbox Platform Team</dc:creator>
+                <category>Sample Apps</category><category>Tips and Tricks</category>
+                <guid>https://dropbox.tech/developers/performant-upload</guid>
+                <description><![CDATA[Learn how to upload files to Dropbox using the Dropbox API in a performant manner]]></description>
+                <pubDate>Tue, 30 Aug 2022 07:30:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Once of the most common uses of the Dropbox API is to upload files to Dropbox. If you only need to upload one small file, you can do so with <a href="https://www.dropbox.com/developers/documentation/http/documentation#files-upload">one Dropbox API call</a>, but when you need to upload a large amount of larger files, and you need to do so very quickly, things can get more complicated. In that case, you'll need to consider things like lock contention and parallelization. </p>
+<p>For tips on how to manage these considerations and upload file data fast, check out our updated <a href="https://developers.dropbox.com/dbx-performance-guide">Performance Guide</a>. We've added some information on using new functionality on the Dropbox API that can help you upload file data fast, by starting multiple upload sessions in batches, and by further parallelizing upload session requests.</p>
+<p>Also, check out <a href="https://github.com/dropbox/Developer-Samples/tree/master/Blog/performant_upload">this new code sample</a> that takes advantage of these features to upload file data as quickly as possible. You can tune the thread count parameters to match however much parallel traffic your network connection can handle.</p>
+<p>Happy uploading!</p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png" medium="image">
+                    <media:title type="html">Uploading file data in a performant manner</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>OpenID Connect released in preview</title>
+                <link>https://dropbox.tech/developers/openid-connect-released-preview</link>
+                <dc:creator>Kyle Anderson</dc:creator>
+                <category>Announcements</category><category>Preview</category>
+                <guid>https://dropbox.tech/developers/openid-connect-released-preview</guid>
+                <description><![CDATA[Learn how to Dropbox as an OpenID Connect provider]]></description>
+                <pubDate>Thu, 28 Jul 2022 07:30:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>OpenID Connect—or OIDC—is a standard identity layer built on top of OAuth 2.</p>
+<p>This lets you build support for signing into your application via the user’s email verified Dropbox identity, which reduces the number of steps for a user to sign up for your service. It provides the end user with a simple click through consent screen, and returns basic user information to your application.</p>
+<p>OIDC is an open standard, supported by many tools and libraries that can help you integrate this functionality.</p>
+<p>For details on implementing OIDC, visit our new <a href="https://developers.dropbox.com/oidc-guide">OpenID Connect Guide</a>.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/www/en-us/landing-pages/developers/oidc-guide/authorize-example.png/_jcr_content/renditions/authorize-example.webp" alt="Screenshot of the authorization page using OIDC" data-aem-asset-id="7ca8311d-ad05-49a9-91b9-f79fc06d60b3:authorize-example.png" data-trackable="true" height="894" width="1194"/>
+        
+    
+
+            
+        
+    </figure>
+</div></div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/developers/Developers-1-1440x305px-light.png" medium="image">
+                    <media:title type="html">OpenID Connect released in preview</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>A look inside our sixth generation of server hardware</title>
+                <link>https://dropbox.tech/infrastructure/sixth-generation-server-hardware</link>
+                <dc:creator>Eric Shobe and Jared Mednick</dc:creator>
+                <category>Hardware</category><category>Databases</category><category>Infrastructure</category><category>storage</category><category>Edge Network</category><category>Magic Pocket</category><category>compute</category><category>SMR</category><category>Edgestore</category>
+                <guid>https://dropbox.tech/infrastructure/sixth-generation-server-hardware</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Wed, 29 Jun 2022 07:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>For nearly a decade, Dropbox has run its own hardware infrastructure. We have one of the few exabyte-scale storage systems in the world, and running infrastructure at this scale takes a lot of time and planning to build and maintain. Our Hardware team architects, ships, and maintains all of the physical hardware in the data centers that keep Dropbox online, and we recently hit an exciting milestone: we shipped our sixth generation hardware designs. </p>
+<p>As our workloads grow and workflows evolve, each new generation of server hardware helps us stay ahead of Dropbox users’ needs. And by revisiting these configurations on a regular cadence, we ensure we’re making decisions that provide the best user experience possible. Often, that means making innovative bets on new and emerging technologies. We were <a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment">early adopters of </a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment" target="_blank">Shingled Magnetic Recording</a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment"> </a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment">(SMR)</a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment"> storage drives</a> and new CPU technology from AMD, and we’re excited about the possibility of leveraging machine learning accelerators and heat-assisted magnetic recording in the future.</p>
+<p>But first, let’s take a closer look at what’s running in our data centers today.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-who-are-yall-and-what-do-you-do-at-dropbox">
+    <h2 class="dr-article-content__section-title"> Who are y’all and what do you do at Dropbox?</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>When we started work on <a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket" target="_blank">Magic Pocket</a> in 2013<b>,</b> the hardware team decided to do all of our infrastructure engineering in-house. This provided an opportunity to control our own destiny in terms of cost and performance, which allows us to serve our customers better.</p>
+<p>When designing server configurations there are many different approaches. One approach is to tailor the server to each service. This is sort of like designing a high-performance sports car that’s optimized for speed, but not as well suited for running errands or dropping your kids off at school. If you don’t have many services, this approach makes sense—but at Dropbox there are more than 100, and that number keeps increasing. This means we would have to design and maintain more than 100 unique hardware configurations at any one time. In the hardware industry we call these snowflakes.  </p>
+<p>To tackle the increasing size and breadth of our service diversity, our approach has been to focus on a few general-purpose system designs and to avoid hardware snowflakes. This means our hardware building blocks are more utilitarian—and in keeping with our analogy above, more like designing a family sedan, which is better suited for all around tasks.</p>
+<p>These hardware building blocks are classified into three server tiers for core applications, and one tier for serving our Edge network:</p>
+<ul>
+<li><b>Storage </b>runs <a href="https://dropbox.tech/infrastructure/how-we-optimized-magic-pocket-for-cold-storage" target="_blank">Magic Pocket</a> (our immutable block storage system) and hosts all of our customer data</li>
+<li><b>Database</b> powers our persistent storage layer (<a href="https://dropbox.tech/infrastructure/reintroducing-edgestore">think</a><a href="https://dropbox.tech/infrastructure/reintroducing-edgestore" target="_blank"> MySQL and metadata</a>)</li>
+<li><b>Compute</b> provides general purpose compute for applications</li>
+<li><b>Edge</b> connects our customers to our data centers through our <a href="https://dropbox.tech/infrastructure/dropbox-traffic-infrastructure-edge-network" target="_blank">distributed POP sites</a></li>
+</ul>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="a-look-inside-our-sixth-generation-servers">
+    <h2 class="dr-article-content__section-title">A look inside our sixth generation servers</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>As in any engineering project, there was a lot of time spent discussing the code names for each tier. We usually try to stick to cartoon names, and each name has to begin with the same first letter as each of our server tiers: Storage, Database, and Compute. (Edge is the exception, because we saw it as a branch from the Compute design.) For our sixth generation hardware, we chose Scooby, Diego, Cartman, and Coco.</p>
+<p><b>Scooby (storage)<br />
+ </b>These servers are designed to efficiently store our customer data. We co-designed this server with the Magic Pocket team to offer a range of high capacity 3.5” HDDs. This generation allows us to scale up to more than 2 PB per server, and more than 20 PB per rack. Each chassis contains more than 100 drives, a compute enclosure to run Magic Pocket software, and a 100 Gb NIC for connectivity. We can fit eight of these chassis in a rack—an amazing amount of density that lets us get even more performance per rack than previous generations.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/06/sixth-gen-hardware/scooby-storage-drives.jpg/_jcr_content/renditions/scooby-storage-drives.webp" alt="The inside of a server chassis packed with hard drives. Photo by Jared Mednick" data-aem-asset-id="c48918b7-c0e9-420e-a1f3-0e4d8b38f8d7:scooby-storage-drives.jpg" data-trackable="true" height="2160" width="1662"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Drives on drives on drives! Photo by Jared Mednick</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p><b>Diego (database)<br />
+ </b>These servers power our persistent storage layer, which supports services like Edgestore, File Journal, and Magic Pocket. With Diego, we’ve effectively doubled our rack density. Each chassis has 60% more CPU cores and 16 TB NVME SSDs—twice the amount of flash storage as our previous generation. Flash storage technology is the key to providing very fast input/output and low latency access to metadata. </p>
+<p><b>Cartman (compute)<br />
+ </b>These servers handle our general compute needs. Each node is a low-end server, housed in a 1U enclosure, stacked 46 per rack, and then interconnected with a top-of-rack switch. Cartman gives our Compute tier a 3x improvement in speed and power—far beyond any prior generation. The leap in compute was primarily driven by multi-tenancy—meaning multiple applications sharing the same space—and CPU industry trends that give us more performance across our fleet with fewer CPUs. Inside the box is a 48 core processor, 256 GB DDR4 RAM, a 1 TB SSD for boot, and a 25 Gb NIC.</p>
+<p><b>Coco (edge)<br />
+ </b>These servers are responsible for accepting, encrypting, and decrypting traffic in and out of our data centers, and is the closest tier to our users. Our Coco refresh has allowed us to scale up the rack density of our POPs by 17%, increase our core count by 50%, increase network speeds by 25%, and triple our total memory. These improvements have helped us cut down on latency and improve the user experience when connecting to a Dropbox data center.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-whats-next-seventh-generation-hardware">
+    <h2 class="dr-article-content__section-title"> What’s next: Seventh generation hardware</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Now that our sixth-generation hardware is up and running, we’ve been working closely with our colleagues on the software team to monitor how our new servers are performing. Not only can the software team see the actual user impact of our decisions in action, but their insights directly influence future hardware designs. Co-designing hardware with our software teams allows us to take full advantage of the latest technologies, and differentiate our infrastructure from our competitors, ensuring we provide the best service to our users, generation after generation. </p>
+<p>Dropbox has a strong track record of deploying new hardware technologies. Some highlights include partnering with AMD to launch their Naples and Rome processors, and deploying SMR drives for Magic Pocket. We plan to continue with this theme by exploring new areas such as machine learning and heat-assisted magnetic recording (HAMR) hard drives.</p>
+<p>Machine learning workloads will allow us to take advantage of hardware accelerators, which are new to our fleet. These accelerators offer huge performance gains when running inference and regression-type workloads. This will help us provide Dropbox users with an even better experience when using <a href="https://dropbox.tech/machine-learning/how-image-search-works-at-dropbox" target="_blank">some of the new features</a> we’ve rolled out in the past few years. </p>
+<p>Heat-assisted magnetic recording is the next logical step in unlocking new densities in the most important storage destination at Dropbox: where customer data lives. This new technology will use a superheated laser focused on the platter while writing new bits into place. We’re excited to work closely with our suppliers to deploy these new drives in our fleet.</p>
+<p>These are just a few of the technologies that will allow us to keep improving the Dropbox user experience. In fact, we’re already at work on our seventh generation server hardware, which will also mark our 10th anniversary of designing these configurations in-house! We plan to continue scaling our best-in-class infrastructure by rolling out new storage solutions, optimizing for multi-tenancy, and unlocking new features for our database tier.</p>
+<p>If you’re interested in helping us build world class infrastructure, <a href="https://www.dropbox.com/jobs/teams/engineering#open-positions">w</a><a href="https://www.dropbox.com/jobs/teams/engineering#open-positions" target="_blank">e’re hiring</a>! Dropbox is now <a href="https://blog.dropbox.com/topics/company/dropbox-goes-virtual-first" target="_blank">Virtual First</a>, which means that remote work will be the primary experience for all Dropboxers. To learn more, visit <a href="https://www.dropbox.com/jobs" target="_blank">our jobs site</a> and see all of our currently open positions.</p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/06/sixth-gen-hardware/sixth-gen-hardware-light-1400px.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/06/sixth-gen-hardware/sixth-gen-hardware-light-1400px.png" medium="image">
+                    <media:title type="html">A look inside our sixth generation of server hardware</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>Fighting the forces of clock skew when syncing password payloads</title>
+                <link>https://dropbox.tech/application/dropbox-passwords-clock-skew-payload-sync-merge</link>
+                <dc:creator>John Karabinos, Tony Xu, and Andrew Hannon</dc:creator>
+                <category>clock skew</category><category>three-way merge</category><category>encryption</category><category>Passwords</category><category>Sync</category>
+                <guid>https://dropbox.tech/application/dropbox-passwords-clock-skew-payload-sync-merge</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Tue, 17 May 2022 03:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>A good password manager should be able to securely store, sync, and even autofill your username and password when logging into websites and apps. A password manager like…<a href="https://dropbox.com/passwords" target="_blank">Dropbox Passwords</a>!</p>
+<p>When we released Dropbox Passwords in the Summer of 2020, it was important we ensured that a user’s logins would always be available—and up to date—on any device they used. Luckily, Dropbox has some experience here, and we were able to leverage our existing syncing infrastructure to copy a user’s encrypted password info, known as a payload, from one device to another. However, while implementing this crucial component, we encountered an unexpected syncing issue where, sometimes, out-of-date login items would overwrite newer, more recent changes.</p>
+<p>Eventually we found a solution that built on prior Dropbox syncing work. But it also involved contemplating the very nature of time itself.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-two-way-merge">
+    <h2 class="dr-article-content__section-title">The two-way merge</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Dropbox Passwords uses zero-knowledge encryption. This means the private encryption key for a user’s passwords is only stored on their local devices, and the server is unable to decrypt them. While this is good for security purposes, it means we need to rely on the client to manage syncing and merging, and thus cannot rely on the server as a source of truth for recency as we typically would.</p>
+<p>Initially, our sync algorithm used a two-way merge. If a user edited an existing login item—thus, modifying the client’s local payload—the client performed the following steps:</p>
+<ul>
+<li>Update the local payload with the new details and current time.</li>
+<li>Download the equivalent payload from the server.</li>
+<li>Compare the timestamp of the local login item with the timestamp of the remote login item.</li>
+<li>Use the newer login item as the winner.</li>
+</ul>
+<p>Here’s a diagram illustrating what the flow might look like when a user updates their password from <span class="dr-code">hunter1</span> to <span class="dr-code">hunter2</span>.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-1.png" alt="A diagram of a successful merge and sync of a Dropbox Passwords payload." data-aem-asset-id="9b4f9446-c075-4073-bf4d-d1779a84828f:passwords-clock-skew-diagram-1.png" data-trackable="true" height="595" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">A successful merge and sync. </p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>In theory, this worked nicely. Old items were replaced with their most recent versions. In practice, however, we noticed that some items were syncing incorrectly. One of our engineers discovered a phenomenon in which an older item would somehow trump a newer one. </p>
+<p>After some thorough investigation, we found our culprit: clock skew.<br />
+</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-conflicting-clocks">
+    <h2 class="dr-article-content__section-title"> Conflicting clocks</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Let’s consider the following scenario. You are a happy Dropbox Passwords user with a computer and phone synced to the same account. You edit the notes field on one of your login items from your phone so that you can remember those pesky security questions. A few minutes later, you realize that you made a mistake when typing one of the questions—but your phone is all the way across the room. So you open up your computer to fix your mistake. After updating the notes field, you save the item, but something strange has happened. You are <i>shocked</i> to see your initial change—the one you made from your phone—has overwritten the newer change you just made on your laptop. How could this be?</p>
+<p>Recall that the client is responsible for setting the timestamps on each item. We generally assume that our electronic devices have an accurate representation of the current time, but this is not always the case. It is actually possible for a device’s time to be out of sync with true time. This could be the result of a dead CMOS battery, an incorrect time zone setting, or perhaps even malware.</p>
+<p>In our example, the phone’s login item trumps the computer’s login item because of this clock skew. If the computer’s clock is behind true time—by ten minutes, ten seconds, or even ten years—it’s possible that a more recent change will actually be marked as older. Here is a diagram illustrating what a failed sync might look like with offset clocks.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-2.png" alt="An diagram of a failed merge, in which the timestamp on the newer change is older than the stable version." data-aem-asset-id="64631399-6918-444e-8856-93911ef5228b:passwords-clock-skew-diagram-2.png" data-trackable="true" height="595" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">An example of a failed merge. Note that the timestamp on the newer change is older than the stable version.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-three-way-merge">
+    <h2 class="dr-article-content__section-title">The three-way merge</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>In order to tackle this problem, we borrowed the idea of a <a href="https://www.atlassian.com/git/tutorials/using-branches/git-merge" target="_blank">three-way merge</a> from Git, the popular source control tool. Git uses a three-way merge when a user wants to merge two branches but there isn’t a linear path to merge from one branch to another branch. In these cases, there is a common ancestor of both branches, but no branch is an ancestor of the other. In a three-way merge, the common ancestor and the tips of both branches are used to generate a merged commit.</p>
+<p>In fact, we already use the same idea in the Dropbox desktop client when syncing files between devices. Although this client has a more advanced version of conflict handling, the basic principle is the same. We realized a three-way merge might help us here, too.</p>
+<p>In our case, the main problem with doing a two-way merge is that, because we can’t use the server as source of truth, we don’t have a revision history to keep track of which revision is earlier. As a result, we always rely on timestamps to determine which update is newer. In order to solve this problem, we introduced a third payload copy known as <b>base. </b>Now…</p>
+<ul>
+<li>We have a <b>local</b> payload that represents what the user sees on their client. </li>
+<li>We have a <b>remote</b> payload that represents what is stored on the Dropbox server. </li>
+<li>We have a <b>base</b> payload that represents the most recently synced payload on that client.</li>
+</ul>
+<p>Instead of a simple time comparison of <b>local</b> and <b>remote</b>, we can now generate a diff from <b>local</b> &lt;&gt; <b>base</b> and a diff from <b>remote</b> &lt;&gt; <b>base</b>. If there are any differences between <b>base</b> and the payload to which we are comparing it, we know that the most recent change <i>must</i> come from the <b>non-base</b> payload, since there is no way to edit <b>base</b> directly. </p>
+<p>Once we obtain a list of local diffs and remote diffs, we can attempt to consolidate changes, with a goal of bringing the three payloads back in sync. There are two possible outcomes when comparing the diffs:</p>
+<ul>
+<li><b>Entries in either diff but not both. </b>This means that the diffs do not conflict with each other. Both changes can be safely applied.</li>
+<li><b>Entries in both diffs. </b>Changes in this category are considered conflicted, because both the local and remote payloads have updates to the same item. In this case, we will use their timestamp to resolve conflicts. The winner of the change will be the one that has a more recent timestamp.</li>
+</ul>
+<p>A keen reader will point out that this merging process is still susceptible to clock skew—but under normal usage, this is unlikely to ever occur. A user would not only need two devices with out-of-sync clocks, but would have to edit the same item on both devices at the same time.</p>
+<p>With the three-way merge in place, it was clear the addition of a <b>base</b> payload solved our merge issue. In a typical clock skew scenario, we no longer need to compare timestamps as there should be no conflicts during our merge. </p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-3.png" alt="A diagram of a successful merge and sync with skewed clocks." data-aem-asset-id="39151c5a-a096-4f51-b6a7-30a8f44b4707:passwords-clock-skew-diagram-3.png" data-trackable="true" height="707" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">A successful merge and sync with skewed clocks.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-a-solid-foundation-for-the-future">
+    <h2 class="dr-article-content__section-title"> A solid foundation for the future</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>After a year in general availability, the three-way merge has proven to be a much more robust solution than what we had before. We were especially thankful for the extra stability as we added new features throughout 2021—including support for password sharing and payment card items. Our two-way merge issue could have been much more frustrating for users trying to modify a shared item, so we were happy to solidify our foundation before building atop it.</p>
+<p>But why read about it when you can try it for yourself? Install <a href="https://www.dropbox.com/features/security/passwords" target="_blank">Dropbox Passwords</a> today and let your device finally experience the thrill of a three-way merge.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-one-more-thing">
+    <h2 class="dr-article-content__section-title"> One more thing…</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Do you value the security of your passwords and a silky-smooth syncing experience? <a href="https://www.dropbox.com/jobs/teams/engineering#open-positions" target="_blank">Dropbox is hiring</a>! Whether you have a passion for solving hard problems, or prefer the ritual of a routine bugfix, we’re always looking for curious new engineers. Dropbox would love to welcome you aboard! Visit our <a href="https://www.dropbox.com/jobs/teams/engineering#open-positions" target="_blank">careers page</a> to apply.</p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-1440x305-light.png" medium="image">
+                    <media:title type="html">Fighting the forces of clock skew when syncing password payloads</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>That time we unplugged a data center to test our disaster readiness</title>
+                <link>https://dropbox.tech/infrastructure/disaster-readiness-test-failover-blackhole-sjc</link>
+                <dc:creator>Krishelle Hardson-Hurley, Ross Delinger, and Tong Pham</dc:creator>
+                <category>Metadata</category><category>architecture</category><category>disaster readiness</category><category>failover</category><category>blackhole</category><category>reliability</category><category>uptime</category>
+                <guid>https://dropbox.tech/infrastructure/disaster-readiness-test-failover-blackhole-sjc</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Mon, 25 Apr 2022 06:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>On Thursday, November 18, 2021, Dropbox did <i>not</i> go down. On a normal day this would be a non-event—a sign that everything was operating as usual. However, this day was anything but usual. At 5:00 pm PT, a group of Dropboxers were huddled on a Zoom call when the command was given to physically unplug our San Jose data center from the rest of the Dropbox network. </p>
+<p>This was a big deal—the culmination of more than a year’s worth of work for the Disaster Readiness (DR) team, and more than six years of work across Dropbox as a whole. </p>
+<p>In a world where natural disasters are more and more prevalent, it’s important that we consider the potential impact of such events on our data centers. A core Dropbox value is being worthy of our customer’s trust. From a disaster readiness perspective, this means ensuring we not only measure risks to our physical locations, but also implement strategies to mitigate such risks.</p>
+<p>After we migrated <a href="https://dropbox.tech/infrastructure/magic-pocket-infrastructure" target="_blank">from AWS in 2015</a>, Dropbox was highly centralized in San Jose. While user metadata has been replicated across other regions for many years, the reality was that San Jose was where most of our services originated and matured. Given San Jose's proximity to the the San Andreas Fault, it was critical we ensured an earthquake wouldn't take Dropbox offline.</p>
+<p>One way of communicating our preparedness to our customers is through a metric called Recovery Time Objective (RTO). RTO measures the amount of time we promise it will take to recover from a catastrophic event. Over the years, there have been several workstreams aimed at continually reducing our estimated RTO in preparation for all kinds of potential disasters—earthquakes included.</p>
+<p>Due to a large cross-functional effort led by the DR team in 2020 and 2021—culminating in the literal unplugging of our San Jose data center—Dropbox was able to reduce its RTO by more than an order of magnitude. This is the story of how we did it.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-in-the-beginning-there-was-magic-pocket">
+    <h2 class="dr-article-content__section-title"> In the beginning there was Magic Pocket</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>In order to better appreciate the challenges associated with achieving a significant reduction in our RTO, it’s important to understand how the architecture of Dropbox was designed.</p>
+<p>Dropbox has two core serving stacks: one for block (file) data, and one for metadata. As many avid Dropbox tech blog readers may be aware, <a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket" target="_blank">Magic Pocket is our solution for block storage</a>, and was designed with a multi-homed approach to reliability. When a service is multi-homed, it means that, by design, the service can be run from more than one data center.</p>
+<p>Magic Pocket is also what we call an active-active system. This means, in addition to being multi-homed, it was designed to serve block data from multiple data centers independently at the same time. Its design includes built-in replication and redundancies to ensure a region failure is minimally disruptive to our business. This type of architecture is resilient in disaster scenarios because, from the user’s perspective, it is able to transparently withstand the loss of a data center. After Magic Pocket was implemented, Dropbox embarked on a three-phase plan to make the metadata stack more resilient, with a goal of eventually achieving an active-active architecture here, too. </p>
+<p>The first phase of this project was to achieve an active-passive architecture. This meant making the necessary changes to enable us to move metadata from our current active metro—our San Jose data center (SJC)—to another passive metro. This process is called a failover. </p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram-1-collage.png/_jcr_content/renditions/Diagram-1-collage.webp" alt="" data-aem-asset-id="130ee037-43fe-47a9-946e-ca51f96a596d:Diagram-1-collage.png" data-trackable="true" height="2500" width="2800"/>
+    
+
+            
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Our first failover was successfully performed in 2015, and was intended as a one-off exercise on the way to our eventual goal. But as we began to work towards an active-active architecture for our metadata stack—enabling us to serve user metadata from multiple data centers independently—we started to realize how difficult achieving this goal would be.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-metadata-complicates-things">
+    <h2 class="dr-article-content__section-title"> Metadata complicates things</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The metadata stack is built on top of two large, sharded MySQL deployments. One is for general metadata using our in-house database <a href="https://dropbox.tech/infrastructure/reintroducing-edgestore">E</a><a href="https://dropbox.tech/infrastructure/reintroducing-edgestore" target="_blank">dgestore</a>, and the other for filesystem metadata. Each shard in a cluster is allocated to six physical machines: one primary and two replicas in each of our core regions.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%202_@2x.png/_jcr_content/renditions/Diagram%202_@2x.webp" alt="" data-aem-asset-id="8c81e7f7-4599-4325-a8bc-ebb53b651a64:Diagram 2_@2x.png" data-trackable="true" height="305" width="720"/>
+    
+
+            
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>There are two core trade-offs at the MySQL layer—and complexities with how we model data in Edgestore—that forced a rethink of our disaster readiness plans.</p>
+<p>The first MySQL trade-off is with how we handle replication. We use <a href="https://dev.mysql.com/doc/refman/5.7/en/replication-semisync.html">s</a><a href="https://dev.mysql.com/doc/refman/5.7/en/replication-semisync.html" target="_blank">emisynchronous replication</a> to balance data integrity and write latency. However, because of that choice, replication between regions is asynchronous—meaning the remote replicas are always some number of transactions behind the primary region. This replication lag makes it very hard to handle a sudden and complete failure of the primary region. Given this context, we structured our RTO—and more broadly, our disaster readiness plans—around imminent failures where our primary region is still up, but may not be for long. We felt comfortable with this trade-off because our data centers have many redundant power and networking systems that are frequently tested.</p>
+<p>The second MySQL trade-off is at a consistency level. We run MySQL in <a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html#isolevel_read-committed">r</a><a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html#isolevel_read-committed" target="_blank">ead </a><a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html#isolevel_read-committed">c</a><a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html#isolevel_read-committed" target="_blank">ommitted</a> isolation mode. This strong consistency makes it easy for our developers to work with data, but it also limits the ways we can scale our databases. A common way to scale is to introduce caches that alter the overall consistency guarantees, but increase read throughput. In our case, while we’ve built out a cache layer, it was still designed to be strongly consistent with the database. This decision complicated the design, and put restrictions on how far away from the databases caches can be. </p>
+<p>Finally, because Edgestore is a large multi-tenant graph database used for many different purposes, data ownership isn't always straightforward. This complex ownership model made it hard to move just a subset of user data to another region.</p>
+<p>These trade-offs are critical to why we struggled to build an active-active system. Our developers have come to rely on the write performance enabled by our first MySQL trade-off, and the strong consistency of the second. Combined, these choices severely limited our architectural choices when designing an active-active system, and made the resulting system much more complex. By 2017, work towards this effort had stalled—but there was still pressure within the company to develop a more robust solution to potential datacenter failures. To ensure business continuity in the event of disaster, we switched gears and prioritized an active-passive failure model instead.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="-introducing-the-disaster-readiness-team">
+    <h2 class="dr-article-content__section-title"> Introducing the Disaster Readiness team</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Once we made the decision to focus on active-passive, we began to build the tools needed to make failovers more frequent. In 2019 we ran our first formalized failover, and from that point on we ran failovers quarterly, further improving the process each time. 2020 marked a turning point—not only for the world, but for the state of disaster readiness at Dropbox. </p>
+<p>In May 2020, a critical failure in our failover tooling caused a major outage, costing us 47 minutes of downtime. The script that drove the failover had errored out halfway through the process, leaving us stuck in a half-failed state. This failure highlighted several critical problems in our disaster readiness strategy:</p>
+<ol>
+<li>The system driving our failovers did not fail safely.</li>
+<li>Individual service teams all owned their own failover process and tooling in isolation from each other.</li>
+<li>We were not running failovers often enough, which gave us fewer opportunities to practice our approach.</li>
+</ol>
+<p>To tackle the first problem, we started an emergency audit of our existing failover tooling and processes. We made the necessary changes to ensure our tooling now failed safely, and built a new checklist to ensure appropriate rigor when running a failover exercise.</p>
+<p>The second and third problems were addressed by creating a dedicated team for failover, the Disaster Readiness (DR) team. Having a dedicated team with no competing priorities meant we could run failovers monthly instead of quarterly. More failover experience would not only help build confidence in our approach, but empower us to respond to and recover from disasters far more quickly than before. </p>
+<p>With a clear mandate and a team of seven, we set ourselves the ambitious goal of significantly reducing our RTO by the end of 2021.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-year-of-failover-improvements">
+    <h2 class="dr-article-content__section-title">The year of failover improvements</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>A major concern highlighted by the May 2020 outage was that we relied on a single monolithic Go binary to handle the failover from one metro to another. This tool did the job for the first few failovers, but became harder to manage as our failover ambitions grew.</p>
+<p>As a result, we decided to rewrite the tool from the ground up to be more modular and configurable. We took inspiration from <a href="https://www.usenix.org/conference/osdi18/presentation/veeraraghavan" target="_blank">Facebook’s Maelstrom paper</a>, which details a system for dealing with data center disaster scenarios by smartly draining traffic. However, we would need to adapt the fundamental idea to our own Dropbox systems, starting with an MVP.</p>
+<p>We borrowed Maelstrom’s concept of a runbook, which contains one or more tasks, each of which carries out a particular operation. Together, the tasks form a directed acyclic graph, which enables us to describe not only the current steps needed to perform a failover exercise, but any generic disaster recovery test. We can then describe the runbook needed to perform a failover in a configuration language that is easy to parse and edit—making changes or updates to the failover process as simple as editing configuration files.</p>
+<p>Not only is this a much more lightweight process than editing the Go binary directly, but it allows us to reuse tasks with other runbooks, making it easier to test a task one at a time on a more regular basis.</p>
+<p>The diagrams below show the state machines for a runbook and a task within.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%203_@2x.png/_jcr_content/renditions/Diagram%203_@2x.webp" alt="Runbook state machine. A runbook consists of multiple Tasks." data-aem-asset-id="494e7d11-9c08-4a7d-b35f-1446eac9b695:Diagram 3_@2x.png" data-trackable="true" height="493" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Runbook state machine. A runbook consists of multiple Tasks.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%204_@2x.png/_jcr_content/renditions/Diagram%204_@2x.webp" alt="Task state machine. A task performs a specific operation, such as failing over a database cluster, changing traffic weights, or sending a Slack message." data-aem-asset-id="d319c413-4d09-4aac-8203-1343d0d3a6ee:Diagram 4_@2x.png" data-trackable="true" height="302" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Task state machine. A task performs a specific operation, such as failing over a database cluster, changing traffic weights, or sending a Slack message.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>We also wrote an in-house scheduler implementation which can accept a runbook definition and send out tasks to be executed by a worker process. For the MVP, both scheduler and worker are co-located in the same process and communicate over Go channels, but the flexible architecture means we could turn them into separate services as usage increases in the future.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%205_@2x.png/_jcr_content/renditions/Diagram%205_@2x.webp" alt="The updated failover tool, which consists of a scheduler goroutine and multiple worker goroutines, communicating via channels to assign and execute tasks belonging to a runbook in the correct order." data-aem-asset-id="b9eba5fc-3fb3-4a34-9055-da3b28765980:Diagram 5_@2x.png" data-trackable="true" height="563" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>The updated failover tool, which consists of a scheduler goroutine and multiple worker goroutines, communicating via channels to assign and execute tasks belonging to a runbook in the correct order.<br />
+</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>With this new architecture, it was easy to gain visibility into the execution status of our failover runbook. At a glance, we could now tell which tasks had failed or succeeded. The explicit graph structure also allows for greedy task execution in the face of failure, while guarding important actions from being executed should any of their predecessors fail. And the operator gains other operational flexibilities, such as the ability to easily rerun a runbook, skipping over completed tasks or tasks we do not want. As our runbooks grow in complexity, these reliability gains are essential for our procedure to remain manageable.</p>
+<p>Fundamental improvements in our tooling aside, we also implemented other changes to help us reduce risk and place our customers first:</p>
+<ul>
+<li><b>Routine testing of key failover procedures. </b>With our refactored tooling, we could now run regular, automated tests of failover tasks on a much smaller scale. For example, we might only run a failover of a single database cluster, or only one percent of traffic to another metro and back. These small tests gave us the confidence to make changes without worrying we might miss any regressions—and helped ensure the same issues that plagued our unsuccessful failover would not reoccur.</li>
+<li><b>Improved operational procedures. </b>The DR team was inspired by practices used in past NASA space launches. For example, we instituted a formalized go/no-go decision point, and various checks leading up to a countdown. We also introduced clearly defined roles—such as “button pusher” and “incident manager”—and automated as many steps as possible, allowing us to reduce the number of participants needed for each failover exercise from 30 to fewer than five. This reduction helped us balance the cost of running exercises more frequently.</li>
+<li><b>Clearly defined abort criteria and procedures. </b>Part of the operational improvements included planning for a worst case scenario by defining clear abort criteria and procedures. Having these in place ensured we not only knew <i>when</i> to make a call to abort, but <i>how</i>—allowing us to recover as quickly as possible and minimize the impact on our users’ experience.</li>
+<li><b>More frequent and longer failover exercises. </b>Armed with better tooling, procedures, and visibility into our failover exercises, we were able to increase the frequency of failovers from once a quarter to once a month—and increase the duration of each failover exercise over time. This enabled us to catch code deployments, configuration changes, or new services that would cause a problem during failover sooner, reducing the number of such issues we had to address at a time. After multiple successful one-hour failovers, we increased our stay in the passive metro to four hours, then 24 hours, and so on—until we were able to run from the passive metro for over one month at a time. We also challenged the team with an “unplanned” failover, where the date of the failover was a surprise to the team and the company, leaving everyone just an hour to prepare.</li>
+</ul>
+<p>Looking back at the improvements made since the May 2020, our successful streak of failovers demonstrated that we were on the right path towards our goal. Operationally, we demonstrated muscle memory for performing and consistently improving failovers. The failover service introduced a layer of automation that significantly reduce pre-failover steps for the DR team—drastically reducing the amount of manual prep work needed to perform failover as a result. These tooling improvements also reduced our monthly downtime from 8-9 minutes per failover at the beginning of 2021 to 4-5 minutes in the latter half of the year.<b> </b>The next frontier was getting to a place where we could prove we were no longer dependent on SJC.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%206_@2x.png/_jcr_content/renditions/Diagram%206_@2x.webp" alt="A history of our incremental progress on failover exercises with longer duration of stay." data-aem-asset-id="367cd067-1cac-4489-aa57-0165ec256216:Diagram 6_@2x.png" data-trackable="true" height="503" width="720"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>A history of our incremental progress on failover exercises with longer duration of stay.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-year-of-the-blackhole">
+    <h2 class="dr-article-content__section-title">The year of the blackhole</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>As our failover efforts continued to improve from 2020 into 2021, a small group within the DR team began work on the second critical milestone: achieving true active-passive architecture.</p>
+<p>While our ability to failover proved we could migrate the metadata serving stack to the passive metro, there were several other critical services still serving from the active metro—in this case, SJC. We realized the best way to ensure we did not have any dependency on the active metro was to perform a disaster recovery test where we physically unplugged SJC from the rest of the Dropbox network. If<b> </b>unplugging SJC proved to have minimal impact on our operations, this would prove that in the event of a disaster affecting SJC, Dropbox could be operating normally within a matter of hours.<b> </b>We called this project the SJC blackhole.</p>
+<p><b>Multi-homing <br />
+ </b>Even though the metadata and block stacks that serve live user traffic would not be affected by the SJC blackhole, we knew we could still face major troubles if internal services were degraded or nonfunctional while Dropbox was being served out of another metro. That would prevent us from being able to correct production issues that might arise during the blackhole. As a result, we needed to ensure that all critical services still running in SJC were multi-homed—or, at the very least, could temporarily run single-homed from a metro other than SJC.</p>
+<p>Several prior technological investments helped facilitate the multihoming process and made detection of single-homed services easier. We leveraged the Traffic team and our traffic load balancer <a href="https://dropbox.tech/infrastructure/how-we-migrated-dropbox-from-nginx-to-envoy" target="_blank">Envoy</a> to control traffic flowing from our POPs to our data centers for all critical web routes. The <a href="https://dropbox.tech/infrastructure/courier-dropbox-migration-to-grpc" target="_blank">Courier</a> migration allowed us to build common failover RPC clients, which could direct a service’s client requests to a deployment in another metro. Additionally, Courier standard telemetry provided inter-service traffic data, which helped us identify single-homed services. At the network layer, we leveraged <a href="https://www.kentik.com/" target="_blank">Kentik</a> netflow data with custom dimension tagging to validate the dependency findings from our Courier service and catch any lingering non-Courier traffic. Finally, almost all services are under <a href="https://dropbox.tech/infrastructure/continuous-integration-and-deployment-with-bazel" target="_blank">Bazel</a> configuration, which allowed us to build and promote multi-metro deployment practices and provided another data source to validate service-metro affinity. Once at-risk services were identified, the DR team provided advice and resources to empower service owners to make changes to their service architecture that would reduce dependency on SJC.</p>
+<p>In some cases, we were able to work directly with teams to integrate their service into our monthly failover. By reducing the number of services which were single-homed in SJC and involving them in regular testing, we increased our confidence in those services being able to serve out of another metro. Some of the major services that were added to the failover roster were <a href="https://dropbox.tech/infrastructure/cape-technical-deep-dive" target="_blank">CAPE</a> and <a href="https://dropbox.tech/infrastructure/asynchronous-task-scheduling-at-dropbox" target="_blank">ATF</a>, two asynchronous task execution frameworks. For certain teams, we parachuted in to directly assist their multi-homing efforts for their SJC-only components. In the end, we were able to help multi-home all major services in SJC before our planned blackhole date, allowing us to minimize the potential impact of SJC going dark.<br />
+</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="preparing-for-the-blackhole">
+    <h2 class="dr-article-content__section-title">Preparing for the blackhole</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Once we were confident that critical services were, at the very least, no longer single-homed in SJC, we prepared to unplug SJC for the first time.</p>
+<p>About two months prior to the SJC blackhole, in collaboration with the networking engineering team, we decided to take an incremental approach to preparing for the big event. In our collaboration, there were three main goals:</p>
+<ol>
+<li>To decide on a procedure that would simulate a complete loss of SJC (and would be easily reversible).</li>
+<li>Test this procedure in a lower risk, less impactful metro.</li>
+<li>Based on the outcome of these tests, prepare the company for the SJC blackhole.</li>
+</ol>
+<p><b>The procedure<br />
+ </b>Initially, we planned to isolate SJC from the network by draining the metro’s network routers. While this would have gotten the job done, we ultimately landed on a physical approach that we felt better simulated a true disaster scenario: unplugging the network fiber! After deciding on this approach, we set out to outline a detailed Method of Procedure (MOP) that would dictate the sequence of actions to be performed on the big day. At a high level, this is what our MOP looked like: </p>
+<ol>
+<li>Install traffic drains to direct all lingering traffic to other metros.</li>
+<li>Disable all alerting and auto-remediation.</li>
+<li>Pull the plug!</li>
+<li>Perform validations (pings to machines, monitor key metrics, etc.).</li>
+<li>Start a 30 minute timer and wait.</li>
+<li>Reconnect fiber.</li>
+<li>Perform validations.</li>
+<li>Re-enable alerting and auto-remediation.</li>
+<li>Un-drain traffic.</li>
+</ol>
+<p>With the overall procedure decided, we set out to prepare for two test runs in our Dallas Forth Worth (DFW) metro. We chose this metro because it fit the requirement of being lower risk; it had few critical services, all of which were multi-homed by design, and was therefore very resilient. </p>
+<p>The DFW metro consists of two data center facilities: DFW4 and DFW5. We decided to start with one data center for the first test, and test both facilities second.</p>
+<p>To prepare, the networking and data center teams took photos documenting our optical gear wiring in its ideal state. They also ordered backup hardware to have on hand, just in case something broke. Meanwhile, the DR team defined our abort criteria, and coordinated with teams to either drain their service or disable alerting and/or auto-remediation. </p>
+<p><b>DFW test no.1<br />
+ </b>The day finally came to conduct our first DFW test. More than 20 of us were gathered over Zoom, our MOP was on the screen, and everyone understood their role and was ready to go. We proceeded as planned through the MOP, and unplugged the fiber for DFW4.</p>
+<p>As we began to do validations, we noticed very quickly that our external availability number was dropping—something we did not expect. After waiting about four minutes, we made the call to abort and began to reconnect the network fiber. We deemed the first test a failure as we did not reach 30 minutes of network isolation.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         
+        <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%207_@2x.png/_jcr_content/renditions/Diagram%207_@2x.webp" alt="" data-aem-asset-id="ae7a8646-e153-4dc2-bfc7-9ef29b0418a0:Diagram 7_@2x.png" data-trackable="true" height="457" width="720"/>
+    
+
+            
+        
+    </figure>
+</div></div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The root cause was that the unplugged DFW data center, DFW4, was home to our S3 proxies. When the services still running in DFW5 tried—and failed—to talk to the local S3 proxies, those services suffered, ultimately impacting global availability. </p>
+<p>Going into the test, we incorrectly assumed that the two DFW facilities were roughly equivalent—and thus, we could simply pull the plug on one without affecting the other. However what this test found was that, because we don’t yet treat facilities as independent points of failure—but plan to in the future—many cross-facility dependencies still exist. This leads to a greater impact when we take a single facility offline compared to taking the whole metro offline<sup><a href="#footnote-one">1</a></sup>.</p>
+<p>It’s important to remember that the whole purpose of disaster recovery tests are the lessons we learn—and in this case, not only did the DR team learn a lot, but so did many others. Specifically:</p>
+<ul>
+<li>We needed to conduct blackhole tests on the entire metro, not individual data center facilities.</li>
+<li>We needed a more robust abort criteria specific to these types of tests.</li>
+<li>We needed to work with local service owners to drain their services.</li>
+</ul>
+<p>As a result, the MOP for the next tests introduced two new steps:</p>
+<ol>
+<li><b>Drain any local services (for example, S3 proxies).</b></li>
+<li>Install traffic drains to direct all lingering traffic to other metros.</li>
+<li>Disable all alerting and auto-remediation.</li>
+<li>Pull the plug!</li>
+<li>Perform validations (pings to machines, monitor key metrics, etc.).</li>
+<li>Start a 30 minute timer and wait.</li>
+<li>Reconnect fiber.</li>
+<li>Perform validations.</li>
+<li><b>Un-drain local services and validate their health.</b></li>
+<li>Re-enable alerting and auto-remediation.</li>
+<li>Un-drain traffic.</li>
+</ol>
+<p><b>DFW test no.2<br />
+ </b>Using what we learned, we tried again a few weeks later—this time, aiming to blackhole the entire DFW metro. Once again, photos were taken, we had backup hardware on hand, and we prepared for our first full metro blackhole. </p>
+<p>We started by draining critical local services, and then proceeded with the remaining steps as usual. Two Dropboxers were positioned onsite in each facility and unplugged the fiber on command. Much to our relief, we saw no impact to availability and were able to maintain the blackhole for the full 30 minutes. This was a significant improvement which allowed us to deem the network procedure viable for SJC.</p>
+<p>An important outcome of our DFW tests was that they forced owners of non-critical services—for example, deployment systems, commit systems, and internal security tooling—to think critically about how the SJC blackhole would impact them. An impact document was created to ensure we had a single source of truth to communicate which services would have a gap in service during the SJC blackhole. And we encouraged service owners to perform their own pre-blackhole tests to ensure their service’s readiness for the SJC blackhole procedure.</p>
+<p>As we reflected on what went well and how we could improve, we realized another huge benefit: these tests had helped train the key teams and their on-calls on the procedure we would use for the SJC blackhole. The fact we could apply these same procedures to SJC gave us the operational confidence we would be successful there, too. </p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="the-big-day">
+    <h2 class="dr-article-content__section-title">The big day</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>On Thursday, November 18, 2021, the time had finally come to unplug SJC. We had three Dropboxers ready onsite in each of SJC’s three data center facilities. Again, they took photos and had extra hardware ready in case any optical gear was damaged while un-plugging or re-plugging the delicate network fiber. About 30 people gathered in a Zoom call, and even more in a Slack channel, diligently progressing through a detailed procedure like a space launch mission control.</p>
+<p>Finally, at 5:00 pm PT, the time came to pull the plug at each facility, one by one, until all three were offline. Much like our second DFW test, we saw no impact to global availability—and ultimately reached our goal of a 30 minute SJC blackhole! </p>
+<p>Yeah, we know, this probably sounds a bit anti-climactic. But that’s exactly the point! Our detail-oriented approach to preparing for this event is why the big day went so smoothly.</p>
+<p>While there were some unexpected impacts to internal services that we plan to follow up on, we deemed this test a huge success. In the unlikely event of a disaster, our revamped failover procedures showed that we now had the people and processes in place to offer a significantly reduced RTO—and that Dropbox could run indefinitely from another region without issue. And most importantly, our blackhole exercise proved that, without SJC, Dropbox could still survive. </p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  align-center">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/fiber-collage-alt.jpg/_jcr_content/renditions/fiber-collage-alt.webp" data-aem-asset-id="3a5228c6-49d9-45f8-9aa6-77e6c45dacb9:fiber-collage-alt.jpg" data-trackable="true" height="3000" width="3750"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>From left to right, Eddie, Victor, and Jimmy prepare to physically unplug the network fiber at each of SJC’s three data center facilities. <br />
+</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="a-more-resilient-reliable-dropbox">
+    <h2 class="dr-article-content__section-title">A more resilient, reliable Dropbox</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>The ability to completely blackhole SJC traffic for 30 minutes was a big step forward for disaster readiness at Dropbox. We proved we now have the tooling, knowledge, and experience necessary to keep the business running in the wake of a disaster bad enough to shutdown an entire metro. These are also the kinds of improvements that enable us to be even more competitive with industry standards for service dependability and resiliency.</p>
+<p>This was a multi-year effort involving careful planning and collaboration between multiple teams at Dropbox—and given the complexity of our services and their dependencies, these failovers were not without risk. But a mix of due diligence, frequent testing, and procedural improvements have helped us minimize those risks going forward.</p>
+<p>Most importantly, our experience here reinforces a core tenet of disaster readiness: like a muscle, it takes training and practice to get stronger. As we conduct blackhole exercises more frequently—and refine the processes we use—our disaster readiness capabilities will only continue to improve. And if we do our jobs right, our users should never notice when something goes wrong. A resilient, reliable Dropbox is a Dropbox they can trust. </p>
+<p>Finally, we’d like to acknowledge the many Dropboxers that made this possible, all of whom should be commended for helping us unlock this new milestone. Reliability at our scale requires everyone to take ownership. We couldn’t reach a milestone like this without hundreds of smaller wins from dozens of teams.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="also-were-hiring">
+    <h2 class="dr-article-content__section-title">Also: we’re hiring!</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Do you want to build resilient systems at scale? Are you energized by the thought of averting disaster? If so, we’d love to have you at Dropbox! Visit out <a href="https://www.dropbox.com/jobs/all-jobs" target="_blank">our jobs page</a> to see current openings and apply today.</p>
+
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p style="text-align: center;">- - -<br />
+ </p>
+<p><span class="text--small"><sup><a></a><a id="footnote-one"></a>1</sup><i>This isn't to say the failure of an individual data center facility would impact customers any more than the failure of an entire metro. In both cases we would maintain service by simply failing over to another metro. In the future we plan to further isolate our failure domains, at which point we'll update our disaster readiness strategy to test individual data center facilities, too.</i></span></p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/dr-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/dr-1440x305-light.png" medium="image">
+                    <media:title type="html">That time we unplugged a data center to test our disaster readiness</media:title>
+                </media:content>
+            </item>
+        
+            <item>
+                <title>A day in the life: Engineer onboarding at Dropbox</title>
+                <link>https://dropbox.tech/culture/a-day-in-the-life-engineer-onboarding-at-dropbox</link>
+                <dc:creator>Brian Amaratunga and Adam Hood</dc:creator>
+                <category>careers</category><category>virtual first</category><category>onboarding</category>
+                <guid>https://dropbox.tech/culture/a-day-in-the-life-engineer-onboarding-at-dropbox</guid>
+                <description><![CDATA[]]></description>
+                <pubDate>Thu, 07 Apr 2022 09:00:00 -0700</pubDate>
+                <content:encoded><![CDATA[
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>We’re Adam Hood and Brian Amaratunga—two senior software engineers who joined Dropbox in 2021 as <a href="https://experience.dropbox.com/virtual-first-toolkit" target="_blank">Virtual First</a> employees. This means we spend most of our time working remotely, with physical studios reserved for in-person collaboration.</p>
+<p>When Dropbox became <a href="https://blog.dropbox.com/topics/company/dropbox-goes-virtual-first" target="_blank">a Virtual First company</a> in October 2020, it also meant reimagining the onboarding process to ensure new employees still had a high-quality experience—similar to what they would have gotten before in person. As two recent hires in Engineering, Product, and Design (EPD), we wanted to share our experience of what virtual onboarding at Dropbox is actually like. </p>
+<p style="margin-left: 40.0px;"><b>Adam: </b>I’m an engineer on the Business Space Experience team. Our goal is to improve the workflows of teams that use Dropbox. My story with Dropbox goes back to my college days in 2015 when Dropbox would recruit very heavily on my campus. They would hand out Dropbox t-shirts like they were problem sets, and I suspect that at least a quarter of the undergraduate population had one, if not more. Fast forward to Spring 2021; my job in tech was satisfying enough, but I really wanted to look for ways to grow my career—and I came across Dropbox once again. I’ve always been impressed by their innovation. Early in my career I remember integrating <a href="https://dropbox.tech/security/zxcvbn-realistic-password-strength-estimation" target="_blank">zxcvbn</a>, an open source password strength estimator developed by Dropbox, into a login page that I was developing! As I interviewed with Dropbox, I enjoyed thinking through the tough interview questions—which were unlike any I’d seen before—and I was encouraged by the answers the interviewers gave to some tough questions from me. They really seemed to believe in the company, and were excited about Virtual First.</p>
+<p style="margin-left: 40.0px;"><b>Brian:</b> I’m an engineer on the Organized Experience team. Our mission is to give our users the tools to keep their files tidy and organized—or, as we like to say, “a place for everything and everything in its place.” I was looking to move on from my previous job in the healthcare software industry, so I made a profile on Hired.com. I was mostly expecting to learn about startups and smaller companies that were hiring, but Dropbox was one of the first companies to reach out. I’ve always heard great things about Dropbox’s engineering talent and culture—and with what I’d read about their vision of remote work, I was very interested in continuing the hiring process. I thoroughly enjoyed my interviews, and the questions felt challenging as opposed to just questions copied directly from LeetCode. In addition, I was impressed by all the engineers and recruiters I spoke with, which made me realize my initial impression of Dropbox was true. Once I matched with a team and learned more about the projects I’d be working on, it was a very easy choice to accept the offer.</p>
+<p>Before Dropbox, we both experienced in-person onboarding at other companies, but they were of opposite extremes. Adam had essentially no onboarding at his previous company. Brian was overloaded with classes but had little practical experience early on. But at Dropbox, we found a middle ground. New hires are called Droplets, and have 90 days to get up to speed on our culture, learn various teams' processes, and ship their first small project. Engineers get all the resources they need to succeed without being overwhelmed by information—or immediate pressure to deliver results.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="getting-started">
+    <h2 class="dr-article-content__section-title">Getting started</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Our first day of onboarding was held over Zoom and led by our onboarding lead Alinane. We were both very impressed. As a group we talked through the Dropbox mission, our values, and business strategy. We also set up our laptops and signed-up for benefits. Spending the day on Zoom was exhausting at times, but our onboarding struck the right balance of being useful and informative without being overwhelming. </p>
+<p>One of the most useful things we received was an onboarding checklist of important tasks and a timeline for when we should do them, be it in our first week or first month. This allowed us to learn more about the company—from senior leadership to our users’ workflows—at our own pace.</p>
+<p>The next day, we met our onboarding buddies. Adam was paired with Bozhen, and Brian was paired with Jiayi. They were responsible for helping us get settled—and at first they bombarded us with loads of information. For example, we received dozens of links to various useful resources. We also learned everyone's names and roles—both on our team, as well as the teams we would work most closely with. It was overwhelming at first, but also very helpful to have a fellow engineer as a resource for whatever questions popped into our heads or to guide us through various processes. Our onboarding buddies were always gracious with their time, whether responding to messages over Slack or walking us through our team’s strategies over Zoom.</p>
+<p>Since we would primarily be working remotely, one of our top priorities was to set up our workspaces. </p>
+<p style="margin-left: 40.0px;"><b>Adam:</b> I was very worried about getting used to the Touch Bar on my new Mac, so the first thing I wanted was a keyboard. Luckily, Dropbox made it easy for us to order gear like this through an internal website called Dropgear! I later added a standalone trackpad and a monitor to my desk. I really love my overall setup at this point.</p>
+<p style="margin-left: 40.0px;"><b>Brian:</b> I also used Dropgear during my first week to get a monitor and a mouse! There were some issues with the supplier, so it took several weeks to get the mouse, but it took less than a week to get a 34-inch ultrawide monitor from Dropgear—without paying a penny! Dropbox also has something called a <a href="https://medium.com/life-inside-dropbox/how-our-new-perks-allowance-provides-flexible-benefits-for-dropboxers-in-a-virtual-first-work-75164c32721d" target="_blank">Perks Allowance</a> which we can spend on pretty much anything we want (with a few exceptions). I joined a week before the quarter ended, but was still able to use the full amount to get a really nice adjustable standing desk and Steelcase chair.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="getting-to-know-the-company">
+    <h2 class="dr-article-content__section-title">Getting to know the company</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Onboarding for new EPD hires consists of both interactive video calls and documentation for asynchronous (async) review—meaning at our own pace. There were around five video call sessions over the first couple weeks, each around one-to-two hours, while the rest of the information was documented in <a href="https://www.dropbox.com/paper" target="_blank">Dropbox Paper</a> for us to peruse when we had time. </p>
+<p>This mix of video calls and async learning was our first introduction to “async by default,” one of the key tenets of Virtual First at Dropbox. This means Dropboxers default to sharing information async—communicating via Slack or email as much as possible, and reserving meetings and real-time communication for discussion, debates, and big decisions.</p>
+<p>Each video call session was designed to get us acquainted with how Dropbox works on a technical level, both as a product and as a company. We learned about how we use open-source software and best practices for committing and reviewing code. Particularly enjoyable was a talk that introduced the overarching architecture behind Dropbox. It was really nice to get a solid mental model of all the pieces—such as our hybrid approach between a monolithic and service-oriented architecture (<a href="https://dropbox.tech/infrastructure/atlas--our-journey-from-a-python-monolith-to-a-managed-platform" target="_blank">Atlas</a>), our async task framework (<a href="https://dropbox.tech/infrastructure/asynchronous-task-scheduling-at-dropbox" target="_blank">ATF</a>), and our block storage solution (<a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket" target="_blank">Magic</a><a href="https://dropbox.tech/infrastructure/inside-the-magic-pocket"> Pocket</a>)—and how they all fit together.</p>
+<p>There was enough information to get us started and show us where to go when we were ready to dig deeper. And it was perfectly reasonable if we didn’t recall everything that was covered; each session was recorded and made available to watch again later in case we needed to refresh our knowledge.</p>
+<p>The remaining onboarding sessions were written in Dropbox Paper for us to go over at our own pace. These self-guided lessons included a deep-dive into how our file system syncing and sharing works, and a guide to preparing for our twice-yearly performance reviews. Having so much material available async gave us a lot of flexibility when choosing when to learn and how we prioritized what to learn first. If either of us was feeling Zoom fatigue or needed some time to digest a more complex session from the morning, there was no need to jump straight into another potentially exhausting video call. We could take as much time as we needed and then jump into an async session when we were ready! At the same time, this flexibility allowed us to fit our lessons into whatever schedule worked for us and our managers. This meant we could start working on actual projects earlier in the onboarding process. We even got to ship code during our first week!</p>
+<p>Onboarding was also the perfect introduction to another core pillar of Virtual First at Dropbox: Core Collaboration Hours. These are four hour blocks when all meetings are supposed to be held. In North America, for example, Core Collaboration Hours are from 12 pm to 4pm ET. The remaining four hours of the day are meant for uninterrupted deep work—and everyone has the flexibility to work those hours whenever they feel most productive, because Dropbox is async by default. This helps reduce unnecessary meetings and help us make time for what matters most, from deep work and team building to time with family and friends.</p>
+
+</div>
+<div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-image image cq-dd-image  ">
+    <figure class="dr-margin-0 dr-display-inline-block">
+        
+            
+    
+
+        
+
+        
+        
+        
+
+        
+        
+        
+
+        
+        
+
+        
+        
+
+        
+         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/engineering-onboarding/EngineeringOnboarding-calendar.png/_jcr_content/renditions/EngineeringOnboarding-calendar.webp" data-aem-asset-id="d9677f1f-0fcb-41c5-96c2-7db0c734d83d:EngineeringOnboarding-calendar.png" data-trackable="true" height="1100" width="1386"/>
+        
+    
+
+            <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Brian’s calendar. Note that my team agreed to shift our Core Collaboration Hours to 1 pm to 5 pm ET.</p>
+</figcaption>
+        
+    </figure>
+</div></div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="getting-to-know-the-team">
+    <h2 class="dr-article-content__section-title">Getting to know the team</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>We were definitely worried about how we would build connections with our team in a virtual first environment. At our previous companies, we were able to walk up to people's desks or casually grab coffee, but that wouldn’t be possible here. However, with some gentle nudging from our managers, we realized we just had to be <a href="https://blog.dropbox.com/topics/work-culture/making-friends-virtual-work" target="_blank">more purposeful about building those connections</a> than we would have before.</p>
+<p>In our first couple of weeks, we grabbed quick, 15-20 minute one-on-one meetings with our teammates. We shared how we ended up at Dropbox, and heard how each of our coworkers arrived here as well. We were impressed by the diversity of experience of our various team members, who came from all sorts of unique backgrounds, and attended virtual social events to get to know them better. For example, Brian’s team has a weekly virtual board game event where the team gets together to play board games online.</p>
+<p>While meeting people remotely was a new experience, our colleagues did a great job of making us feel welcome from the start.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="getting-to-know-the-work">
+    <h2 class="dr-article-content__section-title">Getting to know the work</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>We received our onboarding projects on our second day at Dropbox from our onboarding buddies Bozhen and Jiayi. Adam worked with Bozhen on updating modals in the Dropbox web client to improve the file upload flow, while Brian worked on adding some new naming convention rules to help users keep their file system organized. </p>
+<p>Bozhen and Jiayi did a great job breaking these projects down into well-defined, manageable tasks. They introduced us to the sprint planning processes, roughly estimating the time required and assigning due dates for our work. With our onboarding buddies handling the project planning, we could focus on getting to know the codebase—including the code commit and review process—without the added stress of vague or overcomplicated goals.</p>
+<p>Codelabs were one of the most useful resources in our onboarding. These are targeted tutorials that demonstrate how to accomplish different tasks within the Dropbox ecosystem—such as how to create a new API endpoint or how to create a feature gate. We found them to be extremely useful, not just as tutorials, but as reference materials when completing our first projects, ensuring we didn’t miss any steps. For example, Brian was able to ship code his very first week, and used the feature gate codelab to prevent people outside Dropbox from being able to access his work while it was still under development.</p>
+<p>Our onboarding projects lasted 6-8 weeks. Brian shipped the new naming convention rules to users during his seventh week at Dropbox! At the same time, Adam helped Bozhen complete the new file upload flow a couple weeks ahead of schedule, enabling the team to start user testing sooner. By this point, we were pretty comfortable with the Dropbox development ecosystem and started working with the rest of the team on other projects. Even though we were technically still onboarding and reading through the occasional onboarding doc, we felt like we were fully integrated into the team.</p>
+
+</div>
+<div class="section aem-GridColumn aem-GridColumn--default--12">
+<div class="dr-article-content__section" id="final-thoughts">
+    <h2 class="dr-article-content__section-title">Final thoughts</h2>
+</div>
+</div>
+<div class="text parbase aem-GridColumn aem-GridColumn--default--12">
+<p>Overall, Dropbox onboarding was by far the best experience either of us has had. We appreciated the process was async by default—and with so much written down, we really could go at our own pace. It resulted in a very smooth ramp-up period. A huge shoutout to Bozhen and Jiayi for being so supportive through our first few months!</p>
+<p>After a few months in our roles, we both started interviewing prospective new engineers and were able to share the positive onboarding experience that we had. Brian became an advocate for our Virtual First team—which is dedicated to ensuring new employees have a successful transition from in-person to virtual work—while Adam became an onboarding buddy for other new hires as his team continued to grow. We like to remind new hires that the three month ramp-up time is dedicated to learning, without the expectation of immediate results, so that by the end they can be more effective engineers.</p>
+<p>The days of in-person bootcamps where engineers could quickly build connections with their coworkers and fellow Droplets may be gone. But those days also meant absorbing large amounts of information in real time, which isn’t the best learning experience for everyone. With the shift to Virtual First, we think Dropbox struck the ideal balance between individual learning and community building—empowering new hires to learn and contribute at their own pace, while building strong, human connections with their teams. And if you’re interested in experiencing life at Dropbox for yourself, <a href="https://www.dropbox.com/jobs/teams/engineering#open-positions" target="_blank">we’re hiring!</a></p>
+
+</div>
+
+    
+</div>
+]]></content:encoded>
+                
+                <media:thumbnail url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/04/engineering-onboarding/EngineeringOnboarding-1440x305-light.png"/>
+                <media:content url="https://dropbox.tech/cms/content/dam/dropbox/tech-blog/en-us/2022/04/engineering-onboarding/EngineeringOnboarding-1440x305-light.png" medium="image">
+                    <media:title type="html">A day in the life: Engineer onboarding at Dropbox</media:title>
+                </media:content>
+            </item>
+        
+    </channel>
+</rss>
