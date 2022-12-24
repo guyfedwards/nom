@@ -26,11 +26,11 @@ func main() {
 	args, err := parser.Parse()
 	handleError(err, opts.Verbose)
 
-	if len(args) == 0 {
-		handleError(ErrNotEnoughArgs, opts.Verbose)
-	}
+	// if len(args) == 0 {
+	// 	handleError(ErrNotEnoughArgs, opts.Verbose)
+	// }
 
-	cfg, err := config.New("", opts.Pager)
+	cfg, err := config.New("", opts.Pager, opts.NoCache)
 	if err != nil {
 		handleError(err, opts.Verbose)
 	}
@@ -44,6 +44,13 @@ func main() {
 
 	cmds := commands.New(cfg, cash)
 
+	// no subcommand, run the TUI
+	if len(args) == 0 {
+		handleError(cmds.TUI(), opts.Verbose)
+
+		return
+	}
+
 	switch args[0] {
 	case "list":
 		handleError(cmds.List(opts.Number, !opts.NoCache), opts.Verbose)
@@ -51,11 +58,13 @@ func main() {
 		if len(args) != 2 {
 			handleError(ErrNotEnoughArgs, opts.Verbose)
 		}
+
 		handleError(cmds.Add(args[1]), opts.Verbose)
 	case "read":
 		if len(args) < 2 {
 			handleError(ErrNotEnoughArgs, opts.Verbose)
 		}
+
 		handleError(cmds.Read(args[1:]...), opts.Verbose)
 	}
 }
@@ -63,8 +72,9 @@ func main() {
 func handleError(err error, verbose bool) {
 	if err != nil {
 		if verbose {
-			fmt.Println(err)
+			fmt.Printf("%v\n", err)
 		}
+
 		parser.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}

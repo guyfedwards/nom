@@ -14,14 +14,14 @@ const configFixturePath = "../test/data/config_fixture.yml"
 const configFixtureWritePath = "../test/data/config_fixture_write.yml"
 
 func TestNewDefault(t *testing.T) {
-	c, _ := New("", "")
+	c, _ := New("", "", false)
 	ucd, _ := os.UserConfigDir()
 
 	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.configPath, "Wrong defaults set")
 }
 
 func TestNewOverride(t *testing.T) {
-	c, _ := New("foobar", "")
+	c, _ := New("foobar", "", false)
 
 	test.Equal(t, "foobar", c.configPath, "Override not respected")
 }

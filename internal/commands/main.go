@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/charmbracelet/bubbles/list"
+
 	"github.com/guyfedwards/nom/internal/cache"
 	"github.com/guyfedwards/nom/internal/config"
 	"github.com/guyfedwards/nom/internal/rss"
@@ -23,11 +25,28 @@ func New(config config.Config, cache cache.Cache) Commands {
 	return Commands{config, cache}
 }
 
-func (c Commands) List(numResults int, cache bool) error {
-	if len(c.config.Feeds) <= 0 {
-		return fmt.Errorf("no feeds found, add to nom/config.yml")
+func (c Commands) TUI() error {
+	rsss, err := c.fetchAllFeeds(c.config.Feeds)
+	if err != nil {
+		return fmt.Errorf("commands List: %w", err)
 	}
 
+	var items []list.Item
+
+	for _, r := range rsss {
+		for _, item := range r.Channel.Items {
+			items = append(items, RSSToItem(item))
+		}
+	}
+
+	if err := Render(items, c); err != nil {
+		return fmt.Errorf("commands.TUI: %w", err)
+	}
+
+	return nil
+}
+
+func (c Commands) List(numResults int, cache bool) error {
 	rsss, err := c.fetchAllFeeds(c.config.Feeds)
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
@@ -70,22 +89,26 @@ func (c Commands) fetchAllFeeds(feeds []config.Feed) ([]rss.RSS, error) {
 		wg   sync.WaitGroup
 	)
 
+	if len(feeds) <= 0 {
+		return []rss.RSS{}, fmt.Errorf("no feeds found, add to nom/config.yml")
+	}
+
 	ch := make(chan FetchResultError)
 
 	for _, feed := range feeds {
 		v, err := c.cache.Read(feed.URL)
 
-		if err == cache.ErrCacheMiss {
+		if c.config.NoCache || err == cache.ErrCacheMiss {
 			wg.Add(1)
 			go fetchFeed(ch, &wg, feed.URL)
 		} else if err != nil {
 			log.Fatal("error getting cache")
 		} else {
 			wg.Add(1)
-			go func() {
+			go func(feed config.Feed) {
 				ch <- FetchResultError{res: v, err: nil, url: feed.URL}
 				wg.Done()
-			}()
+			}(feed)
 		}
 	}
 
@@ -126,32 +149,50 @@ func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feedURL string) {
 	ch <- FetchResultError{res: r, err: nil, url: feedURL}
 }
 
-func (c Commands) Read(substrs ...string) error {
+func (c Commands) FindArticle(substr string) (item rss.Item, err error) {
 	rsss, err := c.fetchAllFeeds(c.config.Feeds)
 	if err != nil {
-		return fmt.Errorf("commands Read: %w", err)
+		return rss.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
 	}
-
-	substr := strings.Join(substrs, " ")
 
 	regex, err := regexp.Compile(strings.ToLower(substr))
 	if err != nil {
-		return fmt.Errorf("commands Read: regexp: %w", err)
+		return rss.Item{}, fmt.Errorf("commands.FindArticle: regexp: %w", err)
 	}
 
-	var content string
-
 	for _, r := range rsss {
-		for _, item := range r.Channel.Items {
+		for _, it := range r.Channel.Items {
 			// very basic string matching on title to read an article
-			if regex.MatchString(strings.ToLower(item.Title)) {
-				content, err = rss.GlamouriseItem(item)
-				if err != nil {
-					return fmt.Errorf("commands Read: %w", err)
-				}
+			if regex.MatchString(strings.ToLower(it.Title)) {
+				item = it
 				break
 			}
 		}
+	}
+
+	return item, nil
+}
+
+func (c Commands) FindGlamourisedArticle(substr string) (string, error) {
+	article, err := c.FindArticle(substr)
+	if err != nil {
+		return "", fmt.Errorf("commands.FindGlamourisedArticle: %w", err)
+	}
+
+	content, err := rss.GlamouriseItem(article)
+	if err != nil {
+		return "", fmt.Errorf("commands Read: %w", err)
+	}
+
+	return content, nil
+}
+
+func (c Commands) Read(substrs ...string) error {
+	substr := strings.Join(substrs, " ")
+
+	content, err := c.FindGlamourisedArticle(substr)
+	if err != nil {
+		return fmt.Errorf("commands.Read: %w", err)
 	}
 
 	if c.config.Pager == "false" {

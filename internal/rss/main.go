@@ -36,12 +36,12 @@ type RSS struct {
 func GlamouriseItem(item Item) (string, error) {
 	var mdown string
 
-	mdown += item.Title
+	mdown += "# " + item.Title
 	mdown += "\n"
 	mdown += item.Author
 	mdown += "\n"
 	mdown += item.PubDate.String()
-	mdown += "\n"
+	mdown += "\n\n"
 	mdown += htmlToMd(item.Content)
 
 	out, err := glamour.Render(mdown, "dark")
