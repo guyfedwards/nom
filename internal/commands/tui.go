@@ -3,11 +3,13 @@ package commands
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/term"
 
 	"github.com/guyfedwards/nom/internal/rss"
 )
@@ -15,23 +17,16 @@ import (
 const listHeight = 14
 
 var (
-	titleStyle         = lipgloss.NewStyle().MarginLeft(2)
-	itemStyle          = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle  = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	paginationStyle    = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	helpStyle          = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	quitTextStyle      = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-	viewportTitleStyle = func() lipgloss.Style {
-		b := lipgloss.RoundedBorder()
-		b.Right = "├"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
-	}()
-
-	infoStyle = func() lipgloss.Style {
-		b := lipgloss.RoundedBorder()
-		b.Left = "┤"
-		return titleStyle.Copy().BorderStyle(b)
-	}()
+	appStyle          = lipgloss.NewStyle().Padding(0).Margin(0)
+	titleStyle        = list.DefaultStyles().Title.Margin(1, 0, 0, 0)
+	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
+	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
+	helpStyle         = list.DefaultStyles().
+				HelpStyle.
+				PaddingLeft(4).
+				PaddingBottom(1).
+				Foreground(lipgloss.Color("#4A4A4A"))
 )
 
 type Item struct {
@@ -68,8 +63,8 @@ type model struct {
 	list            list.Model
 	commands        Commands
 	selectedArticle string
-	quitting        bool
 	viewport        viewport.Model
+	prevKeyWasG     bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -77,6 +72,21 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// resize all views regardless of which is showing to keep consistent
+	// when switching
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		x, y := appStyle.GetFrameSize()
+
+		m.list.SetSize(msg.Width-x, msg.Height-y)
+
+		m.viewport.Width = msg.Width - x
+		footerHeight := lipgloss.Height(m.viewportHelp())
+		m.viewport.Height = msg.Height - footerHeight
+
+		return m, nil
+	}
+
 	if m.selectedArticle != "" {
 		return updateViewport(msg, m)
 	}
@@ -86,15 +96,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	// case tea.WindowSizeMsg:
-	// 	m.list.SetWidth(msg.Width)
-	// 	return m, nil
-
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
 
 		case "ctrl+c":
-			m.quitting = true
 			return m, tea.Quit
 
 		case "enter":
@@ -121,16 +126,21 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	// case tea.WindowSizeMsg:
-	// 	return m, nil
-
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
+		case "g":
+			if m.prevKeyWasG {
+				m.viewport.GotoTop()
+				m.prevKeyWasG = false
+			} else {
+				m.prevKeyWasG = true
+			}
+		case "G":
+			m.viewport.GotoBottom()
 		case "esc", "q":
 			m.selectedArticle = ""
 
 		case "ctrl+c":
-			m.quitting = true
 			return m, tea.Quit
 		}
 	}
@@ -141,10 +151,6 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	if m.quitting {
-		return quitTextStyle.Render("Bye!")
-	}
-
 	var s string
 
 	if m.selectedArticle == "" {
@@ -153,7 +159,7 @@ func (m model) View() string {
 		s = viewportView(m)
 	}
 
-	return s
+	return appStyle.Render(s)
 }
 
 func listView(m model) string {
@@ -161,11 +167,11 @@ func listView(m model) string {
 }
 
 func viewportView(m model) string {
-	return m.viewport.View() + m.viewportHelp()
+	return m.viewport.View() + "\n" + m.viewportHelp()
 }
 
 func (m model) viewportHelp() string {
-	return helpStyle.Render("\n↑/k up • ↓/j down • q/esc: Back\n")
+	return helpStyle.Render("\n↑/k up • ↓/j down • gg top • G bottom • q/esc back")
 }
 
 func RSSToItem(c rss.Item) Item {
@@ -177,20 +183,25 @@ func RSSToItem(c rss.Item) Item {
 
 func Render(items []list.Item, cmds Commands) error {
 	const defaultWidth = 20
+	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
+	_, y := appStyle.GetFrameSize()
+	height := ts - y
 
-	l := list.New(items, itemDelegate{}, defaultWidth, listHeight)
+	appStyle.Height(height)
+
+	l := list.New(items, itemDelegate{}, defaultWidth, height)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
+	l.Title = "nom 🍜"
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 
-	vp := viewport.New(78, 20)
-	// vp.HighPerformanceRendering = true
+	vp := viewport.New(78, height)
 
 	m := model{list: l, commands: cmds, viewport: vp}
 
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		return fmt.Errorf("tui.Render: %w", err)
 	}
 
