@@ -102,10 +102,22 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 
+		case "r":
+			rss, err := m.commands.fetchAllFeeds(true)
+			if err != nil {
+				return m, tea.Quit
+			}
+
+			m.list.SetItems(getItemsFromRSS(rss))
+
+			return m, nil
+
 		case "enter":
 			i, ok := m.list.SelectedItem().(Item)
 			if ok {
 				m.selectedArticle = i.Title
+
+				m.viewport.GotoTop()
 
 				content, err := m.commands.FindGlamourisedArticle(m.selectedArticle)
 				if err != nil {

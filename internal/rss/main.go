@@ -77,7 +77,9 @@ func (pd *pubDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 	parse, err := time.Parse(time.RFC1123Z, value)
 	if err != nil {
-		return fmt.Errorf("rss unmarshalxml: %w", err)
+		// if there is a parsing error, fill with zero-date for now
+		*pd = pubDate{time.Time{}}
+		return nil
 	}
 
 	*pd = pubDate{parse}

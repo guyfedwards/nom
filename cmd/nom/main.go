@@ -26,10 +26,6 @@ func main() {
 	args, err := parser.Parse()
 	handleError(err, opts.Verbose)
 
-	// if len(args) == 0 {
-	// 	handleError(ErrNotEnoughArgs, opts.Verbose)
-	// }
-
 	cfg, err := config.New("", opts.Pager, opts.NoCache)
 	if err != nil {
 		handleError(err, opts.Verbose)

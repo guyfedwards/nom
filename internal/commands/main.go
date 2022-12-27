@@ -25,12 +25,7 @@ func New(config config.Config, cache cache.Cache) Commands {
 	return Commands{config, cache}
 }
 
-func (c Commands) TUI() error {
-	rsss, err := c.fetchAllFeeds(c.config.Feeds)
-	if err != nil {
-		return fmt.Errorf("commands List: %w", err)
-	}
-
+func getItemsFromRSS(rsss []rss.RSS) []list.Item {
 	var items []list.Item
 
 	for _, r := range rsss {
@@ -38,6 +33,17 @@ func (c Commands) TUI() error {
 			items = append(items, RSSToItem(item))
 		}
 	}
+
+	return items
+}
+
+func (c Commands) TUI() error {
+	rsss, err := c.fetchAllFeeds(false)
+	if err != nil {
+		return fmt.Errorf("commands List: %w", err)
+	}
+
+	items := getItemsFromRSS(rsss)
 
 	if err := Render(items, c); err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
@@ -47,7 +53,7 @@ func (c Commands) TUI() error {
 }
 
 func (c Commands) List(numResults int, cache bool) error {
-	rsss, err := c.fetchAllFeeds(c.config.Feeds)
+	rsss, err := c.fetchAllFeeds(false)
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
 	}
@@ -83,11 +89,13 @@ type FetchResultError struct {
 	url string
 }
 
-func (c Commands) fetchAllFeeds(feeds []config.Feed) ([]rss.RSS, error) {
+func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 	var (
 		rsss []rss.RSS
 		wg   sync.WaitGroup
 	)
+
+	feeds := c.config.Feeds
 
 	if len(feeds) <= 0 {
 		return []rss.RSS{}, fmt.Errorf("no feeds found, add to nom/config.yml")
@@ -98,7 +106,7 @@ func (c Commands) fetchAllFeeds(feeds []config.Feed) ([]rss.RSS, error) {
 	for _, feed := range feeds {
 		v, err := c.cache.Read(feed.URL)
 
-		if c.config.NoCache || err == cache.ErrCacheMiss {
+		if c.config.NoCache || noCacheOverride || err == cache.ErrCacheMiss {
 			wg.Add(1)
 			go fetchFeed(ch, &wg, feed.URL)
 		} else if err != nil {
@@ -120,8 +128,6 @@ func (c Commands) fetchAllFeeds(feeds []config.Feed) ([]rss.RSS, error) {
 	for result := range ch {
 		// TODO: handle error more gracefully per feed and resort to cache
 		if result.err != nil {
-			close(ch)
-
 			return []rss.RSS{}, fmt.Errorf("commands List: %w", result.err)
 		}
 
@@ -150,7 +156,7 @@ func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feedURL string) {
 }
 
 func (c Commands) FindArticle(substr string) (item rss.Item, err error) {
-	rsss, err := c.fetchAllFeeds(c.config.Feeds)
+	rsss, err := c.fetchAllFeeds(false)
 	if err != nil {
 		return rss.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
 	}
