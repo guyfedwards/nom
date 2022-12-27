@@ -1,6 +1,8 @@
 # nom
 > Feed me
 
+![](./.github/demo.gif)
+
 ## Install
 ```sh
 $ go install github.com/guyfedwards/nom@latest
