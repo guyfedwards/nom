@@ -10,6 +10,17 @@ $ go install github.com/guyfedwards/nom@latest
 
 See [releases](https://github.com/guyfedwards/nom/releases) for binaries
 
+## Config
+Add feeds with the `add` command 
+```sh
+$ nom add <url>
+```
+or add directly to the config at `~/.config/nom/config.yml`.
+```yaml
+feeds:
+  - url: https://dropbox.tech/feed
+  - url: https://snyk.io/blog/feed
+```
 
 ## Usage
 ```sh
