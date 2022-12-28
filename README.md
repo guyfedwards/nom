@@ -5,7 +5,7 @@
 
 ## Install
 ```sh
-$ go install github.com/guyfedwards/nom@latest
+$ go install github.com/guyfedwards/nom/cmd/nom@latest
 ```
 
 See [releases](https://github.com/guyfedwards/nom/releases) for binaries
