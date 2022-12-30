@@ -12,28 +12,23 @@ import (
 	"github.com/guyfedwards/nom/internal/config"
 )
 
-var opts struct {
+type Options struct {
 	Verbose bool   `short:"v" long:"verbose" description:"Show verbose logging"`
 	Number  int    `short:"n" long:"number" description:"Number of results to show"`
 	Pager   string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
 	NoCache bool   `long:"no-cache" description:"Do not use the cache"`
 }
 
-var parser = flags.NewParser(&opts, flags.Default)
 var ErrNotEnoughArgs = errors.New("not enough args")
 
-func main() {
-	args, err := parser.Parse()
-	handleError(err, opts.Verbose)
-
+func run(args []string, opts Options) error {
 	cfg, err := config.New("", opts.Pager, opts.NoCache)
 	if err != nil {
-		handleError(err, opts.Verbose)
+		return err
 	}
 
-	err = cfg.Load()
-	if err != nil {
-		handleError(err, opts.Verbose)
+	if err := cfg.Load(); err != nil {
+		return err
 	}
 
 	cash := cache.New(cache.DefaultPath, cache.DefaultExpiry)
@@ -42,32 +37,42 @@ func main() {
 
 	// no subcommand, run the TUI
 	if len(args) == 0 {
-		handleError(cmds.TUI(), opts.Verbose)
-
-		return
+		return cmds.TUI()
 	}
 
 	switch args[0] {
 	case "list":
-		handleError(cmds.List(opts.Number, !opts.NoCache), opts.Verbose)
+		return cmds.List(opts.Number, !opts.NoCache)
 	case "add":
 		if len(args) != 2 {
-			handleError(ErrNotEnoughArgs, opts.Verbose)
+			return ErrNotEnoughArgs
 		}
 
-		handleError(cmds.Add(args[1]), opts.Verbose)
+		return cmds.Add(args[1])
 	case "read":
 		if len(args) < 2 {
-			handleError(ErrNotEnoughArgs, opts.Verbose)
+			return ErrNotEnoughArgs
 		}
 
-		handleError(cmds.Read(args[1:]...), opts.Verbose)
+		return cmds.Read(args[1:]...)
 	}
+
+	return nil
 }
 
-func handleError(err error, verbose bool) {
+func main() {
+	var opts Options
+
+	parser := flags.NewParser(&opts, flags.Default)
+
+	args, err := parser.Parse()
 	if err != nil {
-		if verbose {
+		parser.WriteHelp(os.Stderr)
+		os.Exit(1)
+	}
+
+	if err := run(args, opts); err != nil {
+		if opts.Verbose {
 			fmt.Printf("%v\n", err)
 		}
 
