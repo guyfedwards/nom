@@ -23,7 +23,7 @@ type Options struct {
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.ShowFeedNames)
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache)
 	if err != nil {
 		return err
 	}
