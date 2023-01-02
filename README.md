@@ -31,3 +31,15 @@ $ nom add <feed_url>
 $ nom read <title_substring> 
 $ nom list --no-cache # fetch new results
 ```
+## Building and Running via Docker
+Build nom image
+```sh
+docker build -t nom .
+```
+This embeds the local docker-config.yml file into the container and will be used by default.
+
+Running the nom via docker
+```sh
+docker run -rm -it nom
+```
+Use the `-v` command line argument to mount a local config onto `/app/docker-config.yml` as desired.
