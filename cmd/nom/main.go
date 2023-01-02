@@ -13,16 +13,17 @@ import (
 )
 
 type Options struct {
-	Verbose bool   `short:"v" long:"verbose" description:"Show verbose logging"`
-	Number  int    `short:"n" long:"number" description:"Number of results to show"`
-	Pager   string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
-	NoCache bool   `long:"no-cache" description:"Do not use the cache"`
+	Verbose    bool   `short:"v" long:"verbose" description:"Show verbose logging"`
+	Number     int    `short:"n" long:"number" description:"Number of results to show"`
+	Pager      string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
+	NoCache    bool   `long:"no-cache" description:"Do not use the cache"`
+	ConfigPath string `long:"config-path" description:"Location of config.yml"`
 }
 
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	cfg, err := config.New("", opts.Pager, opts.NoCache)
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.ShowFeedNames)
 	if err != nil {
 		return err
 	}

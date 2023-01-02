@@ -108,6 +108,7 @@ func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 
 		if c.config.NoCache || noCacheOverride || err == cache.ErrCacheMiss {
 			wg.Add(1)
+
 			go fetchFeed(ch, &wg, feed.URL)
 		} else if err != nil {
 			log.Fatal("error getting cache")

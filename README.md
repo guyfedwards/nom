@@ -21,6 +21,7 @@ feeds:
   - url: https://dropbox.tech/feed
   - url: https://snyk.io/blog/feed
 ```
+You can customise the location of the config file with the `--config-path` flag.
 
 ## Usage
 ```sh
