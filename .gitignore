@@ -2,3 +2,9 @@ nom
 internal/test/data/cache.json
 
 dist/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
