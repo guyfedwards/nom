@@ -15,7 +15,7 @@ Add feeds with the `add` command
 ```sh
 $ nom add <url>
 ```
-or add directly to the config at `~/.config/nom/config.yml`.
+or add directly to the config at `~/.config/nom/config.yml` on unix systems and `$HOME/Library/Application Support/nom/config.yml` on darwin.
 ```yaml
 feeds:
   - url: https://dropbox.tech/feed
