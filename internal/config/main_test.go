@@ -20,6 +20,12 @@ func TestNewDefault(t *testing.T) {
 	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.configPath, "Wrong defaults set")
 }
 
+func TestConfigCustomPath(t *testing.T) {
+	c, _ := New("foo/bar.yml", "", false)
+
+	test.Equal(t, "foo/bar.yml", c.configPath, "Config path override not set")
+}
+
 func TestNewOverride(t *testing.T) {
 	c, _ := New("foobar", "", false)
 
@@ -27,7 +33,7 @@ func TestNewOverride(t *testing.T) {
 }
 
 func TestConfigLoad(t *testing.T) {
-	c, _ := New(configFixturePath, "")
+	c, _ := New(configFixturePath, "", false)
 	err := c.Load()
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -39,7 +45,8 @@ func TestConfigLoad(t *testing.T) {
 }
 
 func TestConfigLoadPrecidence(t *testing.T) {
-	c, _ := New(configFixturePath, "testpager")
+	c, _ := New(configFixturePath, "testpager", false)
+
 	err := c.Load()
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -51,8 +58,13 @@ func TestConfigLoadPrecidence(t *testing.T) {
 }
 
 func TestConfigAddFeed(t *testing.T) {
-	c, _ := New(configFixtureWritePath, "")
-	c.Load()
+	c, _ := New(configFixtureWritePath, "", false)
+
+	err := c.Load()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	c.AddFeed(Feed{URL: "foo"})
 
 	var actual Config
