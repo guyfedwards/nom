@@ -1,15 +1,13 @@
 package rss
 
 import (
-	"encoding/xml"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/glamour"
+	"github.com/mmcdole/gofeed"
 )
 
 type Item struct {
@@ -67,43 +65,51 @@ type pubDate struct {
 	time.Time
 }
 
-func (pd *pubDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var value string
-
-	err := d.DecodeElement(&value, &start)
-	if err != nil {
-		return fmt.Errorf("rss unmarshalxml: %w", err)
-	}
-
-	parse, err := time.Parse(time.RFC1123Z, value)
-	if err != nil {
-		// if there is a parsing error, fill with zero-date for now
-		*pd = pubDate{time.Time{}}
-		return nil
-	}
-
-	*pd = pubDate{parse}
-
-	return nil
-}
-
 func Fetch(feedURL string) (RSS, error) {
-	resp, err := http.Get(feedURL)
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(feedURL)
 	if err != nil {
 		return RSS{}, fmt.Errorf("rss.Fetch: %w", err)
 	}
+	items := make([]Item, 0)
+	for _, it := range feed.Items {
+		ni := Item{
+			Title:       it.Title,
+			Link:        it.Link,
+			Description: it.Description,
+			Author:      it.Author.Name,
+		}
+		if it.Content == "" {
+			// If there's no content (as is the case for YouTube RSS items), fallback
+			// to the link.
+			ni.Content = it.Link
+		} else {
+			ni.Content = it.Content
+		}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return RSS{}, fmt.Errorf("rss.Fetch: %w", err)
+		// TODO: support multiple categories
+		if len(it.Categories) > 0 {
+			ni.Category = it.Categories[0]
+		}
+
+		var pd pubDate
+		pt, err := time.Parse(time.RFC1123Z, it.Published)
+		if err != nil {
+			// if there is a parsing error, fill with zero-date for now
+			pd = pubDate{time.Time{}}
+		} else {
+			pd = pubDate{pt}
+		}
+		ni.PubDate = pd
+
+		items = append(items, ni)
 	}
-
-	var rss RSS
-
-	err = xml.Unmarshal(body, &rss)
-	if err != nil {
-		return RSS{}, fmt.Errorf("rss.Fetch: %w", err)
+	rss := RSS{}
+	rss.Channel = Channel{
+		Title:       feed.Title,
+		Link:        feed.Link,
+		Description: feed.Description,
+		Items:       items,
 	}
-
 	return rss, nil
 }
