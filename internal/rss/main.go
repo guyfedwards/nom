@@ -74,10 +74,16 @@ func Fetch(feedURL string) (RSS, error) {
 	items := make([]Item, 0)
 	for _, it := range feed.Items {
 		ni := Item{
-			Title:       it.Title,
-			Link:        it.Link,
-			Description: it.Description,
-			Author:      it.Author.Name,
+			Title: it.Title,
+			Link:  it.Link,
+		}
+		if it.Description != "" {
+			ni.Description = it.Description
+		}
+		if it.Author != nil {
+			if it.Author.Name != "" {
+				ni.Author = it.Author.Name
+			}
 		}
 		if it.Content == "" {
 			// If there's no content (as is the case for YouTube RSS items), fallback
@@ -86,7 +92,6 @@ func Fetch(feedURL string) (RSS, error) {
 		} else {
 			ni.Content = it.Content
 		}
-
 		// TODO: support multiple categories
 		if len(it.Categories) > 0 {
 			ni.Category = it.Categories[0]
@@ -101,7 +106,6 @@ func Fetch(feedURL string) (RSS, error) {
 			pd = pubDate{pt}
 		}
 		ni.PubDate = pd
-
 		items = append(items, ni)
 	}
 	rss := RSS{}
