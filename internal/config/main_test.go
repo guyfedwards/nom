@@ -38,15 +38,15 @@ func TestPreviewFeedsOverrideFeedsFromConfigFile(t *testing.T) {
 	feeds := c.GetFeeds()
 	test.Equal(t, 3, len(feeds), "Incorrect feeds number")
 	test.Equal(t, "cattle", feeds[0].URL, "First feed in a config must be cattle")
-	test.Equal(t, "bird", feeds[1].URL, "First feed in a config must be bird")
+	test.Equal(t, "bird", feeds[1].URL, "Second feed in a config must be bird")
 	test.Equal(t, "dog", feeds[2].URL, "Third feed in a config must be dog")
 
-	c, _ = New(configFixturePath, "", false, []string{"pumpkin", "raddish"})
+	c, _ = New(configFixturePath, "", false, []string{"pumpkin", "radish"})
 	c.Load()
 	feeds = c.GetFeeds()
 	test.Equal(t, 2, len(feeds), "Incorrect feeds number")
 	test.Equal(t, "pumpkin", feeds[0].URL, "First feed in a config must be pumpkin")
-	test.Equal(t, "raddish", feeds[1].URL, "First feed in a config must be raddish")
+	test.Equal(t, "radish", feeds[1].URL, "Second feed in a config must be radish")
 }
 
 func TestConfigLoad(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 )
 
 func TestReadReturnError(t *testing.T) {
-	c := New("../test/data", 0)
+	c := NewFileCache("../test/data", 0)
 
 	_, err := c.Read("foo")
 	if !errors.Is(err, ErrCacheMiss) {
@@ -17,7 +17,7 @@ func TestReadReturnError(t *testing.T) {
 }
 
 func TestWrite(t *testing.T) {
-	c := New("../test/data/", 0)
+	c := NewFileCache("../test/data/", 0)
 
 	err := c.Write("keytomyheart", rss.RSS{
 		Channel: rss.Channel{
@@ -34,7 +34,7 @@ func TestWrite(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-	c := New("../test/data/", 0)
+	c := NewFileCache("../test/data/", 0)
 
 	_ = c.Write("cashin", rss.RSS{
 		Channel: rss.Channel{
