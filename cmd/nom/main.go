@@ -13,17 +13,23 @@ import (
 )
 
 type Options struct {
-	Verbose    bool   `short:"v" long:"verbose" description:"Show verbose logging"`
-	Number     int    `short:"n" long:"number" description:"Number of results to show"`
-	Pager      string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
-	NoCache    bool   `long:"no-cache" description:"Do not use the cache"`
-	ConfigPath string `long:"config-path" description:"Location of config.yml"`
+	Verbose      bool     `short:"v" long:"verbose" description:"Show verbose logging"`
+	Number       int      `short:"n" long:"number" description:"Number of results to show"`
+	Pager        string   `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
+	NoCache      bool     `long:"no-cache" description:"Do not use the cache"`
+	ConfigPath   string   `long:"config-path" description:"Location of config.yml"`
+	PreviewFeeds []string `short:"f" long:"feed" description:"Feed(s) URL(s) for preview"`
 }
 
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache)
+	if len(opts.PreviewFeeds) > 0 {
+		// Don't mess up the cache of configured feeds in the preview mode.
+		opts.NoCache = true
+	}
+
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.PreviewFeeds)
 	if err != nil {
 		return err
 	}

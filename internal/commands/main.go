@@ -95,7 +95,7 @@ func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 		wg   sync.WaitGroup
 	)
 
-	feeds := c.config.Feeds
+	feeds := c.config.GetFeeds()
 
 	if len(feeds) <= 0 {
 		return []rss.RSS{}, fmt.Errorf("no feeds found, add to nom/config.yml")

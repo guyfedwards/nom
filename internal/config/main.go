@@ -19,9 +19,11 @@ type Config struct {
 	Pager      string `yaml:"pager,omitempty"`
 	NoCache    bool   `yaml:"no-cache,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
+	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
+	PreviewFeeds []Feed `yaml:"previewfeeds,omitempty"`
 }
 
-func New(configPath string, pager string, noCache bool) (Config, error) {
+func New(configPath string, pager string, noCache bool, previewFeeds []string) (Config, error) {
 	if configPath == "" {
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
@@ -31,12 +33,22 @@ func New(configPath string, pager string, noCache bool) (Config, error) {
 		configPath = filepath.Join(userConfigDir, "nom/config.yml")
 	}
 
+	var f []Feed
+	for _, feedUrl := range previewFeeds {
+		f = append(f, Feed{feedUrl})
+	}
+
 	return Config{
-		configPath: configPath,
-		Pager:      pager,
-		NoCache:    noCache,
-		Feeds:      []Feed{},
+		configPath:   configPath,
+		Pager:        pager,
+		NoCache:      noCache,
+		Feeds:        []Feed{},
+		PreviewFeeds: f,
 	}, nil
+}
+
+func (c *Config) IsPreviewMode() bool {
+	return len(c.PreviewFeeds) > 0
 }
 
 func (c *Config) Load() error {
@@ -101,6 +113,13 @@ func (c *Config) AddFeed(feed Feed) error {
 	}
 
 	return nil
+}
+
+func (c *Config) GetFeeds() []Feed {
+	if c.IsPreviewMode() {
+		return c.PreviewFeeds
+	}
+	return c.Feeds
 }
 
 func setupConfigDir(configPath string) error {
