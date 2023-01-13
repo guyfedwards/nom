@@ -1,11 +1,11 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -90,10 +90,17 @@ type FetchResultError struct {
 }
 
 func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
+
 	var (
 		rsss []rss.RSS
 		wg   sync.WaitGroup
 	)
+
+	if c.config.Preview != "" {
+		feed, err := rss.Fetch(c.config.Preview)
+		rsss = append(rsss, feed)
+		return rsss, err
+	}
 
 	feeds := c.config.Feeds
 
@@ -162,22 +169,14 @@ func (c Commands) FindArticle(substr string) (item rss.Item, err error) {
 		return rss.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
 	}
 
-	regex, err := regexp.Compile(strings.ToLower(substr))
-	if err != nil {
-		return rss.Item{}, fmt.Errorf("commands.FindArticle: regexp: %w", err)
-	}
-
 	for _, r := range rsss {
-		for _, it := range r.Channel.Items {
-			// very basic string matching on title to read an article
-			if regex.MatchString(strings.ToLower(it.Title)) {
-				item = it
-				break
-			}
+		item, err := r.FindArticle(substr)
+		if item != nil || err != nil {
+			return *item, err
 		}
 	}
 
-	return item, nil
+	return rss.Item{}, errors.New(fmt.Sprintf("Article %s not found", substr))
 }
 
 func (c Commands) FindGlamourisedArticle(substr string) (string, error) {

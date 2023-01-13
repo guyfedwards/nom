@@ -19,9 +19,10 @@ type Config struct {
 	Pager      string `yaml:"pager,omitempty"`
 	NoCache    bool   `yaml:"no-cache,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
+	Preview    string `yaml:"preview,omitempty"`
 }
 
-func New(configPath string, pager string, noCache bool) (Config, error) {
+func New(configPath string, pager string, noCache bool, preview string) (Config, error) {
 	if configPath == "" {
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
@@ -36,6 +37,7 @@ func New(configPath string, pager string, noCache bool) (Config, error) {
 		Pager:      pager,
 		NoCache:    noCache,
 		Feeds:      []Feed{},
+		Preview:    preview,
 	}, nil
 }
 

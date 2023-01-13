@@ -3,6 +3,8 @@ package rss
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
@@ -29,6 +31,19 @@ type Channel struct {
 
 type RSS struct {
 	Channel Channel `xml:"channel"`
+}
+
+func (rss *RSS) FindArticle(substr string) (*Item, error) {
+	regex, err := regexp.Compile(strings.ToLower(substr))
+	if err != nil {
+		return nil, fmt.Errorf("Failed regex: %w", err)
+	}
+	for _, it := range rss.Channel.Items {
+		if regex.MatchString(strings.ToLower(it.Title)) {
+			return &it, nil
+		}
+	}
+	return nil, nil
 }
 
 func GlamouriseItem(item Item) (string, error) {

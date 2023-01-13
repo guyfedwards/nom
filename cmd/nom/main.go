@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -18,12 +19,22 @@ type Options struct {
 	Pager      string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
 	NoCache    bool   `long:"no-cache" description:"Do not use the cache"`
 	ConfigPath string `long:"config-path" description:"Location of config.yml"`
+	Preview    string
 }
 
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache)
+	preview := ""
+	if len(args) > 0 {
+		_, err := url.ParseRequestURI(args[0])
+		if err == nil {
+			// args[0] is a valid url
+			preview = args[0]
+			args = args[1:]
+		}
+	}
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, preview)
 	if err != nil {
 		return err
 	}
