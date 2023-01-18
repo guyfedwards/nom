@@ -14,27 +14,38 @@ import (
 )
 
 type Options struct {
-	Verbose    bool   `short:"v" long:"verbose" description:"Show verbose logging"`
-	Number     int    `short:"n" long:"number" description:"Number of results to show"`
-	Pager      string `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
-	NoCache    bool   `long:"no-cache" description:"Do not use the cache"`
-	ConfigPath string `long:"config-path" description:"Location of config.yml"`
-	Preview    string
+	Verbose      bool     `short:"v" long:"verbose" description:"Show verbose logging"`
+	Number       int      `short:"n" long:"number" description:"Number of results to show"`
+	Pager        string   `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
+	NoCache      bool     `long:"no-cache" description:"Do not use the cache"`
+	ConfigPath   string   `long:"config-path" description:"Location of config.yml"`
+	PreviewFeeds []string `short:"f" long:"feed" description:"Feed(s) URL(s) for preview"`
 }
 
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	preview := ""
-	if len(args) > 0 {
-		_, err := url.ParseRequestURI(args[0])
+	var previewFeeds []string
+	for i := len(args) - 1; i >= 0; i-- {
+		_, err := url.ParseRequestURI(args[i])
 		if err == nil {
-			// args[0] is a valid url
-			preview = args[0]
-			args = args[1:]
+			previewFeeds = append(previewFeeds, args[i])
+			args = append(args[:i], args[i+1:]...)
 		}
 	}
-	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, preview)
+	if len(opts.PreviewFeeds) > 0 {
+		previewFeeds = append(previewFeeds, opts.PreviewFeeds...)
+	}
+	if len(previewFeeds) > 0 {
+		// Don't mess up the cache of configured feeds in the preview mode.
+		// Preview mode should use short-lived in-momory cache, but to make it
+		// happen we should support that through a cache interface.
+		// Another solution is to cache in different directory and wipe it out once nom is closed, i.e.
+		// defer wipeOutPreviewCache()
+		opts.NoCache = true
+	}
+
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, previewFeeds)
 	if err != nil {
 		return err
 	}
