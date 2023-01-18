@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -25,18 +24,7 @@ type Options struct {
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	var previewFeeds []string
-	for i := len(args) - 1; i >= 0; i-- {
-		_, err := url.ParseRequestURI(args[i])
-		if err == nil {
-			previewFeeds = append(previewFeeds, args[i])
-			args = append(args[:i], args[i+1:]...)
-		}
-	}
 	if len(opts.PreviewFeeds) > 0 {
-		previewFeeds = append(previewFeeds, opts.PreviewFeeds...)
-	}
-	if len(previewFeeds) > 0 {
 		// Don't mess up the cache of configured feeds in the preview mode.
 		// Preview mode should use short-lived in-momory cache, but to make it
 		// happen we should support that through a cache interface.
@@ -45,7 +33,7 @@ func run(args []string, opts Options) error {
 		opts.NoCache = true
 	}
 
-	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, previewFeeds)
+	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.PreviewFeeds)
 	if err != nil {
 		return err
 	}
