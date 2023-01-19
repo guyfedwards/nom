@@ -24,15 +24,6 @@ type Options struct {
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	if len(opts.PreviewFeeds) > 0 {
-		// Don't mess up the cache of configured feeds in the preview mode.
-		// Preview mode should use short-lived in-momory cache, but to make it
-		// happen we should support that through a cache interface.
-		// Another solution is to cache in different directory and wipe it out once nom is closed, i.e.
-		// defer wipeOutPreviewCache()
-		opts.NoCache = true
-	}
-
 	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.PreviewFeeds)
 	if err != nil {
 		return err
@@ -42,7 +33,12 @@ func run(args []string, opts Options) error {
 		return err
 	}
 
-	cash := cache.New(cache.DefaultPath, cache.DefaultExpiry)
+	var cash cache.CacheInterface
+	if cfg.IsPreviewMode() {
+		cash = cache.NewMemoryCache()
+	} else {
+		cash = cache.NewFileCache(cache.DefaultPath, cache.DefaultExpiry)
+	}
 
 	cmds := commands.New(cfg, cash)
 
