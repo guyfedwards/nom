@@ -62,6 +62,10 @@ func run(args []string, opts Options) error {
 }
 
 func main() {
+	// disable http2 client as causing issues with reddit rss feed requests
+	// https://github.com/guyfedwards/nom/issues/7
+	os.Setenv("GODEBUG", "http2client=0")
+
 	var opts Options
 
 	parser := flags.NewParser(&opts, flags.Default)
