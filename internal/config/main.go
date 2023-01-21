@@ -87,6 +87,12 @@ func (c *Config) AddFeed(feed Feed) error {
 		return fmt.Errorf("config.AddFeed: %w", err)
 	}
 
+	for _, f := range c.Feeds {
+		if f.URL == feed.URL {
+			return errors.New("config.AddFeed: feed already exists")
+		}
+	}
+
 	c.Feeds = append(c.Feeds, feed)
 
 	err = c.Write()
