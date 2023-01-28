@@ -18,10 +18,10 @@ import (
 
 type Commands struct {
 	config config.Config
-	cache  cache.Cache
+	cache  cache.CacheInterface
 }
 
-func New(config config.Config, cache cache.Cache) Commands {
+func New(config config.Config, cache cache.CacheInterface) Commands {
 	return Commands{config, cache}
 }
 

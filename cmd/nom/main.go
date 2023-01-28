@@ -24,11 +24,6 @@ type Options struct {
 var ErrNotEnoughArgs = errors.New("not enough args")
 
 func run(args []string, opts Options) error {
-	if len(opts.PreviewFeeds) > 0 {
-		// Don't mess up the cache of configured feeds in the preview mode.
-		opts.NoCache = true
-	}
-
 	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.NoCache, opts.PreviewFeeds)
 	if err != nil {
 		return err
@@ -38,7 +33,12 @@ func run(args []string, opts Options) error {
 		return err
 	}
 
-	cash := cache.New(cache.DefaultPath, cache.DefaultExpiry)
+	var cash cache.CacheInterface
+	if cfg.IsPreviewMode() {
+		cash = cache.NewMemoryCache()
+	} else {
+		cash = cache.NewFileCache(cache.DefaultPath, cache.DefaultExpiry)
+	}
 
 	cmds := commands.New(cfg, cash)
 
