@@ -30,6 +30,7 @@ $ nom list -n 20 # optionally show more
 $ nom add <feed_url> 
 $ nom read <title_substring> 
 $ nom list --no-cache # fetch new results
+$ nom --feed <feed_url> # preview feed without adding to config
 ```
 ## Building and Running via Docker
 Build nom image
@@ -40,6 +41,6 @@ This embeds the local docker-config.yml file into the container and will be used
 
 Running the nom via docker
 ```sh
-docker run -rm -it nom
+docker run --rm -it nom
 ```
 Use the `-v` command line argument to mount a local config onto `/app/docker-config.yml` as desired.
