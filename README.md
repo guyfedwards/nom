@@ -23,6 +23,19 @@ feeds:
 ```
 You can customise the location of the config file with the `--config-path` flag.
 
+### Backends
+As well as adding feeds directly, you can pull in feeds from another source. You can add multiple backends and the feeds will all be added.
+```yaml
+backends:
+  miniflux:
+    host: http://myminiflux.foo
+    api_key: jafksdljfladjfk
+  freshrss:
+    host: http://myfreshrss.bar
+    user: admin
+    password: muchstrong
+```
+
 ## Usage
 ```sh
 $ nom # open TUI
@@ -44,3 +57,11 @@ Running the nom via docker
 docker run --rm -it nom
 ```
 Use the `-v` command line argument to mount a local config onto `/app/docker-config.yml` as desired.
+
+
+## Dev setup
+You can use the `backends-compose.yml` to spin up a local instance of miniflux and freshrss if needed for development.
+
+```sh
+$ docker-compose -f backends-compose.yml up
+```

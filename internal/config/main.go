@@ -14,13 +14,30 @@ type Feed struct {
 	URL string `yaml:"url"`
 }
 
+type MinifluxBackend struct {
+	Host   string `yaml:"host"`
+	APIKey string `yaml:"api_key"`
+}
+
+type FreshRSSBackend struct {
+	Host     string `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+}
+
+type Backends struct {
+	Miniflux *MinifluxBackend `yaml:"miniflux,omitempty"`
+	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
+}
+
 type Config struct {
 	configPath string
 	Pager      string `yaml:"pager,omitempty"`
 	NoCache    bool   `yaml:"no-cache,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds []Feed `yaml:"previewfeeds,omitempty"`
+	PreviewFeeds []Feed    `yaml:"previewfeeds,omitempty"`
+	Backends     *Backends `yaml:"backends,omitempty"`
 }
 
 func New(configPath string, pager string, noCache bool, previewFeeds []string) (Config, error) {
@@ -34,8 +51,8 @@ func New(configPath string, pager string, noCache bool, previewFeeds []string) (
 	}
 
 	var f []Feed
-	for _, feedUrl := range previewFeeds {
-		f = append(f, Feed{feedUrl})
+	for _, feedURL := range previewFeeds {
+		f = append(f, Feed{feedURL})
 	}
 
 	return Config{
@@ -73,6 +90,26 @@ func (c *Config) Load() error {
 	// precidence than flags/env that can be passed to New
 	if c.Pager == "" {
 		c.Pager = fileConfig.Pager
+	}
+
+	if fileConfig.Backends != nil {
+		if fileConfig.Backends.Miniflux != nil {
+			mffeeds, err := getMinifluxFeeds(fileConfig.Backends.Miniflux)
+			if err != nil {
+				return err
+			}
+
+			c.Feeds = append(c.Feeds, mffeeds...)
+		}
+
+		if fileConfig.Backends.FreshRSS != nil {
+			freshfeeds, err := getFreshRSSFeeds(fileConfig.Backends.FreshRSS)
+			if err != nil {
+				return err
+			}
+
+			c.Feeds = append(c.Feeds, freshfeeds...)
+		}
 	}
 
 	return nil
@@ -119,6 +156,7 @@ func (c *Config) GetFeeds() []Feed {
 	if c.IsPreviewMode() {
 		return c.PreviewFeeds
 	}
+
 	return c.Feeds
 }
 

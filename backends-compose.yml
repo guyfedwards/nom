@@ -1,0 +1,42 @@
+version: '3.4'
+services:
+  miniflux:
+    image: miniflux/miniflux:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://miniflux:secret@db:5432/miniflux?sslmode=disable
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=miniflux
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - miniflux-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "miniflux"]
+      interval: 10s
+      start_period: 30s
+
+  freshrss:
+    image: freshrss/freshrss
+    container_name: freshrss
+    hostname: freshrss
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Paris
+      CRON_MIN: '3,33'
+      FRESHRSS_ENV: development
+      ADMIN_EMAIL: admin@example.net
+      ADMIN_PASSWORD: freshrss
+      ADMIN_API_PASSWORD: freshrss
+    ports:
+      - "8081:80"
+
+volumes:
+  miniflux-db:
+  data:
+  extensions:
