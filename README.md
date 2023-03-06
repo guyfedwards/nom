@@ -19,6 +19,8 @@ or add directly to the config at `~/.config/nom/config.yml` on unix systems and 
 ```yaml
 feeds:
   - url: https://dropbox.tech/feed
+    # name will be prefixed to all entries in the list
+    name: dropbox 
   - url: https://snyk.io/blog/feed
 ```
 You can customise the location of the config file with the `--config-path` flag.

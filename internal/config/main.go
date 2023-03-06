@@ -11,7 +11,8 @@ import (
 )
 
 type Feed struct {
-	URL string `yaml:"url"`
+	URL  string `yaml:"url"`
+	Name string `yaml:"name,omitempty"`
 }
 
 type MinifluxBackend struct {
@@ -52,7 +53,7 @@ func New(configPath string, pager string, noCache bool, previewFeeds []string) (
 
 	var f []Feed
 	for _, feedURL := range previewFeeds {
-		f = append(f, Feed{feedURL})
+		f = append(f, Feed{URL: feedURL})
 	}
 
 	return Config{
