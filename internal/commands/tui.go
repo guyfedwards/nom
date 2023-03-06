@@ -31,8 +31,9 @@ var (
 )
 
 type Item struct {
-	Title string
-	URL   string
+	Title    string
+	FeedName string
+	URL      string
 }
 
 func (i Item) FilterValue() string { return "" }
@@ -48,7 +49,12 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		return
 	}
 
-	str := fmt.Sprintf("%d. %s", index+1, i.Title)
+	var str string
+	if i.FeedName == "" {
+		str = fmt.Sprintf("%d. %s", index+1, i.Title)
+	} else {
+		str = fmt.Sprintf("%d. %s: %s", index+1, i.FeedName, i.Title)
+	}
 
 	fn := itemStyle.Render
 	if index == m.Index() {
@@ -189,8 +195,9 @@ func (m model) viewportHelp() string {
 
 func RSSToItem(c rss.Item) Item {
 	return Item{
-		Title: c.Title,
-		URL:   c.Link,
+		FeedName: c.FeedName,
+		Title:    c.Title,
+		URL:      c.Link,
 	}
 }
 

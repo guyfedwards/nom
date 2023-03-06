@@ -8,6 +8,8 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/glamour"
 	"github.com/mmcdole/gofeed"
+
+	"github.com/guyfedwards/nom/internal/config"
 )
 
 type Item struct {
@@ -18,6 +20,7 @@ type Item struct {
 	Category    string  `xml:"category"`
 	Content     string  `xml:"encoded"`
 	PubDate     pubDate `xml:"pubDate"`
+	FeedName    string
 }
 
 type Channel struct {
@@ -65,26 +68,31 @@ type pubDate struct {
 	time.Time
 }
 
-func Fetch(feedURL string) (RSS, error) {
+func Fetch(f config.Feed) (RSS, error) {
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(feedURL)
+
+	feed, err := fp.ParseURL(f.URL)
 	if err != nil {
 		return RSS{}, fmt.Errorf("rss.Fetch: %w", err)
 	}
+
 	items := make([]Item, 0)
 	for _, it := range feed.Items {
 		ni := Item{
 			Title: it.Title,
 			Link:  it.Link,
 		}
+
 		if it.Description != "" {
 			ni.Description = it.Description
 		}
+
 		if it.Author != nil {
 			if it.Author.Name != "" {
 				ni.Author = it.Author.Name
 			}
 		}
+
 		if it.Content == "" {
 			// If there's no content (as is the case for YouTube RSS items), fallback
 			// to the link.
@@ -92,12 +100,14 @@ func Fetch(feedURL string) (RSS, error) {
 		} else {
 			ni.Content = it.Content
 		}
+
 		// TODO: support multiple categories
 		if len(it.Categories) > 0 {
 			ni.Category = it.Categories[0]
 		}
 
 		var pd pubDate
+
 		pt, err := time.Parse(time.RFC1123Z, it.Published)
 		if err != nil {
 			// if there is a parsing error, fill with zero-date for now
@@ -105,9 +115,13 @@ func Fetch(feedURL string) (RSS, error) {
 		} else {
 			pd = pubDate{pt}
 		}
+
 		ni.PubDate = pd
+		ni.FeedName = f.Name
+
 		items = append(items, ni)
 	}
+
 	rss := RSS{}
 	rss.Channel = Channel{
 		Title:       feed.Title,
@@ -115,5 +129,6 @@ func Fetch(feedURL string) (RSS, error) {
 		Description: feed.Description,
 		Items:       items,
 	}
+
 	return rss, nil
 }

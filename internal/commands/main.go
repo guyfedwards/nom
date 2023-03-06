@@ -109,7 +109,7 @@ func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 		if c.config.NoCache || noCacheOverride || err == cache.ErrCacheMiss {
 			wg.Add(1)
 
-			go fetchFeed(ch, &wg, feed.URL)
+			go fetchFeed(ch, &wg, feed)
 		} else if err != nil {
 			log.Fatal("error getting cache")
 		} else {
@@ -143,17 +143,17 @@ func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 	return rsss, nil
 }
 
-func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feedURL string) {
+func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed) {
 	defer wg.Done()
 
-	r, err := rss.Fetch(feedURL)
+	r, err := rss.Fetch(feed)
 
 	if err != nil {
-		ch <- FetchResultError{res: rss.RSS{}, err: err, url: feedURL}
+		ch <- FetchResultError{res: rss.RSS{}, err: err, url: feed.URL}
 		return
 	}
 
-	ch <- FetchResultError{res: r, err: nil, url: feedURL}
+	ch <- FetchResultError{res: r, err: nil, url: feed.URL}
 }
 
 func (c Commands) FindArticle(substr string) (item rss.Item, err error) {
