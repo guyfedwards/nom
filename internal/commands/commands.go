@@ -6,44 +6,108 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/glamour"
 
-	"github.com/guyfedwards/nom/internal/cache"
 	"github.com/guyfedwards/nom/internal/config"
 	"github.com/guyfedwards/nom/internal/rss"
+	"github.com/guyfedwards/nom/internal/store"
 )
 
 type Commands struct {
 	config config.Config
-	cache  cache.CacheInterface
+	store  store.Store
 }
 
-func New(config config.Config, cache cache.CacheInterface) Commands {
-	return Commands{config, cache}
+func New(config config.Config, store store.Store) Commands {
+	return Commands{config, store}
 }
 
-func getItemsFromRSS(rsss []rss.RSS) []list.Item {
+func convertItems(its []store.Item) []list.Item {
 	var items []list.Item
 
-	for _, r := range rsss {
-		for _, item := range r.Channel.Items {
-			items = append(items, RSSToItem(item))
-		}
+	for _, item := range its {
+		items = append(items, ItemToTUIItem(item))
 	}
 
 	return items
 }
 
+func (c Commands) OpenInBrowser(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default: // "linux", "freebsd", "openbsd", "netbsd"
+		if IsWSL() {
+			cmd = "cmd.exe"
+			args = []string{"/c", "start"}
+		} else {
+			cmd = "xdg-open"
+		}
+	}
+
+	args = append(args, url)
+	return exec.Command(cmd, args...).Start()
+}
+
+func IsWSL() bool {
+	out, err := exec.Command("uname", "-a").Output()
+	if err != nil {
+		return false
+	}
+	// In some cases, uname on wsl outputs microsoft capitalized
+	matched, _ := regexp.Match(`microsoft|Microsoft`, out)
+	return matched
+}
+
+func IsWayland() bool {
+	s := os.Getenv("XDG_SESSION_TYPE")
+	return s == "wayland"
+}
+
+// Gets the subsystem host ip
+// If the CLI is running under WSL the localhost url will not work so
+// this function should return the real ip that we should redirect to
+func GetWslHostName() string {
+	out, err := exec.Command("wsl.exe", "hostname", "-I").Output()
+	if err != nil {
+		return "localhost"
+	}
+	return strings.TrimSpace(string(out))
+}
+
 func (c Commands) TUI() error {
-	rsss, err := c.fetchAllFeeds(false)
+	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
-	items := getItemsFromRSS(rsss)
+	// if no feeds in store or we have preview feeds, fetchAllFeeds
+	if len(its) == 0 || len(c.config.PreviewFeeds) > 0 {
+		_, err = c.fetchAllFeeds()
+		if err != nil {
+			return fmt.Errorf("[commands.go] TUI: %w", err)
+		}
+
+		// refetch for consistent data across calls
+		its, err = c.GetAllFeeds()
+		if err != nil {
+			return fmt.Errorf("[commands.go] TUI: %w", err)
+		}
+	}
+
+	items := convertItems(its)
 
 	if err := Render(items, c); err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
@@ -52,18 +116,16 @@ func (c Commands) TUI() error {
 	return nil
 }
 
-func (c Commands) List(numResults int, cache bool) error {
-	rsss, err := c.fetchAllFeeds(false)
+func (c Commands) List(numResults int) error {
+	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
 	output := ""
 
-	for _, r := range rsss {
-		for _, item := range r.Channel.Items {
-			output += fmt.Sprintf("%s \n  - %s\n", item.Title, item.Link)
-		}
+	for _, item := range its {
+		output += fmt.Sprintf("%s \n  - %s\n", item.Title, item.Link)
 	}
 
 	if c.config.Pager == "false" {
@@ -89,36 +151,24 @@ type FetchResultError struct {
 	url string
 }
 
-func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
+func (c Commands) fetchAllFeeds() ([]store.Item, error) {
 	var (
-		rsss []rss.RSS
-		wg   sync.WaitGroup
+		items []store.Item
+		wg    sync.WaitGroup
 	)
 
 	feeds := c.config.GetFeeds()
 
 	if len(feeds) <= 0 {
-		return []rss.RSS{}, fmt.Errorf("no feeds found, add to nom/config.yml")
+		return []store.Item{}, fmt.Errorf("no feeds found, add to nom/config.yml")
 	}
 
 	ch := make(chan FetchResultError)
 
 	for _, feed := range feeds {
-		v, err := c.cache.Read(feed.URL)
+		wg.Add(1)
 
-		if c.config.NoCache || noCacheOverride || err == cache.ErrCacheMiss {
-			wg.Add(1)
-
-			go fetchFeed(ch, &wg, feed)
-		} else if err != nil {
-			log.Fatal("error getting cache")
-		} else {
-			wg.Add(1)
-			go func(feed config.Feed) {
-				ch <- FetchResultError{res: v, err: nil, url: feed.URL}
-				wg.Done()
-			}(feed)
-		}
+		go fetchFeed(ch, &wg, feed)
 	}
 
 	go func() {
@@ -127,20 +177,69 @@ func (c Commands) fetchAllFeeds(noCacheOverride bool) ([]rss.RSS, error) {
 	}()
 
 	for result := range ch {
-		// TODO: handle error more gracefully per feed and resort to cache
+		// TODO: handle error more gracefully per feed
 		if result.err != nil {
-			return []rss.RSS{}, fmt.Errorf("commands List: %w", result.err)
+			return []store.Item{}, fmt.Errorf("commands List: %w", result.err)
 		}
 
-		rsss = append(rsss, result.res)
+		for _, r := range result.res.Channel.Items {
+			i := store.Item{
+				Author:      r.Author,
+				Content:     r.Content,
+				FeedURL:     result.url,
+				Link:        r.Link,
+				PublishedAt: r.PubDate,
+				Title:       r.Title,
+			}
 
-		err := c.cache.Write(result.url, result.res)
-		if err != nil {
-			log.Fatal("Error writing to cache")
+			// only store if non-preview feed
+			if !includes(c.config.PreviewFeeds, config.Feed{URL: result.url}) {
+				err := c.store.UpsertItem(i)
+				if err != nil {
+					log.Fatalf("[commands.go] fetchAllFeeds: %e", err)
+					continue
+				}
+			}
+
+			items = append(items, i)
 		}
 	}
 
-	return rsss, nil
+	return items, nil
+}
+
+func includes[T comparable](arr []T, item T) bool {
+	for _, v := range arr {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (c Commands) GetAllFeeds() ([]store.Item, error) {
+	is, err := c.store.GetAllItems()
+	if err != nil {
+		return []store.Item{}, fmt.Errorf("commands.go: GetAllFeeds %w", err)
+	}
+
+	// filter out read and add feedname
+	var items []store.Item
+	for i := range is {
+		if !c.config.ShowRead && is[i].Read() {
+			continue
+		}
+
+		for _, f := range c.config.Feeds {
+			if f.URL == is[i].FeedURL {
+				is[i].FeedName = f.Name
+			}
+		}
+
+		items = append(items, is[i])
+	}
+
+	return items, nil
 }
 
 func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed) {
@@ -156,58 +255,94 @@ func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed) {
 	ch <- FetchResultError{res: r, err: nil, url: feed.URL}
 }
 
-func (c Commands) FindArticle(substr string) (item rss.Item, err error) {
-	rsss, err := c.fetchAllFeeds(false)
+func (c Commands) GetArticleByID(ID int) (store.Item, error) {
+	items, err := c.GetAllFeeds()
 	if err != nil {
-		return rss.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
+		return store.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
 	}
 
-	regex, err := regexp.Compile(strings.ToLower(substr))
-	if err != nil {
-		return rss.Item{}, fmt.Errorf("commands.FindArticle: regexp: %w", err)
-	}
-
-	for _, r := range rsss {
-		for _, it := range r.Channel.Items {
-			// very basic string matching on title to read an article
-			if regex.MatchString(strings.ToLower(it.Title)) {
-				item = it
-				break
-			}
+	var item store.Item
+	for _, it := range items {
+		if it.ID == ID {
+			item = it
+			break
 		}
 	}
 
 	return item, nil
 }
 
-func (c Commands) FindGlamourisedArticle(substr string) (string, error) {
-	article, err := c.FindArticle(substr)
+func (c Commands) FindArticle(substr string) (item store.Item, err error) {
+	items, err := c.GetAllFeeds()
+	if err != nil {
+		return store.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
+	}
+
+	regex, err := regexp.Compile(strings.ToLower(substr))
+	if err != nil {
+		return store.Item{}, fmt.Errorf("commands.FindArticle: regexp: %w", err)
+	}
+
+	for _, it := range items {
+		// very basic string matching on title to read an article
+		if regex.MatchString(strings.ToLower(it.Title)) {
+			item = it
+			break
+		}
+	}
+
+	return item, nil
+}
+
+func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
+	article, err := c.GetArticleByID(ID)
 	if err != nil {
 		return "", fmt.Errorf("commands.FindGlamourisedArticle: %w", err)
 	}
 
-	content, err := rss.GlamouriseItem(article)
+	if c.config.AutoRead {
+		err = c.store.ToggleRead(article.ID)
+		if err != nil {
+			return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
+		}
+	}
+
+	content, err := glamouriseItem(article)
 	if err != nil {
-		return "", fmt.Errorf("commands Read: %w", err)
+		return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
 	}
 
 	return content, nil
 }
 
-func (c Commands) Read(substrs ...string) error {
-	substr := strings.Join(substrs, " ")
+func glamouriseItem(item store.Item) (string, error) {
+	var mdown string
 
-	content, err := c.FindGlamourisedArticle(substr)
+	mdown += "# " + item.Title
+	mdown += "\n"
+	mdown += item.Author
+	mdown += "\n"
+	mdown += item.PublishedAt.String()
+	mdown += "\n\n"
+	mdown += htmlToMd(item.Content)
+
+	out, err := glamour.Render(mdown, "dark")
 	if err != nil {
-		return fmt.Errorf("commands.Read: %w", err)
+		return "", fmt.Errorf("GlamouriseItem: %w", err)
 	}
 
-	if c.config.Pager == "false" {
-		fmt.Println(content)
-		return nil
+	return out, nil
+}
+
+func htmlToMd(html string) string {
+	converter := md.NewConverter("", true, nil)
+
+	mdown, err := converter.ConvertString(html)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return outputToPager(content)
+	return mdown
 }
 
 func outputToPager(content string) error {

@@ -12,16 +12,16 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"golang.org/x/term"
 
-	"github.com/guyfedwards/nom/internal/rss"
+	"github.com/guyfedwards/nom/internal/store"
 )
-
-const listHeight = 14
 
 var (
 	appStyle          = lipgloss.NewStyle().Padding(0).Margin(0)
-	titleStyle        = list.DefaultStyles().Title.Margin(1, 0, 0, 0)
+	titleStyle        = list.DefaultStyles().Title.Margin(1, 0, 0, 0).Width(5)
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	readStyle         = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
+	selectedReadStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().
 				HelpStyle.
@@ -30,13 +30,15 @@ var (
 				Foreground(lipgloss.Color("#4A4A4A"))
 )
 
-type Item struct {
+type TUIItem struct {
+	ID       int
 	Title    string
 	FeedName string
 	URL      string
+	Read     bool
 }
 
-func (i Item) FilterValue() string { return "" }
+func (i TUIItem) FilterValue() string { return i.Title }
 
 type itemDelegate struct{}
 
@@ -44,21 +46,29 @@ func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
 func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(Item)
+	i, ok := listItem.(TUIItem)
 	if !ok {
 		return
 	}
 
 	var str string
 	if i.FeedName == "" {
-		str = fmt.Sprintf("%d. %s", index+1, i.Title)
+		str = fmt.Sprintf("%3d. %s", index+1, i.Title)
 	} else {
-		str = fmt.Sprintf("%d. %s: %s", index+1, i.FeedName, i.Title)
+		str = fmt.Sprintf("%3d. %s: %s", index+1, i.FeedName, i.Title)
 	}
 
 	fn := itemStyle.Render
+
+	if i.Read {
+		fn = readStyle.Render
+	}
+
 	if index == m.Index() {
 		fn = func(s string) string {
+			if i.Read {
+				return selectedReadStyle.Render("> " + s)
+			}
 			return selectedItemStyle.Render("> " + s)
 		}
 	}
@@ -69,7 +79,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 type model struct {
 	list            list.Model
 	commands        Commands
-	selectedArticle string
+	selectedArticle *int
 	viewport        viewport.Model
 	prevKeyWasG     bool
 }
@@ -94,14 +104,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if m.selectedArticle != "" {
+	if m.selectedArticle != nil {
 		return updateViewport(msg, m)
 	}
 
 	return updateList(msg, m)
 }
 
+func (m *model) UpdateList() tea.Cmd {
+	fs, err := m.commands.GetAllFeeds()
+	if err != nil {
+		return tea.Quit
+	}
+
+	cmd := m.list.SetItems(convertItems(fs))
+
+	return cmd
+}
+
 func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
@@ -110,40 +136,81 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "r":
-			rss, err := m.commands.fetchAllFeeds(true)
+			if m.list.SettingFilter() {
+				break
+			}
+
+			items, err := m.commands.fetchAllFeeds()
 			if err != nil {
 				return m, tea.Quit
 			}
 
-			m.list.SetItems(getItemsFromRSS(rss))
+			m.list.SetItems(convertItems(items))
 
 			return m, nil
 
+		case "m":
+			if m.list.SettingFilter() {
+				break
+			}
+
+			current := m.list.SelectedItem().(TUIItem)
+			err := m.commands.store.ToggleRead(current.ID)
+			if err != nil {
+				return m, tea.Quit
+			}
+			m.UpdateList()
+
+		case "M":
+			if m.list.SettingFilter() {
+				break
+			}
+
+			m.commands.config.ToggleShowRead()
+			m.UpdateList()
+
+		case "o":
+			if m.list.SettingFilter() {
+				break
+			}
+			current := m.list.SelectedItem().(TUIItem)
+			err := m.commands.OpenInBrowser(current.URL)
+			if err != nil {
+				return m, tea.Quit
+			}
+
 		case "enter":
-			i, ok := m.list.SelectedItem().(Item)
+			i, ok := m.list.SelectedItem().(TUIItem)
 			if ok {
-				m.selectedArticle = i.Title
+				m.selectedArticle = &i.ID
 
 				m.viewport.GotoTop()
 
-				content, err := m.commands.FindGlamourisedArticle(m.selectedArticle)
+				content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 				if err != nil {
 					return m, tea.Quit
 				}
 
 				m.viewport.SetContent(content)
-			}
 
-			return m, nil
+				cmd = m.UpdateList()
+				cmds = append(cmds, cmd)
+			}
 		}
 	}
 
-	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
@@ -157,22 +224,71 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case "G":
 			m.viewport.GotoBottom()
 		case "esc", "q":
-			m.selectedArticle = ""
+			m.selectedArticle = nil
 
+		case "o":
+			current := m.list.SelectedItem().(TUIItem)
+			err := m.commands.OpenInBrowser(current.URL)
+			if err != nil {
+				return m, tea.Quit
+			}
+
+		case "h":
+			current := m.list.Index()
+			if current-1 < 0 {
+				return m, nil
+			}
+
+			m.list.Select(current - 1)
+			items := m.list.Items()
+			item := items[current-1]
+			id := item.(TUIItem).ID
+			m.selectedArticle = &id
+
+			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
+			if err != nil {
+				return m, tea.Quit
+			}
+
+			m.viewport.SetContent(content)
+			cmd = m.UpdateList()
+			cmds = append(cmds, cmd)
+
+		case "l":
+			current := m.list.Index()
+			items := m.list.Items()
+			if current+1 >= len(items) {
+				return m, nil
+			}
+
+			m.list.Select(current + 1)
+			item := items[current+1]
+			id := item.(TUIItem).ID
+			m.selectedArticle = &id
+
+			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
+			if err != nil {
+				return m, tea.Quit
+			}
+
+			m.viewport.SetContent(content)
+			cmd = m.UpdateList()
+			cmds = append(cmds, cmd)
 		case "ctrl+c":
 			return m, tea.Quit
 		}
 	}
 
-	var cmd tea.Cmd
 	m.viewport, cmd = m.viewport.Update(msg)
-	return m, cmd
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
 	var s string
 
-	if m.selectedArticle == "" {
+	if m.selectedArticle == nil {
 		s = listView(m)
 	} else {
 		s = viewportView(m)
@@ -190,14 +306,16 @@ func viewportView(m model) string {
 }
 
 func (m model) viewportHelp() string {
-	return helpStyle.Render("\n↑/k up • ↓/j down • gg top • G bottom • q/esc back")
+	return helpStyle.Render("\nk/j up/down • h/l prev/next • gg/G top/bot • o open • q/esc back")
 }
 
-func RSSToItem(c rss.Item) Item {
-	return Item{
-		FeedName: c.FeedName,
-		Title:    c.Title,
-		URL:      c.Link,
+func ItemToTUIItem(i store.Item) TUIItem {
+	return TUIItem{
+		ID:       i.ID,
+		FeedName: i.FeedName,
+		Title:    i.Title,
+		URL:      i.Link,
+		Read:     i.Read(),
 	}
 }
 
@@ -211,16 +329,31 @@ func Render(items []list.Item, cmds Commands) error {
 
 	l := list.New(items, itemDelegate{}, defaultWidth, height)
 	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.Title = "nom 🍜"
+	l.Title = "nom"
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
+	l.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			key.NewBinding(
+				key.WithKeys("m"),
+				key.WithHelp("m", "toggle read"),
+			),
+			key.NewBinding(
+				key.WithKeys("M"),
+				key.WithHelp("M", "show/hide read"),
+			),
+			key.NewBinding(
+				key.WithKeys("r"),
+				key.WithHelp("r", "refresh feed"),
+			),
+		}
+	}
 	l.AdditionalShortHelpKeys = func() []key.Binding {
 		return []key.Binding{
 			key.NewBinding(
-				key.WithKeys("r"),
-				key.WithHelp("r", "refresh cache"),
+				key.WithKeys("o"),
+				key.WithHelp("o", "open in browser"),
 			),
 		}
 	}

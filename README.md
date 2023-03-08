@@ -11,11 +11,13 @@ $ go install github.com/guyfedwards/nom/cmd/nom@latest
 See [releases](https://github.com/guyfedwards/nom/releases) for binaries
 
 ## Config
+Config lives by default in `$XDG_CONFIG_HOME/nom/config.yml`
+### Feeds
 Add feeds with the `add` command 
 ```sh
 $ nom add <url>
 ```
-or add directly to the config at `~/.config/nom/config.yml` on unix systems and `$HOME/Library/Application Support/nom/config.yml` on darwin.
+or add directly to the config at `$XDG_CONFIG_HOME/nom/config.yml` on unix systems and `$HOME/Library/Application Support/nom/config.yml` on darwin.
 ```yaml
 feeds:
   - url: https://dropbox.tech/feed
@@ -24,6 +26,17 @@ feeds:
   - url: https://snyk.io/blog/feed
 ```
 You can customise the location of the config file with the `--config-path` flag.
+
+### Show read (default: false)
+Show read items by default. (can be toggled with M)
+```yaml
+showread: true
+```
+### Auto read (default: false)
+Automatically mark items as read on selection or navigation through items. ()
+```yaml
+autoread: true
+```
 
 ### Backends
 As well as adding feeds directly, you can pull in feeds from another source. You can add multiple backends and the feeds will all be added.
@@ -38,13 +51,14 @@ backends:
     password: muchstrong
 ```
 
+## Store
+`nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
+
 ## Usage
 ```sh
 $ nom # open TUI
 $ nom list -n 20 # optionally show more
 $ nom add <feed_url> 
-$ nom read <title_substring> 
-$ nom list --no-cache # fetch new results
 $ nom --feed <feed_url> # preview feed without adding to config
 ```
 ## Building and Running via Docker
