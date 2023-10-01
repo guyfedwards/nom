@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/pkg/browser"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -156,6 +158,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 		case "G":
 			m.viewport.GotoBottom()
+		case "O":
+			browser.OpenURL(m.list.SelectedItem().(Item).URL)
 		case "esc", "q":
 			m.selectedArticle = ""
 
@@ -190,7 +194,7 @@ func viewportView(m model) string {
 }
 
 func (m model) viewportHelp() string {
-	return helpStyle.Render("\n↑/k up • ↓/j down • gg top • G bottom • q/esc back")
+	return helpStyle.Render("\n↑/k up • ↓/j down • gg top • G bottom • O open browser • q/esc back")
 }
 
 func RSSToItem(c rss.Item) Item {
