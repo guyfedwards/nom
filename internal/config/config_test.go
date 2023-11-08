@@ -14,26 +14,33 @@ const configFixturePath = "../test/data/config_fixture.yml"
 const configFixtureWritePath = "../test/data/config_fixture_write.yml"
 
 func TestNewDefault(t *testing.T) {
-	c, _ := New("", "", false, []string{})
+	c, _ := New("", "", []string{})
 	ucd, _ := os.UserConfigDir()
 
 	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.configPath, "Wrong defaults set")
+	test.Equal(t, fmt.Sprintf("%s/nom", ucd), c.ConfigDir, "Wrong default ConfigDir set")
 }
 
 func TestConfigCustomPath(t *testing.T) {
-	c, _ := New("foo/bar.yml", "", false, []string{})
+	c, _ := New("foo/bar.yml", "", []string{})
 
 	test.Equal(t, "foo/bar.yml", c.configPath, "Config path override not set")
 }
 
+func TestConfigDir(t *testing.T) {
+	c, _ := New("foo/bizzle/bar.yml", "", []string{})
+
+	test.Equal(t, "foo/bizzle", c.ConfigDir, "ConfigDir not correctly parsed")
+}
+
 func TestNewOverride(t *testing.T) {
-	c, _ := New("foobar", "", false, []string{})
+	c, _ := New("foobar", "", []string{})
 
 	test.Equal(t, "foobar", c.configPath, "Override not respected")
 }
 
 func TestPreviewFeedsOverrideFeedsFromConfigFile(t *testing.T) {
-	c, _ := New(configFixturePath, "", false, []string{})
+	c, _ := New(configFixturePath, "", []string{})
 	c.Load()
 	feeds := c.GetFeeds()
 	test.Equal(t, 3, len(feeds), "Incorrect feeds number")
@@ -41,7 +48,7 @@ func TestPreviewFeedsOverrideFeedsFromConfigFile(t *testing.T) {
 	test.Equal(t, "bird", feeds[1].URL, "Second feed in a config must be bird")
 	test.Equal(t, "dog", feeds[2].URL, "Third feed in a config must be dog")
 
-	c, _ = New(configFixturePath, "", false, []string{"pumpkin", "radish"})
+	c, _ = New(configFixturePath, "", []string{"pumpkin", "radish"})
 	c.Load()
 	feeds = c.GetFeeds()
 	test.Equal(t, 2, len(feeds), "Incorrect feeds number")
@@ -50,7 +57,7 @@ func TestPreviewFeedsOverrideFeedsFromConfigFile(t *testing.T) {
 }
 
 func TestConfigLoad(t *testing.T) {
-	c, _ := New(configFixturePath, "", false, []string{})
+	c, _ := New(configFixturePath, "", []string{})
 	err := c.Load()
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -62,7 +69,7 @@ func TestConfigLoad(t *testing.T) {
 }
 
 func TestConfigLoadPrecidence(t *testing.T) {
-	c, _ := New(configFixturePath, "testpager", false, []string{})
+	c, _ := New(configFixturePath, "testpager", []string{})
 
 	err := c.Load()
 	if err != nil {
@@ -75,7 +82,7 @@ func TestConfigLoadPrecidence(t *testing.T) {
 }
 
 func TestConfigAddFeed(t *testing.T) {
-	c, _ := New(configFixtureWritePath, "", false, []string{})
+	c, _ := New(configFixtureWritePath, "", []string{})
 
 	err := c.Load()
 	if err != nil {

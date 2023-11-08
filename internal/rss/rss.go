@@ -2,24 +2,21 @@ package rss
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	md "github.com/JohannesKaufmann/html-to-markdown"
-	"github.com/charmbracelet/glamour"
 	"github.com/mmcdole/gofeed"
 
 	"github.com/guyfedwards/nom/internal/config"
 )
 
 type Item struct {
-	Title       string  `xml:"title"`
-	Link        string  `xml:"link"`
-	Description string  `xml:"description"`
-	Author      string  `xml:"author"`
-	Category    string  `xml:"category"`
-	Content     string  `xml:"encoded"`
-	PubDate     pubDate `xml:"pubDate"`
+	Title       string    `xml:"title"`
+	Link        string    `xml:"link"`
+	Description string    `xml:"description"`
+	Author      string    `xml:"author"`
+	Categories  []string  `xml:"categories"`
+	Content     string    `xml:"encoded"`
+	PubDate     time.Time `xml:"pubDate"`
 	FeedName    string
 }
 
@@ -34,40 +31,6 @@ type RSS struct {
 	Channel Channel `xml:"channel"`
 }
 
-func GlamouriseItem(item Item) (string, error) {
-	var mdown string
-
-	mdown += "# " + item.Title
-	mdown += "\n"
-	mdown += item.Author
-	mdown += "\n"
-	mdown += item.PubDate.String()
-	mdown += "\n\n"
-	mdown += htmlToMd(item.Content)
-
-	out, err := glamour.Render(mdown, "dark")
-	if err != nil {
-		return "", fmt.Errorf("GlamouriseItem: %w", err)
-	}
-
-	return out, nil
-}
-
-func htmlToMd(html string) string {
-	converter := md.NewConverter("", true, nil)
-
-	mdown, err := converter.ConvertString(html)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return mdown
-}
-
-type pubDate struct {
-	time.Time
-}
-
 func Fetch(f config.Feed) (RSS, error) {
 	fp := gofeed.NewParser()
 
@@ -76,6 +39,12 @@ func Fetch(f config.Feed) (RSS, error) {
 		return RSS{}, fmt.Errorf("rss.Fetch: %w", err)
 	}
 
+	rss := feedToRSS(f, feed)
+
+	return rss, nil
+}
+
+func feedToRSS(f config.Feed, feed *gofeed.Feed) RSS {
 	items := make([]Item, 0)
 	for _, it := range feed.Items {
 		ni := Item{
@@ -101,22 +70,15 @@ func Fetch(f config.Feed) (RSS, error) {
 			ni.Content = it.Content
 		}
 
-		// TODO: support multiple categories
-		if len(it.Categories) > 0 {
-			ni.Category = it.Categories[0]
-		}
-
-		var pd pubDate
+		ni.Categories = it.Categories
 
 		pt, err := time.Parse(time.RFC1123Z, it.Published)
 		if err != nil {
 			// if there is a parsing error, fill with zero-date for now
-			pd = pubDate{time.Time{}}
-		} else {
-			pd = pubDate{pt}
+			pt = time.Time{}
 		}
 
-		ni.PubDate = pd
+		ni.PubDate = pt
 		ni.FeedName = f.Name
 
 		items = append(items, ni)
@@ -130,5 +92,5 @@ func Fetch(f config.Feed) (RSS, error) {
 		Items:       items,
 	}
 
-	return rss, nil
+	return rss
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:media="http://search.yahoo.com/mrss/">
     <channel>
-        <title></title>
+        <title>We are venom</title>
         <atom:link href="https://dropbox.tech/feed" rel="self" type="application/rss+xml"/>
-        <link></link>
-        <description></description>
+        <link>foobar.com</link>
+        <description>Need brains</description>
         <lastBuildDate>Wed, 19 Oct 2022 07:30:00 -0700</lastBuildDate>
         <language>en</language>
         <sy:updatePeriod>hourly</sy:updatePeriod>
@@ -17,17 +17,17 @@
         
             <item>
                 <title>Using OAuth 2.0 with offline access</title>
-                <link>https://dropbox.tech/developers/using-oauth-2-0-with-offline-access</link>
+                <link>https://dropbox.tech/developers/using-oauth</link>
                 <dc:creator>Dropbox Platform Team</dc:creator>
                 <category>OAuth flow</category><category>Authorization</category><category>Sample Apps</category><category>Oauth</category>
                 <guid>https://dropbox.tech/developers/using-oauth-2-0-with-offline-access</guid>
-                <description><![CDATA[Learn how to use the Dropbox OAuth 2.0 app authorization flow with offline access]]></description>
-                <pubDate>Wed, 19 Oct 2022 07:30:00 -0700</pubDate>
+                <description><![CDATA[Learn how to use the Dropbox OAuth]]></description>
+                <pubDate>Wed, 19 Oct 2022 07:30:00 +0100</pubDate>
                 <content:encoded><![CDATA[
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>The <a href="https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens">Dropbox API now returns short-lived access tokens</a>, and optionally returns refresh tokens. This post will cover how and when to retrieve and use refresh tokens. We suggest checking out <a href="https://developers.dropbox.com/oauth-guide">the OAuth Guide</a> for background first, if you haven’t already.<br />
 <br />
@@ -234,7 +234,7 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -256,7 +256,7 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>Dropbox originally used Amazon S3 and the Hadoop Distributed File System (HDFS) as the backbone of its data storage infrastructure. Although we migrated user file data to our internal block storage system Magic Pocket in 2015, Dropbox continued to use S3 and HDFS as a general-purpose store for other internal products and tools. Among these use cases were crash traces, build artifacts, test logs, and image caching.</p>
 <p>Using these two legacy systems as generic blob storage caused many pain points—the worst of which was the cost inefficiency of using S3’s API. For instance, crash traces wrote many objects which were rarely accessed unless specifically needed for an investigation, generating a large PUT bill. Caches built against S3 burned pricey GET requests with each cache miss.</p>
@@ -277,34 +277,34 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%201-@2x.png/_jcr_content/renditions/Diagram%201-@2x.webp" data-aem-asset-id="eb606c24-d647-4507-81aa-30acc50fa5c4:Diagram 1-@2x.png" data-trackable="true" height="310" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>A simplified diagram of Object Store’s architecture</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -327,34 +327,34 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%202-@2x.png/_jcr_content/renditions/Diagram%202-@2x.webp" alt="One batch contains many objects and corresponds to an underlying store blob. Objects are identified in the batch by length and offset" data-aem-asset-id="7ebab5d8-5133-4feb-8ee3-0f135d43c351:Diagram 2-@2x.png" data-trackable="true" height="273" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>One batch contains many objects and corresponds to an underlying store blob. Objects are identified in the batch by length and offset</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -382,34 +382,34 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%203-@2x.png/_jcr_content/renditions/Diagram%203-@2x.webp" alt="Encrypted keys are stored as part of object metadata" data-aem-asset-id="038d24f6-7fe0-49a6-be2f-f7eb0a09bd95:Diagram 3-@2x.png" data-trackable="true" height="225" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Encrypted keys are stored as part of object metadata</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -426,34 +426,34 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%204-@2x.png/_jcr_content/renditions/Diagram%204-@2x.webp" alt="Batching meant our initial approach to object deletion involved compaction" data-aem-asset-id="c103bc46-b652-4eae-b9f8-08efe4c6dd9f:Diagram 4-@2x.png" data-trackable="true" height="772" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Batching meant our initial approach to object deletion involved compaction</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -464,34 +464,34 @@ Once the current short-lived access token expires, call <a href="https://www.dro
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%205-@2x.png/_jcr_content/renditions/Diagram%205-@2x.webp" data-aem-asset-id="4795ee72-101e-4c08-9bd1-421bd1520d4c:Diagram 5-@2x.png" data-trackable="true" height="399" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Eventually, we settled on a crypto-shredding approach to object deletion—no compaction needed</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -530,34 +530,34 @@ else:
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/10/object-store/Diagram%206-@2x.png/_jcr_content/renditions/Diagram%206-@2x.webp" data-aem-asset-id="21222c2e-5c52-4170-8e8f-4318701b67e4:Diagram 6-@2x.png" data-trackable="true" height="337" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Chunking objects means not only can we store many objects in one blob—we can also store one object across many blobs. Magic Pocket keys are derived deterministically from a single database key</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -580,7 +580,7 @@ else:
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -602,7 +602,7 @@ else:
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>Over the past few years, server-side request forgery (SSRF) has received an increasing amount of attention from security researchers. With SSRF, an attacker can retarget a request to internal services and exploit the implicit trust within the network. It often escalates into a critical vulnerability, and in 2021 it was among <a href="https://owasp.org/www-project-top-ten/" target="_blank">the top ten web application security risks</a> identified by the Open Web Application Security Project. At Dropbox, it’s the Application Security team’s responsibility to guard against and address SSRF in a scalable manner, so that our engineers can deliver products securely and with as little friction as possible.</p>
 <p>On February 19, 2021, HackerOne user <a href="https://hackerone.com/detroitsmash?type=user" target="_blank">Kumar Saurabh</a> reported a critical SSRF vulnerability to us through <a href="https://dropbox.tech/security/dropbox-bug-bounty-program-has-paid-out-over--1-000-000" target="_blank">our bug bounty program</a>. With this vulnerability, an attacker could make an HTTP GET request to internal endpoints within the production environment and read the response. After reproducing the vulnerability, we immediately declared <a href="https://dropbox.tech/infrastructure/lessons-learned-in-incident-management">an</a><a href="https://dropbox.tech/infrastructure/lessons-learned-in-incident-management" target="_blank"> internal security incident</a>, worked on a quick fix to close the hole, and pushed the fix to production in around eight hours. (We have no reason to believe this vulnerability was ever actively exploited, and no user data was at risk.)</p>
@@ -622,33 +622,33 @@ else:
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/07/ssrf/Branded_sharing_Team%20Admin_new_495x400.png/_jcr_content/renditions/Branded_sharing_Team%20Admin_new_495x400.webp" alt="" data-aem-asset-id="d330b16a-ba6e-4c29-ac90-d344511331c6:Branded_sharing_Team Admin_new_495x400.png" data-trackable="true" height="800" width="990"/>
-    
 
-            
-        
+
+
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -842,7 +842,7 @@ except Exception as e:
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -864,7 +864,7 @@ except Exception as e:
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>Nobody likes waiting for software. Snappy, responsive interfaces make us happy, and research shows there’s a relationship between responsiveness and attention<a href="#footnote-one"><sup>1</sup></a>. But maintaining fast-feeling websites often requires tradeoffs. This might mean diverting resources from the development of new features, paying off technical debt, or other engineering work. The key to justifying such diversions is by connecting the dots between performance and business outcomes—something we can do through measurement.</p>
 <p>Over the last year, we’ve been rethinking the way we track page load performance on the web at Dropbox. After identifying a few gaps in our existing metrics, we decided we needed a more objective, user-focused way to define page load performance so that we could more reliably and meaningfully compare experiences across products. We thought a relatively new page load metric called Time To Visually Complete (TTVC) could work well.</p>
@@ -879,34 +879,34 @@ except Exception as e:
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-1.png/_jcr_content/renditions/ttvc-diagram-1.webp" alt="" data-aem-asset-id="ed649c87-0abe-4566-bc0a-ba4ffe792c77:ttvc-diagram-1.png" data-trackable="true" height="525" width="720"/>
-    
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Some common pageload performance metrics</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -939,34 +939,34 @@ except Exception as e:
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-2.png/_jcr_content/renditions/ttvc-diagram-2.webp" alt="" data-aem-asset-id="dd4ce1a6-c32e-4da0-b973-e618541d7941:ttvc-diagram-2.png" data-trackable="true" height="277" width="720"/>
-    
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>TTVC can only be reported retroactively</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -986,34 +986,34 @@ except Exception as e:
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/08/ttvc/ttvc-diagram-3.png/_jcr_content/renditions/ttvc-diagram-3.webp" alt="" data-aem-asset-id="b9ba8cc0-7b73-4b43-8913-3bc3b003596f:ttvc-diagram-3.png" data-trackable="true" height="504" width="720"/>
-    
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>The TTVC measurement algorithm</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1197,7 +1197,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -1219,7 +1219,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>Once of the most common uses of the Dropbox API is to upload files to Dropbox. If you only need to upload one small file, you can do so with <a href="https://www.dropbox.com/developers/documentation/http/documentation#files-upload">one Dropbox API call</a>, but when you need to upload a large amount of larger files, and you need to do so very quickly, things can get more complicated. In that case, you'll need to consider things like lock contention and parallelization. </p>
 <p>For tips on how to manage these considerations and upload file data fast, check out our updated <a href="https://developers.dropbox.com/dbx-performance-guide">Performance Guide</a>. We've added some information on using new functionality on the Dropbox API that can help you upload file data fast, by starting multiple upload sessions in batches, and by further parallelizing upload session requests.</p>
@@ -1228,7 +1228,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -1250,7 +1250,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>OpenID Connect—or OIDC—is a standard identity layer built on top of OAuth 2.</p>
 <p>This lets you build support for signing into your application via the user’s email verified Dropbox identity, which reduces the number of steps for a user to sign up for your service. It provides the end user with a simple click through consent screen, and returns basic user information to your application.</p>
@@ -1261,37 +1261,37 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/www/en-us/landing-pages/developers/oidc-guide/authorize-example.png/_jcr_content/renditions/authorize-example.webp" alt="Screenshot of the authorization page using OIDC" data-aem-asset-id="7ca8311d-ad05-49a9-91b9-f79fc06d60b3:authorize-example.png" data-trackable="true" height="894" width="1194"/>
-        
-    
 
-            
-        
+
+
+
+
     </figure>
 </div></div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -1313,7 +1313,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>For nearly a decade, Dropbox has run its own hardware infrastructure. We have one of the few exabyte-scale storage systems in the world, and running infrastructure at this scale takes a lot of time and planning to build and maintain. Our Hardware team architects, ships, and maintains all of the physical hardware in the data centers that keep Dropbox online, and we recently hit an exciting milestone: we shipped our sixth generation hardware designs. </p>
 <p>As our workloads grow and workflows evolve, each new generation of server hardware helps us stay ahead of Dropbox users’ needs. And by revisiting these configurations on a regular cadence, we ensure we’re making decisions that provide the best user experience possible. Often, that means making innovative bets on new and emerging technologies. We were <a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment">early adopters of </a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment" target="_blank">Shingled Magnetic Recording</a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment"> </a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment">(SMR)</a><a href="https://dropbox.tech/infrastructure/extending-magic-pocket-innovation-with-the-first-petabyte-scale-smr-drive-deployment"> storage drives</a> and new CPU technology from AMD, and we’re excited about the possibility of leveraging machine learning accelerators and heat-assisted magnetic recording in the future.</p>
@@ -1352,34 +1352,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/06/sixth-gen-hardware/scooby-storage-drives.jpg/_jcr_content/renditions/scooby-storage-drives.webp" alt="The inside of a server chassis packed with hard drives. Photo by Jared Mednick" data-aem-asset-id="c48918b7-c0e9-420e-a1f3-0e4d8b38f8d7:scooby-storage-drives.jpg" data-trackable="true" height="2160" width="1662"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Drives on drives on drives! Photo by Jared Mednick</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1406,7 +1406,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -1428,7 +1428,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>A good password manager should be able to securely store, sync, and even autofill your username and password when logging into websites and apps. A password manager like…<a href="https://dropbox.com/passwords" target="_blank">Dropbox Passwords</a>!</p>
 <p>When we released Dropbox Passwords in the Summer of 2020, it was important we ensured that a user’s logins would always be available—and up to date—on any device they used. Luckily, Dropbox has some experience here, and we were able to leverage our existing syncing infrastructure to copy a user’s encrypted password info, known as a payload, from one device to another. However, while implementing this crucial component, we encountered an unexpected syncing issue where, sometimes, out-of-date login items would overwrite newer, more recent changes.</p>
@@ -1455,34 +1455,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-1.png" alt="A diagram of a successful merge and sync of a Dropbox Passwords payload." data-aem-asset-id="9b4f9446-c075-4073-bf4d-d1779a84828f:passwords-clock-skew-diagram-1.png" data-trackable="true" height="595" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">A successful merge and sync. </p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1505,34 +1505,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-2.png" alt="An diagram of a failed merge, in which the timestamp on the newer change is older than the stable version." data-aem-asset-id="64631399-6918-444e-8856-93911ef5228b:passwords-clock-skew-diagram-2.png" data-trackable="true" height="595" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">An example of a failed merge. Note that the timestamp on the newer change is older than the stable version.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -1562,34 +1562,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/05/passwords-clock-skew/passwords-clock-skew-diagram-3.png" alt="A diagram of a successful merge and sync with skewed clocks." data-aem-asset-id="39151c5a-a096-4f51-b6a7-30a8f44b4707:passwords-clock-skew-diagram-3.png" data-trackable="true" height="707" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p style="text-align: center;">A successful merge and sync with skewed clocks.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -1612,7 +1612,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -1634,7 +1634,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>On Thursday, November 18, 2021, Dropbox did <i>not</i> go down. On a normal day this would be a non-event—a sign that everything was operating as usual. However, this day was anything but usual. At 5:00 pm PT, a group of Dropboxers were huddled on a Zoom call when the command was given to physically unplug our San Jose data center from the rest of the Dropbox network. </p>
 <p>This was a big deal—the culmination of more than a year’s worth of work for the Disaster Readiness (DR) team, and more than six years of work across Dropbox as a whole. </p>
@@ -1659,33 +1659,33 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram-1-collage.png/_jcr_content/renditions/Diagram-1-collage.webp" alt="" data-aem-asset-id="130ee037-43fe-47a9-946e-ca51f96a596d:Diagram-1-collage.png" data-trackable="true" height="2500" width="2800"/>
-    
 
-            
-        
+
+
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1704,33 +1704,33 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%202_@2x.png/_jcr_content/renditions/Diagram%202_@2x.webp" alt="" data-aem-asset-id="8c81e7f7-4599-4325-a8bc-ebb53b651a64:Diagram 2_@2x.png" data-trackable="true" height="305" width="720"/>
-    
 
-            
-        
+
+
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1775,67 +1775,67 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%203_@2x.png/_jcr_content/renditions/Diagram%203_@2x.webp" alt="Runbook state machine. A runbook consists of multiple Tasks." data-aem-asset-id="494e7d11-9c08-4a7d-b35f-1446eac9b695:Diagram 3_@2x.png" data-trackable="true" height="493" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Runbook state machine. A runbook consists of multiple Tasks.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%204_@2x.png/_jcr_content/renditions/Diagram%204_@2x.webp" alt="Task state machine. A task performs a specific operation, such as failing over a database cluster, changing traffic weights, or sending a Slack message." data-aem-asset-id="d319c413-4d09-4aac-8203-1343d0d3a6ee:Diagram 4_@2x.png" data-trackable="true" height="302" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Task state machine. A task performs a specific operation, such as failing over a database cluster, changing traffic weights, or sending a Slack message.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1845,35 +1845,35 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%205_@2x.png/_jcr_content/renditions/Diagram%205_@2x.webp" alt="The updated failover tool, which consists of a scheduler goroutine and multiple worker goroutines, communicating via channels to assign and execute tasks belonging to a runbook in the correct order." data-aem-asset-id="b9eba5fc-3fb3-4a34-9055-da3b28765980:Diagram 5_@2x.png" data-trackable="true" height="563" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>The updated failover tool, which consists of a scheduler goroutine and multiple worker goroutines, communicating via channels to assign and execute tasks belonging to a runbook in the correct order.<br />
 </p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -1891,34 +1891,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%206_@2x.png/_jcr_content/renditions/Diagram%206_@2x.webp" alt="A history of our incremental progress on failover exercises with longer duration of stay." data-aem-asset-id="367cd067-1cac-4489-aa57-0165ec256216:Diagram 6_@2x.png" data-trackable="true" height="503" width="720"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>A history of our incremental progress on failover exercises with longer duration of stay.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -1973,33 +1973,33 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
-         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/Diagram%207_@2x.png/_jcr_content/renditions/Diagram%207_@2x.webp" alt="" data-aem-asset-id="ae7a8646-e153-4dc2-bfc7-9ef29b0418a0:Diagram 7_@2x.png" data-trackable="true" height="457" width="720"/>
-    
 
-            
-        
+
+
+
     </figure>
 </div></div>
 <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
@@ -2047,35 +2047,35 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  align-center">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/disaster-readiness/fiber-collage-alt.jpg/_jcr_content/renditions/fiber-collage-alt.webp" data-aem-asset-id="3a5228c6-49d9-45f8-9aa6-77e6c45dacb9:fiber-collage-alt.jpg" data-trackable="true" height="3000" width="3750"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>From left to right, Eddie, Victor, and Jimmy prepare to physically unplug the network fiber at each of SJC’s three data center facilities. <br />
 </p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -2106,7 +2106,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 
@@ -2128,7 +2128,7 @@ const App = () =&gt; {
 
 
 <div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
-    
+
     <div class="text parbase aem-GridColumn aem-GridColumn--default--12">
 <p>We’re Adam Hood and Brian Amaratunga—two senior software engineers who joined Dropbox in 2021 as <a href="https://experience.dropbox.com/virtual-first-toolkit" target="_blank">Virtual First</a> employees. This means we spend most of our time working remotely, with physical studios reserved for in-person collaboration.</p>
 <p>When Dropbox became <a href="https://blog.dropbox.com/topics/company/dropbox-goes-virtual-first" target="_blank">a Virtual First company</a> in October 2020, it also meant reimagining the onboarding process to ensure new employees still had a high-quality experience—similar to what they would have gotten before in person. As two recent hires in Engineering, Product, and Design (EPD), we wanted to share our experience of what virtual onboarding at Dropbox is actually like. </p>
@@ -2168,34 +2168,34 @@ const App = () =&gt; {
 <div class="image c04-image aem-GridColumn aem-GridColumn--default--12">
 <div class="dr-image image cq-dd-image  ">
     <figure class="dr-margin-0 dr-display-inline-block">
-        
-            
-    
 
-        
 
-        
-        
-        
 
-        
-        
-        
 
-        
-        
 
-        
-        
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          <img src="/cms/content/dam/dropbox/tech-blog/en-us/2022/04/engineering-onboarding/EngineeringOnboarding-calendar.png/_jcr_content/renditions/EngineeringOnboarding-calendar.webp" data-aem-asset-id="d9677f1f-0fcb-41c5-96c2-7db0c734d83d:EngineeringOnboarding-calendar.png" data-trackable="true" height="1100" width="1386"/>
-        
-    
+
+
 
             <figcaption class="dr-typography-t5 dr-color-ink-60 dr-image-rte"><p>Brian’s calendar. Note that my team agreed to shift our Core Collaboration Hours to 1 pm to 5 pm ET.</p>
 </figcaption>
-        
+
     </figure>
 </div></div>
 <div class="section aem-GridColumn aem-GridColumn--default--12">
@@ -2233,7 +2233,7 @@ const App = () =&gt; {
 
 </div>
 
-    
+
 </div>
 ]]></content:encoded>
                 

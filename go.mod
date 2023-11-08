@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/glamour v0.5.0
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/mmcdole/gofeed v1.1.3
 	golang.org/x/term v0.4.0
 	gopkg.in/yaml.v3 v3.0.1

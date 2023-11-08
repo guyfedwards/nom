@@ -41,37 +41,64 @@
 # Display:
 #   Hide                            Hide the subsequent commands from the output
 #   Show                            Show the subsequent commands in the output
-Output demo.gif
+Output demo2.gif
 Set FontSize 32
+Set FontFamily "JetBrainsMono Nerd Font"
 Set Width 2400
 Set Height 1200
-Set LoopOffset 50%
+Set TypingSpeed 300ms
+# Set LoopOffset 50%
+Set Shell bash
+
+# Clear alias errors
+Ctrl+L
+Sleep 500ms
 
 Type "./nom" Sleep 500ms Enter
 
-Sleep 5s
-
-Type "j" Sleep 500ms
-Type "j" Sleep 500ms
-Type "j" Sleep 500ms
-Type "j" Sleep 500ms
-Type "j" Sleep 500ms
-Type "l" Sleep 1s
-
 Sleep 3s
+
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "l" Sleep 500ms
+Type "h" Sleep 500ms
+
+Sleep 2s
 
 Enter
 
 Sleep 3s
 
-Type "j" Sleep 1s
-Type "j" Sleep 1s
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "j" Sleep 500ms
+Type "k" Sleep 500ms
+Type "gg"
+
+Type "l" Sleep 1s
+Type "l" Sleep 1s
+Type "h" Sleep 1s
 Type "j" Sleep 1s
 Type "j" Sleep 1s
 Type "j" Sleep 1s
 Type "G" Sleep 1s
-Type "gg" Sleep 2s
+Type "gg" Sleep 1s
 
-Sleep 4s
+Type "q" Sleep 1s
 
+Type "/" Sleep 1s
+Type "evil" Sleep 3s
+Enter
+Sleep 2s
 Type "q"
+Type "m" Sleep 1s
+Type "j" Sleep 1s
+Type "m" Sleep 1s
+Type "j" Sleep 1s
+Type "m" Sleep 1s
+Type "j" Sleep 1s
+Type "M" Sleep 3s
+Type "M" Sleep 2s
