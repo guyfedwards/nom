@@ -1,6 +1,12 @@
 # nom
 > Feed me
 
+`nom` is a terminal based RRS feed reader using [Glow](https://github.com/charmbracelet/glow) styled markdown to improve the reading experience and a simple TUI using [Bubbletea](https://github.com/charmbracelet/bubbletea).
+- Local sync and offline reading
+- Backend connections (miniflux, freshrss supported)
+- Vim style keybindings for navigation
+- Plenty more features such as mark read/unread, filtering and feed naming
+
 ![](./.github/demo.gif)
 
 ## Install
