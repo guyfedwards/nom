@@ -10,8 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var ErrMissingConfig = errors.New("missing config.yml")
-
 type Feed struct {
 	URL  string `yaml:"url"`
 	Name string `yaml:"name,omitempty"`
@@ -35,7 +33,7 @@ type Backends struct {
 
 type Config struct {
 	configPath string
-	ConfigDir  string
+	ConfigDir  string `yaml:"-"`
 	Pager      string `yaml:"pager,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
@@ -93,7 +91,7 @@ func (c *Config) Load() error {
 
 	rawData, err := os.ReadFile(c.configPath)
 	if err != nil {
-		return fmt.Errorf("config.Load: %w", ErrMissingConfig)
+		return fmt.Errorf("config.Load: %w", err)
 	}
 
 	// manually set config values from fileconfig, messy solve for config priority
@@ -182,20 +180,26 @@ func (c *Config) GetFeeds() []Feed {
 }
 
 func setupConfigDir(configDir string) error {
-	// if configpath already exists, exit early
-	if _, err := os.Stat(configDir); !errors.Is(err, os.ErrNotExist) {
+	configFile := filepath.Join(configDir, "/config.yml")
+
+	_, err := os.Stat(configFile)
+
+	// if configFile exists, do nothing
+	if !errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
 
-	err := os.MkdirAll(configDir, 0755)
+	// if not, create directory. noop if directory exists
+	err = os.MkdirAll(configDir, 0755)
 	if err != nil {
 		return fmt.Errorf("setupConfigDir: %w", err)
 	}
 
-	_, err = os.Create(configDir)
+	// then create the file
+	_, err = os.Create(configFile)
 	if err != nil {
 		return fmt.Errorf("setupConfigDir: %w", err)
 	}
 
-	return nil
+	return err
 }

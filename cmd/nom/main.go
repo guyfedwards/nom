@@ -77,10 +77,6 @@ func main() {
 			fmt.Printf("%v\n", err)
 		}
 
-		if errors.Is(err, config.ErrMissingConfig) {
-			fmt.Printf("Missing config file. \nAdd $XDG_CONFIG_HOME/nom/config.yml. See docs for config options.\n\n")
-		}
-
 		parser.WriteHelp(os.Stderr)
 		os.Exit(1)
 	}

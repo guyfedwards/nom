@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -12,6 +13,12 @@ import (
 
 const configFixturePath = "../test/data/config_fixture.yml"
 const configFixtureWritePath = "../test/data/config_fixture_write.yml"
+const configDir = "../test/data/nom"
+const configPath = "../test/data/nom/config.yml"
+
+func cleanup() {
+	os.RemoveAll(configDir)
+}
 
 func TestNewDefault(t *testing.T) {
 	c, _ := New("", "", []string{})
@@ -106,4 +113,19 @@ func TestConfigAddFeed(t *testing.T) {
 	if !hasAdded {
 		t.Fatalf("did not write feed correctly")
 	}
+}
+
+func TestConfigSetupDir(t *testing.T) {
+	err := setupConfigDir(configDir)
+	if err != nil {
+		t.Fail()
+		return
+	}
+
+	_, err = os.Stat(filepath.Join(configDir, "config.yml"))
+	if err != nil {
+		t.Fail()
+	}
+
+	cleanup()
 }
