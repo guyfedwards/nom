@@ -2,15 +2,61 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - main: cmd/nom/main.go
+  - id: darwin-amd64
+    main: cmd/nom/main.go
+    binary: nom
+    goarch:
+      - amd64
+    goos:
+      - darwin
     env:
-      - CGO_ENABLED=1
+      - CC=o64-clang
+    flags:
+      - -mod=readonly
+  - id: darwin-arm64
+    binary: nom
+    main: ./cmd/nom/main.go
+    goarch:
+      - arm64
+    goos:
+      - darwin
+    env:
+      - CC=oa64-clang
+  - id: linux-amd64
+    main: cmd/nom/main.go
+    binary: nom
     goos:
       - linux
+    goarch:
+      - amd64
+    env:
+      - CC=x86_64-linux-gnu-gcc
+    flags:
+      - -trimpath
+  - id: linux-arm64
+    main: cmd/nom/main.go
+    binary: nom
+    goos:
+      - linux
+    goarch:
+      - arm64
+    env:
+      - CC=aarch64-linux-gnu-gcc
+    flags:
+      - -mod=readonly
+      - -trimpath
+  - id: windows-amd64
+    binary: nom
+    main: ./cmd/nom/main.go
+    goarch:
+      - amd64
+    goos:
       - windows
-      - darwin
-env_files:
-  github_token: ./github_token
+    env:
+      - CC=x86_64-w64-mingw32-gcc
+    flags:
+      - -trimpath
+      - -buildmode=exe
 checksum:
   name_template: 'checksums.txt'
 snapshot:
