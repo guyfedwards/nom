@@ -1,6 +1,7 @@
 internal/test/data/cache.json
 
 dist/
+.release-env
 
 # macOS
 .DS_Store
