@@ -87,7 +87,43 @@ func GetWslHostName() string {
 	return strings.TrimSpace(string(out))
 }
 
+func (c Commands) CleanFeeds() error {
+	urls, err := c.store.GetAllFeedURLs()
+	if err != nil {
+		return fmt.Errorf("[commands.go]: %w", err)
+	}
+
+	var urlsToRemove []string
+
+	for _, u := range urls {
+		inFeeds := false
+		for _, f := range c.config.Feeds {
+			if f.URL == u {
+				inFeeds = true
+			}
+		}
+
+		if !inFeeds {
+			urlsToRemove = append(urlsToRemove, u)
+		}
+	}
+
+	for _, url := range urlsToRemove {
+		err := c.store.DeleteByFeedURL(url)
+		if err != nil {
+			return fmt.Errorf("[commands.go]: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func (c Commands) TUI() error {
+	err := c.CleanFeeds()
+	if err != nil {
+		return fmt.Errorf("commands List: %w", err)
+	}
+
 	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
@@ -117,6 +153,10 @@ func (c Commands) TUI() error {
 }
 
 func (c Commands) List(numResults int) error {
+	err := c.CleanFeeds()
+	if err != nil {
+		return fmt.Errorf("commands List: %w", err)
+	}
 	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)

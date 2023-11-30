@@ -32,7 +32,9 @@ func (i Item) Read() bool {
 type Store interface {
 	UpsertItem(item Item) error
 	GetAllItems() ([]Item, error)
+	GetAllFeedURLs() ([]string, error)
 	ToggleRead(ID int) error
+	DeleteByFeedURL(feedurl string) error
 }
 
 type SQLiteStore struct {
@@ -213,6 +215,41 @@ func (sls SQLiteStore) ToggleRead(ID int) error {
 	_, err := stmt.Exec(time.Now(), ID)
 	if err != nil {
 		return fmt.Errorf("[store.go] ToggleRead: %w", err)
+	}
+
+	return nil
+}
+
+func (sls SQLiteStore) GetAllFeedURLs() ([]string, error) {
+	var urls []string
+
+	stmt, _ := sls.db.Prepare(`select feedurl from items group by feedurl;`)
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return urls, fmt.Errorf("[store.go] GetAllFeedURLs: %w", err)
+	}
+
+	for rows.Next() {
+		var feedurl string
+
+		err := rows.Scan(&feedurl)
+		if err != nil {
+			return urls, fmt.Errorf("[store.go] GetAllFeedURLs: %w", err)
+		}
+
+		urls = append(urls, feedurl)
+	}
+
+	return urls, nil
+}
+
+func (sls SQLiteStore) DeleteByFeedURL(feedurl string) error {
+	stmt, _ := sls.db.Prepare(`delete from items where feedurl = ?`)
+
+	_, err := stmt.Exec(feedurl)
+	if err != nil {
+		return fmt.Errorf("[store.go] DeleteByFeedURL: %w", err)
 	}
 
 	return nil
