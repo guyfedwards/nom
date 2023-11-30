@@ -187,6 +187,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, error) {
 				Author:      r.Author,
 				Content:     r.Content,
 				FeedURL:     result.url,
+				FeedName:    r.FeedName,
 				Link:        r.Link,
 				PublishedAt: r.PubDate,
 				Title:       r.Title,
