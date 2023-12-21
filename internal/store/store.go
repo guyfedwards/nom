@@ -210,7 +210,7 @@ func (sls SQLiteStore) GetAllItems() ([]Item, error) {
 }
 
 func (sls SQLiteStore) ToggleRead(ID int) error {
-	stmt, _ := sls.db.Prepare(`update items set readat = ? where id = ?`)
+	stmt, _ := sls.db.Prepare(`update items set readat = case when readat is null then ? else null end where id = ?`)
 
 	_, err := stmt.Exec(time.Now(), ID)
 	if err != nil {
