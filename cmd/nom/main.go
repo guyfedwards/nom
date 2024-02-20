@@ -18,9 +18,13 @@ type Options struct {
 	Pager        string   `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
 	ConfigPath   string   `long:"config-path" description:"Location of config.yml"`
 	PreviewFeeds []string `short:"f" long:"feed" description:"Feed(s) URL(s) for preview"`
+	Version      bool     `long:"version" description:"Display version information"`
 }
 
-var ErrNotEnoughArgs = errors.New("not enough args")
+var (
+	version          = "dev"
+	ErrNotEnoughArgs = errors.New("not enough args")
+)
 
 func run(args []string, opts Options) error {
 	cfg, err := config.New(opts.ConfigPath, opts.Pager, opts.PreviewFeeds)
@@ -37,6 +41,11 @@ func run(args []string, opts Options) error {
 		return fmt.Errorf("main.go: %w", err)
 	}
 	cmds := commands.New(cfg, s)
+
+	if opts.Version || (len(args) > 0 && args[0] == "version") {
+		fmt.Printf("%s\n", version)
+		return nil
+	}
 
 	// no subcommand, run the TUI
 	if len(args) == 0 {
@@ -68,8 +77,13 @@ func main() {
 
 	args, err := parser.Parse()
 	if err != nil {
-		// parser.Parse() prints help/errors by default here
-		os.Exit(1)
+		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
+			os.Exit(0)
+		} else {
+			fmt.Printf("%v\n", err)
+			os.Exit(1)
+		}
+		return
 	}
 
 	if err := run(args, opts); err != nil {
