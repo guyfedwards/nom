@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/guyfedwards/nom/internal/test"
+	"github.com/guyfedwards/nom/v2/internal/test"
 )
 
 const configFixturePath = "../test/data/config_fixture.yml"

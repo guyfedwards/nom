@@ -7,9 +7,9 @@ import (
 
 	"github.com/mmcdole/gofeed"
 
-	"github.com/guyfedwards/nom/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/config"
 
-	"github.com/guyfedwards/nom/internal/test"
+	"github.com/guyfedwards/nom/v2/internal/test"
 )
 
 const dropboxFixture = "../test/data/dropbox_fixture.rss"

@@ -14,9 +14,9 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/glamour"
 
-	"github.com/guyfedwards/nom/internal/config"
-	"github.com/guyfedwards/nom/internal/rss"
-	"github.com/guyfedwards/nom/internal/store"
+	"github.com/guyfedwards/nom/v2/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/rss"
+	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
 type Commands struct {

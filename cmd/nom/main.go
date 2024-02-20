@@ -7,9 +7,9 @@ import (
 
 	"github.com/jessevdk/go-flags"
 
-	"github.com/guyfedwards/nom/internal/commands"
-	"github.com/guyfedwards/nom/internal/config"
-	"github.com/guyfedwards/nom/internal/store"
+	"github.com/guyfedwards/nom/v2/internal/commands"
+	"github.com/guyfedwards/nom/v2/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
 type Options struct {

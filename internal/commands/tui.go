@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"golang.org/x/term"
 
-	"github.com/guyfedwards/nom/internal/store"
+	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
 var (
