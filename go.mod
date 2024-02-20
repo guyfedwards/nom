@@ -1,4 +1,4 @@
-module github.com/guyfedwards/nom
+module github.com/guyfedwards/nom/v2
 
 go 1.19
 
