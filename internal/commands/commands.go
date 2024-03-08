@@ -129,9 +129,10 @@ func (c Commands) TUI() error {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
+	var errorItems []ErrorItem
 	// if no feeds in store or we have preview feeds, fetchAllFeeds
 	if len(its) == 0 || len(c.config.PreviewFeeds) > 0 {
-		_, err = c.fetchAllFeeds()
+		_, errorItems, err = c.fetchAllFeeds()
 		if err != nil {
 			return fmt.Errorf("[commands.go] TUI: %w", err)
 		}
@@ -145,7 +146,12 @@ func (c Commands) TUI() error {
 
 	items := convertItems(its)
 
-	if err := Render(items, c); err != nil {
+	es := []string{}
+	for _, e := range errorItems {
+		es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
+	}
+
+	if err := Render(items, c, es); err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
 	}
 
@@ -191,16 +197,22 @@ type FetchResultError struct {
 	url string
 }
 
-func (c Commands) fetchAllFeeds() ([]store.Item, error) {
+type ErrorItem struct {
+	FeedURL string
+	Err     error
+}
+
+func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 	var (
-		items []store.Item
-		wg    sync.WaitGroup
+		items      []store.Item
+		wg         sync.WaitGroup
+		errorItems []ErrorItem
 	)
 
 	feeds := c.config.GetFeeds()
 
 	if len(feeds) <= 0 {
-		return []store.Item{}, fmt.Errorf("no feeds found, add to nom/config.yml")
+		return items, errorItems, fmt.Errorf("no feeds found, add to nom/config.yml")
 	}
 
 	ch := make(chan FetchResultError)
@@ -217,9 +229,9 @@ func (c Commands) fetchAllFeeds() ([]store.Item, error) {
 	}()
 
 	for result := range ch {
-		// TODO: handle error more gracefully per feed
 		if result.err != nil {
-			return []store.Item{}, fmt.Errorf("commands List: %w", result.err)
+			errorItems = append(errorItems, ErrorItem{FeedURL: result.url, Err: result.err})
+			continue
 		}
 
 		for _, r := range result.res.Channel.Items {
@@ -246,7 +258,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, error) {
 		}
 	}
 
-	return items, nil
+	return items, errorItems, nil
 }
 
 func includes[T comparable](arr []T, item T) bool {
@@ -362,8 +374,10 @@ func glamouriseItem(item store.Item) (string, error) {
 	mdown += "# " + item.Title
 	mdown += "\n"
 	mdown += item.Author
-	mdown += "\n"
-	mdown += item.PublishedAt.String()
+	if !item.PublishedAt.IsZero() {
+		mdown += "\n"
+		mdown += item.PublishedAt.String()
+	}
 	mdown += "\n\n"
 	mdown += htmlToMd(item.Content)
 

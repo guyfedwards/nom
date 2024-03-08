@@ -82,6 +82,7 @@ type model struct {
 	selectedArticle *int
 	viewport        viewport.Model
 	prevKeyWasG     bool
+	errors          []string
 }
 
 func (m model) Init() tea.Cmd {
@@ -140,14 +141,26 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				break
 			}
 
-			items, err := m.commands.fetchAllFeeds()
+			_, errorItems, err := m.commands.fetchAllFeeds()
 			if err != nil {
 				return m, tea.Quit
 			}
 
-			m.list.SetItems(convertItems(items))
+			// refetch for consistent data across calls
+			items, err := m.commands.GetAllFeeds()
+			if err != nil {
+				return m, tea.Quit
+			}
 
-			return m, nil
+			es := []string{}
+			for _, e := range errorItems {
+				es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
+			}
+
+			m.list.SetItems(convertItems(items))
+			m.errors = es
+
+			return m, m.list.NewStatusMessage("Refreshed.")
 
 		case "m":
 			if m.list.SettingFilter() {
@@ -298,6 +311,10 @@ func (m model) View() string {
 }
 
 func listView(m model) string {
+	if len(m.errors) > 0 {
+		m.list.NewStatusMessage(m.errors[0])
+	}
+
 	return "\n" + m.list.View()
 }
 
@@ -319,7 +336,7 @@ func ItemToTUIItem(i store.Item) TUIItem {
 	}
 }
 
-func Render(items []list.Item, cmds Commands) error {
+func Render(items []list.Item, cmds Commands, errors []string) error {
 	const defaultWidth = 20
 	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
 	_, y := appStyle.GetFrameSize()
@@ -360,7 +377,7 @@ func Render(items []list.Item, cmds Commands) error {
 
 	vp := viewport.New(78, height)
 
-	m := model{list: l, commands: cmds, viewport: vp}
+	m := model{list: l, commands: cmds, viewport: vp, errors: errors}
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		return fmt.Errorf("tui.Render: %w", err)
