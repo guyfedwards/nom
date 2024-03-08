@@ -167,6 +167,10 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				break
 			}
 
+			if len(m.list.Items()) == 0 {
+				return m, m.list.NewStatusMessage("No items to mark.")
+			}
+
 			current := m.list.SelectedItem().(TUIItem)
 			err := m.commands.store.ToggleRead(current.ID)
 			if err != nil {
