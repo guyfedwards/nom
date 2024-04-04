@@ -10,11 +10,10 @@
 ![](./.github/demo.gif)
 
 ## Install
+See [releases](https://github.com/guyfedwards/nom/releases) for binaries. E.g.
 ```sh
-$ go install github.com/guyfedwards/nom/cmd/nom@latest
+$ curl -L https://github.com/guyfedwards/nom/releases/download/v2.1.4/nom_2.1.4_darwin_amd64.tar.gz | tar -xzvf -
 ```
-
-See [releases](https://github.com/guyfedwards/nom/releases) for binaries
 
 ## Config
 Config lives by default in `$XDG_CONFIG_HOME/nom/config.yml`
