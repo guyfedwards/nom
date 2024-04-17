@@ -233,7 +233,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				break
 			}
 			current := m.list.SelectedItem().(TUIItem)
-			err := m.commands.OpenInBrowser(current.URL)
+			err := m.commands.OpenLink(current.URL)
 			if err != nil {
 				return m, tea.Quit
 			}
@@ -287,7 +287,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case "o":
 			current := m.list.SelectedItem().(TUIItem)
-			err := m.commands.OpenInBrowser(current.URL)
+			err := m.commands.OpenLink(current.URL)
 			if err != nil {
 				return m, tea.Quit
 			}
@@ -431,7 +431,7 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 		return []key.Binding{
 			key.NewBinding(
 				key.WithKeys("o"),
-				key.WithHelp("o", "open in browser"),
+				key.WithHelp("o", "open link"),
 			),
 		}
 	}

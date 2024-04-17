@@ -15,14 +15,20 @@ See [releases](https://github.com/guyfedwards/nom/releases) for binaries. E.g.
 $ curl -L https://github.com/guyfedwards/nom/releases/download/v2.1.4/nom_2.1.4_darwin_amd64.tar.gz | tar -xzvf -
 ```
 
-## Config
-Config lives by default in `$XDG_CONFIG_HOME/nom/config.yml`
-### Feeds
-Add feeds with the `add` command 
+## Usage
 ```sh
-$ nom add <url>
+$ nom # start TUI
+$ nom list -n 20 # list feed items in $PAGER, optionally show more
+$ nom add <feed_url> 
+$ nom --feed <feed_url> # preview feed without adding to config
 ```
-or add directly to the config at `$XDG_CONFIG_HOME/nom/config.yml` on unix systems and `$HOME/Library/Application Support/nom/config.yml` on darwin.
+
+## Config
+Config lives by default in `$XDG_CONFIG_HOME/nom/config.yml` or `$HOME/Library/Application Support/nom/config.yml` on darwin.  
+You can customise the location of the config file with the `--config-path` flag.
+
+### Feeds
+Feeds are added to the config file and have a url and name.
 ```yaml
 feeds:
   - url: https://dropbox.tech/feed
@@ -30,7 +36,15 @@ feeds:
     name: dropbox 
   - url: https://snyk.io/blog/feed
 ```
-You can customise the location of the config file with the `--config-path` flag.
+You can also add feeds with the `add` command:
+```sh
+$ nom add <url>
+```
+#### Youtube feeds
+To add youtube feeds you can go to a channel and run the following in the browser console to get the rss feed link:
+```js
+console.log(`https://www.youtube.com/feeds/videos.xml?channel_id=${document.querySelector("link[rel='canonical']").href.split('/channel/').reverse()[0]}`)
+```
 
 ### Show read (default: false)
 Show read items by default. (can be toggled with M)
@@ -38,7 +52,7 @@ Show read items by default. (can be toggled with M)
 showread: true
 ```
 ### Auto read (default: false)
-Automatically mark items as read on selection or navigation through items. ()
+Automatically mark items as read on selection or navigation through items. 
 ```yaml
 autoread: true
 ```
@@ -56,16 +70,19 @@ backends:
     password: muchstrong
 ```
 
+### Openers
+By default links are opened in the browser, you can specify commands to open certain links based on a regex string.   
+`regex` can be any valid golang regex string, it will be matched against the feed item link.  
+`cmd` is run as a child command. The `%s` denotes the position of the link in the command.  
+```yaml
+openers:
+  - regex: "youtube"
+    cmd: "mpv %s"
+```
+
 ## Store
 `nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
 
-## Usage
-```sh
-$ nom # open TUI
-$ nom list -n 20 # optionally show more
-$ nom add <feed_url> 
-$ nom --feed <feed_url> # preview feed without adding to config
-```
 ## Building and Running via Docker
 Build nom image
 ```sh
