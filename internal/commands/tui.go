@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"sort"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sahilm/fuzzy"
 	"golang.org/x/term"
 
 	"github.com/guyfedwards/nom/v2/internal/store"
@@ -41,7 +45,7 @@ type TUIItem struct {
 	Favourite bool
 }
 
-func (i TUIItem) FilterValue() string { return i.Title }
+func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.FeedName, i.Title) }
 
 type itemDelegate struct{}
 
@@ -239,6 +243,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
+			if m.list.SettingFilter() {
+				break
+			}
 			i, ok := m.list.SelectedItem().(TUIItem)
 			if ok {
 				m.selectedArticle = &i.ID
@@ -383,6 +390,109 @@ func ItemToTUIItem(i store.Item) TUIItem {
 	}
 }
 
+type Filterer struct {
+	FeedNames []string
+	Title     string
+}
+
+func (f *Filterer) FilterByFeed(ranks []fuzzy.Match, targets []string) []fuzzy.Match {
+	if len(f.FeedNames) > 0 {
+		var filteredRanks []fuzzy.Match
+		for _, feedName := range f.FeedNames {
+			for _, rank := range ranks {
+				if strings.ToLower(strings.Split(targets[rank.Index], "||")[0]) == feedName {
+					filteredRanks = append(filteredRanks, rank)
+				}
+			}
+		}
+		return filteredRanks
+	}
+
+	return ranks
+}
+
+func (f *Filterer) Filter(targets []string) []fuzzy.Match {
+	// Extract titles for regular fuzzy filtering
+	targetTitles := []string{}
+	for _, target := range targets {
+		targetTitles = append(targetTitles, strings.Split(target, "||")[1])
+	}
+	ranks := fuzzy.Find(f.Title, targetTitles)
+
+	ranks = f.FilterByFeed(ranks, targets)
+
+    sort.Stable(ranks)
+
+	return ranks
+}
+
+func GenerateTagRegex(tag string) (*regexp.Regexp, *regexp.Regexp) {
+	completeReg := regexp.MustCompile(tag + `:(([^"'][^ ]+)|"([^"]+)"|'([^']+)')`)
+	incompleteReg := regexp.MustCompile(tag + `:("[^"]*|'[^']*)`)
+	return completeReg, incompleteReg
+}
+
+func (f *Filterer) ExtractFeedFilters() {
+	done := false
+	for done == false {
+		complete, incomplete := GenerateTagRegex("feed")
+		matches := complete.FindStringSubmatch(f.Title)
+
+		match := ""
+		if matches != nil {
+			f.Title = strings.Trim(strings.Replace(f.Title, matches[0], "", 1), " ")
+			// Empty strings don't work with fuzzy.Find()
+			if f.Title == "" {
+				f.Title = " "
+			}
+			// single quotes
+			if matches[4] != "" {
+				match = matches[4]
+				// double quotes
+			} else if matches[3] != "" {
+				match = matches[3]
+				// no quotes
+			} else if matches[2] != "" {
+				match = matches[2]
+			}
+		} else {
+			// fallback to regular matching without filter
+			matches := incomplete.FindStringSubmatch(f.Title)
+			if matches != nil {
+				f.Title = strings.Replace(f.Title, matches[0], " ", 1)
+			}
+			done = true
+		}
+
+		f.FeedNames = append(f.FeedNames, strings.ToLower(match))
+	}
+}
+
+func NewFilterer(term string) Filterer {
+	var filterer Filterer
+	filterer.Title = term
+
+	filterer.ExtractFeedFilters()
+
+	return filterer
+}
+
+func CustomFilter(term string, targets []string) []list.Rank {
+	filterer := NewFilterer(term)
+
+	ranks := filterer.Filter(targets)
+
+	result := make([]list.Rank, len(ranks))
+	for i, rank := range ranks {
+		result[i] = list.Rank{
+			Index:          rank.Index,
+			MatchedIndexes: rank.MatchedIndexes,
+		}
+	}
+
+	return result
+}
+
 const defaultTitle = "nom"
 
 func Render(items []list.Item, cmds Commands, errors []string) error {
@@ -402,6 +512,7 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 	// remove some extra keys from next/prev as used for other things
 	l.KeyMap.NextPage.SetKeys("right", "l", "pgdown")
 	l.KeyMap.PrevPage.SetKeys("left", "h", "pgup")
+	l.Filter = CustomFilter
 
 	l.AdditionalFullHelpKeys = func() []key.Binding {
 		return []key.Binding{

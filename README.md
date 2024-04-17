@@ -66,6 +66,14 @@ $ nom list -n 20 # optionally show more
 $ nom add <feed_url> 
 $ nom --feed <feed_url> # preview feed without adding to config
 ```
+
+## Filtering
+Within the `nom` view, you can filter by title pressing the `/` character. If you'd like to filter by feed, just type your feed name using the following formats:
+```
+feed:my_feed
+feed:"my feed - with spaces"
+```
+
 ## Building and Running via Docker
 Build nom image
 ```sh
