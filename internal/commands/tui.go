@@ -16,14 +16,16 @@ import (
 )
 
 var (
-	appStyle          = lipgloss.NewStyle().Padding(0).Margin(0)
-	titleStyle        = list.DefaultStyles().Title.Margin(1, 0, 0, 0).Width(5)
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	readStyle         = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
-	selectedReadStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	helpStyle         = list.DefaultStyles().
+	appStyle               = lipgloss.NewStyle().Padding(0).Margin(0)
+	titleStyle             = list.DefaultStyles().Title.Margin(1, 0, 0, 0).Width(5)
+	itemStyle              = lipgloss.NewStyle().PaddingLeft(4)
+	selectedItemStyle      = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	readStyle              = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
+	selectedReadStyle      = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	favouriteStyle         = itemStyle.Copy().PaddingLeft(2).Bold(true)
+	selectedFavouriteStyle = selectedItemStyle.Copy().Bold(true)
+	paginationStyle        = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
+	helpStyle              = list.DefaultStyles().
 				HelpStyle.
 				PaddingLeft(4).
 				PaddingBottom(1).
@@ -31,11 +33,12 @@ var (
 )
 
 type TUIItem struct {
-	ID       int
-	Title    string
-	FeedName string
-	URL      string
-	Read     bool
+	ID        int
+	Title     string
+	FeedName  string
+	URL       string
+	Read      bool
+	Favourite bool
 }
 
 func (i TUIItem) FilterValue() string { return i.Title }
@@ -64,10 +67,19 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		fn = readStyle.Render
 	}
 
+	if i.Favourite {
+		fn = func(s string) string {
+			return favouriteStyle.Render("* " + s)
+		}
+	}
+
 	if index == m.Index() {
 		fn = func(s string) string {
 			if i.Read {
 				return selectedReadStyle.Render("> " + s)
+			}
+			if i.Favourite {
+				return selectedFavouriteStyle.Render("* " + s)
 			}
 			return selectedItemStyle.Render("> " + s)
 		}
@@ -184,6 +196,36 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.commands.config.ToggleShowRead()
+			m.UpdateList()
+
+		case "f":
+			if m.list.SettingFilter() {
+				break
+			}
+
+			if len(m.list.Items()) == 0 {
+				return m, m.list.NewStatusMessage("No items to favourite.")
+			}
+
+			current := m.list.SelectedItem().(TUIItem)
+			err := m.commands.store.ToggleFavourite(current.ID)
+			if err != nil {
+				return m, tea.Quit
+			}
+			m.UpdateList()
+
+		case "F":
+			if m.list.SettingFilter() {
+				break
+			}
+
+			if m.commands.config.ShowFavourites {
+				m.list.NewStatusMessage("")
+			} else {
+				m.list.NewStatusMessage("favourites")
+			}
+
+			m.commands.config.ToggleShowFavourites()
 			m.UpdateList()
 
 		case "o":
@@ -332,13 +374,16 @@ func (m model) viewportHelp() string {
 
 func ItemToTUIItem(i store.Item) TUIItem {
 	return TUIItem{
-		ID:       i.ID,
-		FeedName: i.FeedName,
-		Title:    i.Title,
-		URL:      i.Link,
-		Read:     i.Read(),
+		ID:        i.ID,
+		FeedName:  i.FeedName,
+		Title:     i.Title,
+		URL:       i.Link,
+		Read:      i.Read(),
+		Favourite: i.Favourite,
 	}
 }
+
+const defaultTitle = "nom"
 
 func Render(items []list.Item, cmds Commands, errors []string) error {
 	const defaultWidth = 20
@@ -350,10 +395,14 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 
 	l := list.New(items, itemDelegate{}, defaultWidth, height)
 	l.SetShowStatusBar(false)
-	l.Title = "nom"
+	l.Title = defaultTitle
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
+	// remove some extra keys from next/prev as used for other things
+	l.KeyMap.NextPage.SetKeys("right", "l", "pgdown")
+	l.KeyMap.PrevPage.SetKeys("left", "h", "pgup")
+
 	l.AdditionalFullHelpKeys = func() []key.Binding {
 		return []key.Binding{
 			key.NewBinding(
@@ -363,6 +412,14 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 			key.NewBinding(
 				key.WithKeys("M"),
 				key.WithHelp("M", "show/hide read"),
+			),
+			key.NewBinding(
+				key.WithKeys("f"),
+				key.WithHelp("f", "toggle favourite"),
+			),
+			key.NewBinding(
+				key.WithKeys("F"),
+				key.WithHelp("F", "show/hide all favourites"),
 			),
 			key.NewBinding(
 				key.WithKeys("r"),
