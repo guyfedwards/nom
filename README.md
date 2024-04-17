@@ -40,6 +40,11 @@ You can also add feeds with the `add` command:
 ```sh
 $ nom add <url>
 ```
+#### Youtube feeds
+To add youtube feeds you can go to a channel and run the following in the browser console to get the rss feed link:
+```js
+console.log(`https://www.youtube.com/feeds/videos.xml?channel_id=${document.querySelector("link[rel='canonical']").href.split('/channel/').reverse()[0]}`)
+```
 
 ### Show read (default: false)
 Show read items by default. (can be toggled with M)

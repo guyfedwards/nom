@@ -36,6 +36,7 @@ type Opener struct {
 	Cmd   string `yaml:"cmd"`
 }
 
+// need to add to Load() below if loading from config file
 type Config struct {
 	configPath string
 	ConfigDir  string `yaml:"-"`
