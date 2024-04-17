@@ -38,6 +38,27 @@ func convertItems(its []store.Item) []list.Item {
 	return items
 }
 
+func (c Commands) OpenLink(url string) error {
+	for _, o := range c.config.Openers {
+		match, err := regexp.MatchString(o.Regex, url)
+		if err != nil {
+			return fmt.Errorf("OpenLink: regex: %w", err)
+		}
+
+		if match {
+			c := fmt.Sprintf(o.Cmd, url)
+			parts := strings.Fields(c)
+
+			cmd := exec.Command(parts[0], parts[1:]...)
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("OpenLink: exec: %w", err)
+			}
+		}
+	}
+
+	return c.OpenInBrowser(url)
+}
+
 func (c Commands) OpenInBrowser(url string) error {
 	var cmd string
 	var args []string

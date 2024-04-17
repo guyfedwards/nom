@@ -31,6 +31,11 @@ type Backends struct {
 	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
 }
 
+type Opener struct {
+	Regex string `yaml:"regex"`
+	Cmd   string `yaml:"cmd"`
+}
+
 type Config struct {
 	configPath string
 	ConfigDir  string `yaml:"-"`
@@ -42,6 +47,7 @@ type Config struct {
 	ShowRead       bool      `yaml:"showread,omitempty"`
 	AutoRead       bool      `yaml:"autoread,omitempty"`
 	ShowFavourites bool
+	Openers        []Opener `yaml:"openers,omitempty"`
 }
 
 func (c *Config) ToggleShowRead() {
@@ -110,6 +116,7 @@ func (c *Config) Load() error {
 	c.AutoRead = fileConfig.AutoRead
 
 	c.Feeds = fileConfig.Feeds
+	c.Openers = fileConfig.Openers
 	// only set pager if it's not defined already, config file is lower
 	// precidence than flags/env that can be passed to New
 	if c.Pager == "" {
