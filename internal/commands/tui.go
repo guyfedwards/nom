@@ -45,7 +45,7 @@ type TUIItem struct {
 	Favourite bool
 }
 
-func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.FeedName, i.Title) }
+func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
 
 type itemDelegate struct{}
 
@@ -390,17 +390,22 @@ func ItemToTUIItem(i store.Item) TUIItem {
 	}
 }
 
+// Struct to aid in filtering items into ranks for BubbleTea
 type Filterer struct {
 	FeedNames []string
-	Title     string
+	Term      struct {
+		Title     string
+		FeedNames []string
+	}
 }
 
-func (f *Filterer) FilterByFeed(ranks []fuzzy.Match, targets []string) []fuzzy.Match {
-	if len(f.FeedNames) > 0 {
+// Filters by specific filterValue/s on the Filterer.Term
+func (f *Filterer) FilterBy(filterValues []string, targetFilterValues []string, ranks []fuzzy.Match) []fuzzy.Match {
+	if filterValues != nil && len(filterValues) > 0 {
 		var filteredRanks []fuzzy.Match
-		for _, feedName := range f.FeedNames {
+		for _, filterValue := range filterValues {
 			for _, rank := range ranks {
-				if strings.ToLower(strings.Split(targets[rank.Index], "||")[0]) == feedName {
+				if strings.ToLower(targetFilterValues[rank.Index]) == filterValue {
 					filteredRanks = append(filteredRanks, rank)
 				}
 			}
@@ -411,40 +416,30 @@ func (f *Filterer) FilterByFeed(ranks []fuzzy.Match, targets []string) []fuzzy.M
 	return ranks
 }
 
-func (f *Filterer) Filter(targets []string) []fuzzy.Match {
-	// Extract titles for regular fuzzy filtering
-	targetTitles := []string{}
-	for _, target := range targets {
-		targetTitles = append(targetTitles, strings.Split(target, "||")[1])
-	}
-	ranks := fuzzy.Find(f.Title, targetTitles)
+// Breaks what's returned from TUIItem.FilterValue() into a TUIItem.
+func (f *Filterer) GetItem(filterValue string) TUIItem {
+	var i TUIItem
 
-	ranks = f.FilterByFeed(ranks, targets)
+	splits := strings.Split(filterValue, "||")
 
-    sort.Stable(ranks)
+	i.Title = splits[0]
+	i.FeedName = strings.ToLower(splits[1])
 
-	return ranks
+	return i
 }
 
-func GenerateTagRegex(tag string) (*regexp.Regexp, *regexp.Regexp) {
-	completeReg := regexp.MustCompile(tag + `:(([^"'][^ ]+)|"([^"]+)"|'([^']+)')`)
-	incompleteReg := regexp.MustCompile(tag + `:("[^"]*|'[^']*)`)
-	return completeReg, incompleteReg
-}
-
-func (f *Filterer) ExtractFeedFilters() {
+// Extracts `tag:.*` from the stored f.Term.Title
+func (f *Filterer) ExtractFiltersFor(tag string) []string {
+	var tags []string
 	done := false
 	for done == false {
-		complete, incomplete := GenerateTagRegex("feed")
-		matches := complete.FindStringSubmatch(f.Title)
+		complete := regexp.MustCompile(tag + `:(([^"'][^ ]+)|"([^"]+)"|'([^']+)')`)
+		incomplete := regexp.MustCompile(tag + `:("[^"]*|'[^']*)`)
+
+		matches := complete.FindStringSubmatch(f.Term.Title)
 
 		match := ""
 		if matches != nil {
-			f.Title = strings.Trim(strings.Replace(f.Title, matches[0], "", 1), " ")
-			// Empty strings don't work with fuzzy.Find()
-			if f.Title == "" {
-				f.Title = " "
-			}
 			// single quotes
 			if matches[4] != "" {
 				match = matches[4]
@@ -455,26 +450,54 @@ func (f *Filterer) ExtractFeedFilters() {
 			} else if matches[2] != "" {
 				match = matches[2]
 			}
+			f.Term.Title = strings.Replace(f.Term.Title, matches[0], "", 1)
 		} else {
 			// fallback to regular matching without filter
-			matches := incomplete.FindStringSubmatch(f.Title)
+			matches = incomplete.FindStringSubmatch(f.Term.Title)
 			if matches != nil {
-				f.Title = strings.Replace(f.Title, matches[0], " ", 1)
+				f.Term.Title = strings.Replace(f.Term.Title, matches[0], "", 1)
 			}
 			done = true
 		}
 
-		f.FeedNames = append(f.FeedNames, strings.ToLower(match))
+        if match != "" {
+            tags = append(tags, strings.ToLower(match))
+        }
 	}
+	if f.Term.Title == "" {
+		f.Term.Title = " "
+	}
+
+	return tags
+}
+
+// Runs all filters
+func (f *Filterer) Filter(targets []string) []fuzzy.Match {
+	var targetTitles []string
+	var targetFeedNames []string
+
+	for _, target := range targets {
+		i := f.GetItem(target)
+		targetTitles = append(targetTitles, i.Title)
+		targetFeedNames = append(targetFeedNames, i.FeedName)
+	}
+
+	ranks := fuzzy.Find(f.Term.Title, targetTitles)
+
+	ranks = f.FilterBy(f.FeedNames, targetFeedNames, ranks)
+
+	sort.Stable(ranks)
+
+	return ranks
 }
 
 func NewFilterer(term string) Filterer {
-	var filterer Filterer
-	filterer.Title = term
+	var f Filterer
 
-	filterer.ExtractFeedFilters()
+    f.Term.Title = term
+	f.FeedNames = f.ExtractFiltersFor("feed")
 
-	return filterer
+	return f
 }
 
 func CustomFilter(term string, targets []string) []list.Rank {
