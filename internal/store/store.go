@@ -15,6 +15,7 @@ type Item struct {
 	ID          int
 	Author      string
 	Title       string
+	Favourite   bool
 	FeedURL     string
 	FeedName    string // added from config if set
 	Link        string
@@ -34,7 +35,8 @@ type Store interface {
 	GetAllItems() ([]Item, error)
 	GetAllFeedURLs() ([]string, error)
 	ToggleRead(ID int) error
-	DeleteByFeedURL(feedurl string) error
+	ToggleFavourite(ID int) error
+	DeleteByFeedURL(feedurl string, incFavourites bool) error
 }
 
 type SQLiteStore struct {
@@ -79,6 +81,7 @@ func dbSetup(db *sql.DB) error {
 		return fmt.Errorf("dbSetup: %w", err)
 	}
 
+	// See migrations below for additions
 	stm := `
 		create table items (id integer primary key, feedurl text, link text, title text, content text, author text, readat datetime, publishedat datetime, updatedat datetime, createdat datetime);
 		create table migrations (id integer not null, runat datetime);
@@ -100,7 +103,10 @@ func dbSetup(db *sql.DB) error {
 func runMigrations(db *sql.DB) (err error) {
 	getCurrent := `select count(*) from migrations;`
 
-	migrations := []string{}
+	// Index based so all new migrations must go at the end of the array
+	migrations := []string{
+		`alter table items add favourite boolean not null default 0;`,
+	}
 
 	tx, _ := db.Begin()
 	updateMigrations, _ := tx.Prepare(`insert into migrations (id, runat) values (?, ?);`)
@@ -178,7 +184,7 @@ func (sls SQLiteStore) UpsertItem(item Item) error {
 // TODO: pagination
 func (sls SQLiteStore) GetAllItems() ([]Item, error) {
 	stmt := `
-		select id, feedurl, link, title, content, author, readat, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat);
+		select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat);
 	`
 
 	rows, err := sls.db.Query(stmt)
@@ -194,7 +200,7 @@ func (sls SQLiteStore) GetAllItems() ([]Item, error) {
 		var publishedAtNull sql.NullTime
 		var linkNull sql.NullString
 
-		if err := rows.Scan(&item.ID, &item.FeedURL, &linkNull, &item.Title, &item.Content, &item.Author, &readAtNull, &publishedAtNull, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.FeedURL, &linkNull, &item.Title, &item.Content, &item.Author, &readAtNull, &item.Favourite, &publishedAtNull, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			fmt.Println("errrerre: ", err)
 			continue
 		}
@@ -215,6 +221,17 @@ func (sls SQLiteStore) ToggleRead(ID int) error {
 	_, err := stmt.Exec(time.Now(), ID)
 	if err != nil {
 		return fmt.Errorf("[store.go] ToggleRead: %w", err)
+	}
+
+	return nil
+}
+
+func (sls SQLiteStore) ToggleFavourite(ID int) error {
+	stmt, _ := sls.db.Prepare(`update items set favourite = case when favourite is true then false else true end where id = ?`)
+
+	_, err := stmt.Exec(ID)
+	if err != nil {
+		return fmt.Errorf("[store.go] ToggleFavourite: %w", err)
 	}
 
 	return nil
@@ -244,8 +261,14 @@ func (sls SQLiteStore) GetAllFeedURLs() ([]string, error) {
 	return urls, nil
 }
 
-func (sls SQLiteStore) DeleteByFeedURL(feedurl string) error {
-	stmt, _ := sls.db.Prepare(`delete from items where feedurl = ?`)
+func (sls SQLiteStore) DeleteByFeedURL(feedurl string, incFavourites bool) error {
+
+	var stmt *sql.Stmt
+	if incFavourites {
+		stmt, _ = sls.db.Prepare(`delete from items where feedurl = ?;`)
+	} else {
+		stmt, _ = sls.db.Prepare(`delete from items where feedurl = ? and favourite = false;`)
+	}
 
 	_, err := stmt.Exec(feedurl)
 	if err != nil {

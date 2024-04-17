@@ -109,7 +109,7 @@ func (c Commands) CleanFeeds() error {
 	}
 
 	for _, url := range urlsToRemove {
-		err := c.store.DeleteByFeedURL(url)
+		err := c.store.DeleteByFeedURL(url, false)
 		if err != nil {
 			return fmt.Errorf("[commands.go]: %w", err)
 		}
@@ -279,6 +279,10 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 	// filter out read and add feedname
 	var items []store.Item
 	for i := range is {
+		if c.config.ShowFavourites && !is[i].Favourite {
+			continue
+		}
+
 		if !c.config.ShowRead && is[i].Read() {
 			continue
 		}

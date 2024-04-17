@@ -37,14 +37,19 @@ type Config struct {
 	Pager      string `yaml:"pager,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds []Feed    `yaml:"previewfeeds,omitempty"`
-	Backends     *Backends `yaml:"backends,omitempty"`
-	ShowRead     bool      `yaml:"showread,omitempty"`
-	AutoRead     bool      `yaml:"autoread,omitempty"`
+	PreviewFeeds   []Feed    `yaml:"previewfeeds,omitempty"`
+	Backends       *Backends `yaml:"backends,omitempty"`
+	ShowRead       bool      `yaml:"showread,omitempty"`
+	AutoRead       bool      `yaml:"autoread,omitempty"`
+	ShowFavourites bool
 }
 
 func (c *Config) ToggleShowRead() {
 	c.ShowRead = !c.ShowRead
+}
+
+func (c *Config) ToggleShowFavourites() {
+	c.ShowFavourites = !c.ShowFavourites
 }
 
 func New(configPath string, pager string, previewFeeds []string) (Config, error) {
