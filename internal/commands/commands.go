@@ -38,6 +38,27 @@ func convertItems(its []store.Item) []list.Item {
 	return items
 }
 
+func (c Commands) OpenLink(url string) error {
+	for _, o := range c.config.Openers {
+		match, err := regexp.MatchString(o.Regex, url)
+		if err != nil {
+			return fmt.Errorf("OpenLink: regex: %w", err)
+		}
+
+		if match {
+			c := fmt.Sprintf(o.Cmd, url)
+			parts := strings.Fields(c)
+
+			cmd := exec.Command(parts[0], parts[1:]...)
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("OpenLink: exec: %w", err)
+			}
+		}
+	}
+
+	return c.OpenInBrowser(url)
+}
+
 func (c Commands) OpenInBrowser(url string) error {
 	var cmd string
 	var args []string
@@ -109,7 +130,7 @@ func (c Commands) CleanFeeds() error {
 	}
 
 	for _, url := range urlsToRemove {
-		err := c.store.DeleteByFeedURL(url)
+		err := c.store.DeleteByFeedURL(url, false)
 		if err != nil {
 			return fmt.Errorf("[commands.go]: %w", err)
 		}
@@ -279,6 +300,10 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 	// filter out read and add feedname
 	var items []store.Item
 	for i := range is {
+		if c.config.ShowFavourites && !is[i].Favourite {
+			continue
+		}
+
 		if !c.config.ShowRead && is[i].Read() {
 			continue
 		}

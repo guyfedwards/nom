@@ -31,20 +31,32 @@ type Backends struct {
 	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
 }
 
+type Opener struct {
+	Regex string `yaml:"regex"`
+	Cmd   string `yaml:"cmd"`
+}
+
+// need to add to Load() below if loading from config file
 type Config struct {
 	configPath string
 	ConfigDir  string `yaml:"-"`
 	Pager      string `yaml:"pager,omitempty"`
 	Feeds      []Feed `yaml:"feeds"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds []Feed    `yaml:"previewfeeds,omitempty"`
-	Backends     *Backends `yaml:"backends,omitempty"`
-	ShowRead     bool      `yaml:"showread,omitempty"`
-	AutoRead     bool      `yaml:"autoread,omitempty"`
+	PreviewFeeds   []Feed    `yaml:"previewfeeds,omitempty"`
+	Backends       *Backends `yaml:"backends,omitempty"`
+	ShowRead       bool      `yaml:"showread,omitempty"`
+	AutoRead       bool      `yaml:"autoread,omitempty"`
+	ShowFavourites bool
+	Openers        []Opener `yaml:"openers,omitempty"`
 }
 
 func (c *Config) ToggleShowRead() {
 	c.ShowRead = !c.ShowRead
+}
+
+func (c *Config) ToggleShowFavourites() {
+	c.ShowFavourites = !c.ShowFavourites
 }
 
 func New(configPath string, pager string, previewFeeds []string) (Config, error) {
@@ -105,6 +117,7 @@ func (c *Config) Load() error {
 	c.AutoRead = fileConfig.AutoRead
 
 	c.Feeds = fileConfig.Feeds
+	c.Openers = fileConfig.Openers
 	// only set pager if it's not defined already, config file is lower
 	// precidence than flags/env that can be passed to New
 	if c.Pager == "" {
