@@ -112,3 +112,6 @@ You can use the `backends-compose.yml` to spin up a local instance of miniflux a
 ```sh
 $ docker-compose -f backends-compose.yml up
 ```
+
+### Debug logging
+You can enable logging to a file using the `DEBUGNOM` env var. Passing any path will cause `log` calls to write there e.g. `DEBUGNOM=debug.log`
