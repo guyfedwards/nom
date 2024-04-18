@@ -68,11 +68,13 @@ $ nom --feed <feed_url> # preview feed without adding to config
 ```
 
 ## Filtering
-Within the `nom` view, you can filter by title pressing the `/` character. If you'd like to filter by feed, just type your feed name using the following formats:
-```
-feed:my_feed
-feed:"my feed - with spaces"
-```
+Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
+- `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
+- `feedname:"my feed - with spaces"` - matches `my feed - with spaces`
+- `feed:'my feed, with single quotes!'` - matches `my feed, with single quotes!`
+- `feed:my\ feed\ with\ escaped\ spaces!` - matches `my feed with escaped spaces!`
+
+More filters to be added soon!
 
 ## Building and Running via Docker
 Build nom image

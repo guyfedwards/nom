@@ -366,6 +366,8 @@ func (m model) View() string {
 func listView(m model) string {
 	if len(m.errors) > 0 {
 		m.list.NewStatusMessage(m.errors[0])
+	} else if m.list.IsFiltered() {
+		m.list.NewStatusMessage("filtering: " + m.list.FilterInput.Value())
 	}
 
 	return "\n" + m.list.View()
@@ -429,26 +431,33 @@ func (f *Filterer) GetItem(filterValue string) TUIItem {
 }
 
 // Extracts `tag:.*` from the stored f.Term.Title
-func (f *Filterer) ExtractFiltersFor(tag string) []string {
-	var tags []string
+func (f *Filterer) ExtractFiltersFor(tags ...string) []string {
+	var extractedTags []string
 	done := false
 	for done == false {
-		complete := regexp.MustCompile(tag + `:(([^"'][^ ]+)|"([^"]+)"|'([^']+)')`)
-		incomplete := regexp.MustCompile(tag + `:("[^"]*|'[^']*)`)
+		// `complete` matches 3 potential capture groups after tags, in which
+		// `[^"]` matches a character that isn't a `"`, `[^']` that isn't a `'`,
+		// etc. If it's no quotes, you can also do `feed:with\ spaces`
+		// `incomplete` matches unfinished quoted tags and removes them from the
+		// search. The order of the capture groups MATTERS.
+		// In both examples, the %s section matches all potential tag aliases
+		// passed in for one tag.
+		complete := regexp.MustCompile(fmt.Sprintf(`(%s):("([^"]+)"|'([^']+)'|(([^\\ ]|\\ )+))`, strings.Join(tags, "|")))
+		incomplete := regexp.MustCompile(fmt.Sprintf(`(%s):("[^"]*|'[^']*)`, strings.Join(tags, "|")))
 
 		matches := complete.FindStringSubmatch(f.Term.Title)
 
 		match := ""
 		if matches != nil {
-			// single quotes
-			if matches[4] != "" {
-				match = matches[4]
-				// double quotes
-			} else if matches[3] != "" {
+			// double quotes
+			if matches[3] != "" {
 				match = matches[3]
+				// single quotes
+			} else if matches[4] != "" {
+				match = matches[4]
 				// no quotes
-			} else if matches[2] != "" {
-				match = matches[2]
+			} else if matches[5] != "" {
+				match = strings.ReplaceAll(matches[5], `\ `, " ")
 			}
 			f.Term.Title = strings.Replace(f.Term.Title, matches[0], "", 1)
 		} else {
@@ -460,15 +469,15 @@ func (f *Filterer) ExtractFiltersFor(tag string) []string {
 			done = true
 		}
 
-        if match != "" {
-            tags = append(tags, strings.ToLower(match))
-        }
+		if match != "" {
+			extractedTags = append(extractedTags, strings.ToLower(match))
+		}
 	}
 	if f.Term.Title == "" {
 		f.Term.Title = " "
 	}
 
-	return tags
+	return extractedTags
 }
 
 // Runs all filters
@@ -494,8 +503,8 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 func NewFilterer(term string) Filterer {
 	var f Filterer
 
-    f.Term.Title = term
-	f.FeedNames = f.ExtractFiltersFor("feed")
+	f.Term.Title = term
+	f.FeedNames = f.ExtractFiltersFor("feedname", "feed", "f")
 
 	return f
 }
