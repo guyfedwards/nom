@@ -404,6 +404,8 @@ func glamouriseItem(item store.Item) (string, error) {
 		mdown += item.PublishedAt.String()
 	}
 	mdown += "\n\n"
+	mdown += item.Link
+	mdown += "\n\n"
 	mdown += htmlToMd(item.Content)
 
 	out, err := glamour.Render(mdown, "dark")

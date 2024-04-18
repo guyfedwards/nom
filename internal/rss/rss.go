@@ -65,7 +65,7 @@ func feedToRSS(f config.Feed, feed *gofeed.Feed) RSS {
 		if it.Content == "" {
 			// If there's no content (as is the case for YouTube RSS items), fallback
 			// to the link.
-			ni.Content = it.Link
+			ni.Content = it.Description
 		} else {
 			ni.Content = it.Content
 		}
