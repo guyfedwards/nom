@@ -20,8 +20,8 @@ import (
 )
 
 var (
-	appStyle               = lipgloss.NewStyle().Padding(0).Margin(0)
-	titleStyle             = list.DefaultStyles().Title.Margin(1, 0, 0, 0).Width(5)
+	appStyle               = lipgloss.NewStyle().Padding(1, 0, 0, 0).Margin(0)
+	titleStyle             = list.DefaultStyles().Title.Margin(0).Width(5)
 	itemStyle              = lipgloss.NewStyle().PaddingLeft(4)
 	selectedItemStyle      = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
 	readStyle              = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
