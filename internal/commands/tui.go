@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"sort"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sahilm/fuzzy"
 	"golang.org/x/term"
 
 	"github.com/guyfedwards/nom/v2/internal/store"
@@ -41,7 +45,7 @@ type TUIItem struct {
 	Favourite bool
 }
 
-func (i TUIItem) FilterValue() string { return i.Title }
+func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
 
 type itemDelegate struct{}
 
@@ -239,6 +243,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
+			if m.list.SettingFilter() {
+				break
+			}
 			i, ok := m.list.SelectedItem().(TUIItem)
 			if ok {
 				m.selectedArticle = &i.ID
@@ -359,6 +366,8 @@ func (m model) View() string {
 func listView(m model) string {
 	if len(m.errors) > 0 {
 		m.list.NewStatusMessage(m.errors[0])
+	} else if m.list.IsFiltered() {
+		m.list.NewStatusMessage("filtering: " + m.list.FilterInput.Value())
 	}
 
 	return "\n" + m.list.View()
@@ -383,6 +392,139 @@ func ItemToTUIItem(i store.Item) TUIItem {
 	}
 }
 
+// Struct to aid in filtering items into ranks for BubbleTea
+type Filterer struct {
+	FeedNames []string
+	Term      struct {
+		Title     string
+		FeedNames []string
+	}
+}
+
+// Filters by specific filterValue/s on the Filterer.Term
+func (f *Filterer) FilterBy(filterValues []string, targetFilterValues []string, ranks []fuzzy.Match) []fuzzy.Match {
+	if filterValues != nil && len(filterValues) > 0 {
+		var filteredRanks []fuzzy.Match
+		for _, filterValue := range filterValues {
+			for _, rank := range ranks {
+				if strings.ToLower(targetFilterValues[rank.Index]) == filterValue {
+					filteredRanks = append(filteredRanks, rank)
+				}
+			}
+		}
+		return filteredRanks
+	}
+
+	return ranks
+}
+
+// Breaks what's returned from TUIItem.FilterValue() into a TUIItem.
+func (f *Filterer) GetItem(filterValue string) TUIItem {
+	var i TUIItem
+
+	splits := strings.Split(filterValue, "||")
+
+	i.Title = splits[0]
+	i.FeedName = strings.ToLower(splits[1])
+
+	return i
+}
+
+// Extracts `tag:.*` from the stored f.Term.Title
+func (f *Filterer) ExtractFiltersFor(tags ...string) []string {
+	var extractedTags []string
+	done := false
+	for done == false {
+		// `complete` matches 3 potential capture groups after tags, in which
+		// `[^"]` matches a character that isn't a `"`, `[^']` that isn't a `'`,
+		// etc. If it's no quotes, you can also do `feed:with\ spaces`
+		// `incomplete` matches unfinished quoted tags and removes them from the
+		// search. The order of the capture groups MATTERS.
+		// In both examples, the %s section matches all potential tag aliases
+		// passed in for one tag.
+		complete := regexp.MustCompile(fmt.Sprintf(`(%s):("([^"]+)"|'([^']+)'|(([^\\ ]|\\ )+))`, strings.Join(tags, "|")))
+		incomplete := regexp.MustCompile(fmt.Sprintf(`(%s):("[^"]*|'[^']*)`, strings.Join(tags, "|")))
+
+		matches := complete.FindStringSubmatch(f.Term.Title)
+
+		match := ""
+		if matches != nil {
+			// double quotes
+			if matches[3] != "" {
+				match = matches[3]
+				// single quotes
+			} else if matches[4] != "" {
+				match = matches[4]
+				// no quotes
+			} else if matches[5] != "" {
+				match = strings.ReplaceAll(matches[5], `\ `, " ")
+			}
+			f.Term.Title = strings.Replace(f.Term.Title, matches[0], "", 1)
+		} else {
+			// fallback to regular matching without filter
+			matches = incomplete.FindStringSubmatch(f.Term.Title)
+			if matches != nil {
+				f.Term.Title = strings.Replace(f.Term.Title, matches[0], "", 1)
+			}
+			done = true
+		}
+
+		if match != "" {
+			extractedTags = append(extractedTags, strings.ToLower(match))
+		}
+	}
+	if f.Term.Title == "" {
+		f.Term.Title = " "
+	}
+
+	return extractedTags
+}
+
+// Runs all filters
+func (f *Filterer) Filter(targets []string) []fuzzy.Match {
+	var targetTitles []string
+	var targetFeedNames []string
+
+	for _, target := range targets {
+		i := f.GetItem(target)
+		targetTitles = append(targetTitles, i.Title)
+		targetFeedNames = append(targetFeedNames, i.FeedName)
+	}
+
+	ranks := fuzzy.Find(f.Term.Title, targetTitles)
+
+	ranks = f.FilterBy(f.FeedNames, targetFeedNames, ranks)
+
+	sort.Stable(ranks)
+
+	return ranks
+}
+
+func NewFilterer(term string) Filterer {
+	var f Filterer
+
+	f.Term.Title = term
+	f.FeedNames = f.ExtractFiltersFor("feedname", "feed", "f")
+
+	return f
+}
+
+func CustomFilter(term string, targets []string) []list.Rank {
+	filterer := NewFilterer(term)
+
+	ranks := filterer.Filter(targets)
+
+	result := make([]list.Rank, len(ranks))
+	for i, rank := range ranks {
+		result[i] = list.Rank{
+			Index:          rank.Index,
+			MatchedIndexes: rank.MatchedIndexes,
+		}
+	}
+
+	return result
+}
+
 const defaultTitle = "nom"
 
 func Render(items []list.Item, cmds Commands, errors []string) error {
@@ -402,6 +544,7 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 	// remove some extra keys from next/prev as used for other things
 	l.KeyMap.NextPage.SetKeys("right", "l", "pgdown")
 	l.KeyMap.PrevPage.SetKeys("left", "h", "pgup")
+	l.Filter = CustomFilter
 
 	l.AdditionalFullHelpKeys = func() []key.Binding {
 		return []key.Binding{

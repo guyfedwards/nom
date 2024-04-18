@@ -83,6 +83,15 @@ openers:
 ## Store
 `nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
 
+## Filtering
+Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
+- `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
+- `feedname:"my feed - with spaces"` - matches `my feed - with spaces`
+- `feed:'my feed, with single quotes!'` - matches `my feed, with single quotes!`
+- `feed:my\ feed\ with\ escaped\ spaces!` - matches `my feed with escaped spaces!`
+
+More filters to be added soon!
+
 ## Building and Running via Docker
 Build nom image
 ```sh
