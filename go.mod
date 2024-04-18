@@ -11,6 +11,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/mmcdole/gofeed v1.1.3
+	github.com/sahilm/fuzzy v0.1.0
 	golang.org/x/term v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	miniflux.app v0.0.0-20230118040013-65febebd40b2
@@ -41,7 +42,6 @@ require (
 	github.com/muesli/termenv v0.13.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/sahilm/fuzzy v0.1.0 // indirect
 	github.com/yuin/goldmark v1.5.3 // indirect
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
 	golang.org/x/net v0.5.0 // indirect
