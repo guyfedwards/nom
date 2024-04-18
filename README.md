@@ -59,14 +59,6 @@ backends:
 ## Store
 `nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
 
-## Usage
-```sh
-$ nom # open TUI
-$ nom list -n 20 # optionally show more
-$ nom add <feed_url> 
-$ nom --feed <feed_url> # preview feed without adding to config
-```
-
 ## Filtering
 Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
 - `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
