@@ -12,6 +12,7 @@ import (
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
@@ -140,6 +141,16 @@ func (c Commands) CleanFeeds() error {
 }
 
 func (c Commands) TUI() error {
+	debug := os.Getenv("DEBUGNOM")
+	if debug != "" {
+		f, err := tea.LogToFile(debug, "debug")
+		if err != nil {
+			fmt.Println("fatal:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
+	}
+
 	err := c.CleanFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
