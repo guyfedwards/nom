@@ -72,20 +72,20 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	if i.Favourite {
-		fn = func(s string) string {
-			return favouriteStyle.Render("* " + s)
+		fn = func(s ...string) string {
+			return favouriteStyle.Render("* " + strings.Join(s, " "))
 		}
 	}
 
 	if index == m.Index() {
-		fn = func(s string) string {
+		fn = func(s ...string) string {
 			if i.Read {
-				return selectedReadStyle.Render("> " + s)
+				return selectedReadStyle.Render("> " + strings.Join(s, " "))
 			}
 			if i.Favourite {
-				return selectedFavouriteStyle.Render("* " + s)
+				return selectedFavouriteStyle.Render("* " + strings.Join(s, " "))
 			}
-			return selectedItemStyle.Render("> " + s)
+			return selectedItemStyle.Render("> " + strings.Join(s, " "))
 		}
 	}
 
