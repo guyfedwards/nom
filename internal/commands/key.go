@@ -16,6 +16,7 @@ type ListKeyMapT struct {
 	Refresh               key.Binding
 	OpenInBrowser         key.Binding
 	oQuit                 key.Binding
+	oForceQuit            key.Binding
 	oClearFilter          key.Binding
 	oCancelWhileFiltering key.Binding
 	oNextPage             key.Binding
@@ -67,6 +68,10 @@ var ListKeyMap = ListKeyMapT{
 	),
 	// o for override
 	oQuit: key.NewBinding(
+		key.WithKeys("q", "esc"),
+		key.WithHelp("q/esc", "quit"),
+	),
+	oForceQuit: key.NewBinding(
 		key.WithKeys("ctrl+c"),
 		key.WithHelp("ctrl+c", "quit"),
 	),
@@ -124,7 +129,7 @@ var ViewportKeyMap = ViewportKeyMapT{
 	),
 	CloseFullHelp: key.NewBinding(
 		key.WithKeys("?"),
-		key.WithHelp("?", "less"),
+		key.WithHelp("?", "close help"),
 	),
 }
 
@@ -163,9 +168,16 @@ func (k ListKeyMapT) ShortHelp() []key.Binding {
 func (k ListKeyMapT) SetOverrides(l *list.Model) {
 	l.AdditionalFullHelpKeys = ListKeyMap.FullHelp
 	l.AdditionalShortHelpKeys = ListKeyMap.ShortHelp
-	l.KeyMap.Quit = k.oQuit
-	l.KeyMap.ClearFilter = k.oClearFilter
-	l.KeyMap.CancelWhileFiltering = k.oCancelWhileFiltering
-	l.KeyMap.NextPage = k.oNextPage
-	l.KeyMap.PrevPage = k.oPrevPage
+	l.KeyMap.Quit.SetKeys(k.oQuit.Keys()...)
+	l.KeyMap.Quit.SetHelp(k.oQuit.Help().Key, k.oQuit.Help().Desc)
+	l.KeyMap.ForceQuit.SetKeys(k.oForceQuit.Keys()...)
+	l.KeyMap.ForceQuit.SetHelp(k.oForceQuit.Help().Key, k.oForceQuit.Help().Desc)
+	l.KeyMap.ClearFilter.SetKeys(k.oClearFilter.Keys()...)
+	l.KeyMap.ClearFilter.SetHelp(k.oClearFilter.Help().Key, k.oClearFilter.Help().Desc)
+	l.KeyMap.CancelWhileFiltering.SetKeys(k.oCancelWhileFiltering.Keys()...)
+    l.KeyMap.CancelWhileFiltering.SetHelp(k.oCancelWhileFiltering.Help().Key, k.oCancelWhileFiltering.Help().Desc)
+	l.KeyMap.NextPage.SetKeys(k.oNextPage.Keys()...)
+	l.KeyMap.NextPage.SetHelp(k.oNextPage.Help().Key, k.oNextPage.Help().Desc)
+	l.KeyMap.PrevPage.SetKeys(k.oPrevPage.Keys()...)
+	l.KeyMap.PrevPage.SetHelp(k.oPrevPage.Help().Key, k.oPrevPage.Help().Desc)
 }
