@@ -161,20 +161,25 @@ func (c Commands) TUI() error {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
-	var errorItems []ErrorItem
-	// if no feeds in store or we have preview feeds, fetchAllFeeds
-	if len(its) == 0 || len(c.config.PreviewFeeds) > 0 {
-		_, errorItems, err = c.fetchAllFeeds()
-		if err != nil {
-			return fmt.Errorf("[commands.go] TUI: %w", err)
-		}
+  var errorItems []ErrorItem
+  // if no feeds in store or we have preview feeds, fetchAllFeeds
+  if len(c.config.PreviewFeeds) > 0 {
+      its, errorItems, err = c.fetchAllFeeds()
+      if err != nil {
+          return fmt.Errorf("[commands.go] TUI: %w", err)
+      }
+  } else if len(its) == 0 {
+      _, errorItems, err = c.fetchAllFeeds()
+      if err != nil {
+          return fmt.Errorf("[commands.go] TUI: %w", err)
+      }
 
-		// refetch for consistent data across calls
-		its, err = c.GetAllFeeds()
-		if err != nil {
-			return fmt.Errorf("[commands.go] TUI: %w", err)
-		}
-	}
+      // refetch for consistent data across calls
+      its, err = c.GetAllFeeds()
+      if err != nil {
+          return fmt.Errorf("[commands.go] TUI: %w", err)
+      }
+  }
 
 	items := convertItems(its)
 
