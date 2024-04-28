@@ -234,7 +234,13 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if m.list.SettingFilter() {
 				break
 			}
-			current := m.list.SelectedItem().(TUIItem)
+
+			item := m.list.SelectedItem()
+			if item == nil {
+				return m, m.list.NewStatusMessage("No link selected.")
+			}
+
+			current := item.(TUIItem)
 			err := m.commands.OpenLink(current.URL)
 			if err != nil {
 				return m, tea.Quit
