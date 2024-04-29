@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mmcdole/gofeed v1.1.3
 	github.com/sahilm/fuzzy v0.1.1-0.20230530133925-c48e322e2a8f
 	golang.org/x/term v0.19.0
