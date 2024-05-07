@@ -161,7 +161,6 @@ func (c Commands) TUI() error {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
-<<<<<<< HEAD
     var errorItems []ErrorItem
     // if no feeds in store, fetchAllFeeds, which will return previews
     if len(c.config.PreviewFeeds) > 0 {
@@ -175,22 +174,6 @@ func (c Commands) TUI() error {
         if err != nil {
             return fmt.Errorf("[commands.go] TUI: %w", err)
         }
-=======
-	var errorItems []ErrorItem
-	// if preview feeds, just use those
-    if len(c.config.PreviewFeeds) > 0 {
-		its, errorItems, err = c.fetchAllFeeds()
-		if err != nil {
-			return fmt.Errorf("[commands.go] TUI: %w", err)
-		}
-    // if items are empty, fetch and return all feeds
-    } else if len(its) == 0 {
-		_, errorItems, err = c.fetchAllFeeds()
-		if err != nil {
-			return fmt.Errorf("[commands.go] TUI: %w", err)
-		}
->>>>>>> 6c821d2b13402a52d577050853fd0922490a86a0
-
         // refetch for consistent data across calls
         its, err = c.GetAllFeeds()
         if err != nil {
