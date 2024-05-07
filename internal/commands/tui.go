@@ -155,18 +155,30 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				break
 			}
 
-			_, errorItems, err := m.commands.fetchAllFeeds()
-			if err != nil {
-				return m, tea.Quit
-			}
-
-			// refetch for consistent data across calls
-			items, err := m.commands.GetAllFeeds()
-			if err != nil {
-				return m, tea.Quit
-			}
-
+			var errorItems []ErrorItem
 			es := []string{}
+			var err error
+			var items []store.Item
+			// if no feeds in store, fetchAllFeeds, which will return previews
+			if len(m.commands.config.PreviewFeeds) > 0 {
+				items, errorItems, err = m.commands.fetchAllFeeds()
+				if err != nil {
+					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+				}
+				// if no items, fetchAllFeeds and GetAllFeeds
+			} else if len(items) == 0 {
+				_, errorItems, err = m.commands.fetchAllFeeds()
+				if err != nil {
+					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+				}
+
+				// refetch for consistent data across calls
+				items, err = m.commands.GetAllFeeds()
+				if err != nil {
+					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+				}
+			}
+
 			for _, e := range errorItems {
 				es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
 			}
