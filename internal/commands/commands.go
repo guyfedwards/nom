@@ -161,25 +161,25 @@ func (c Commands) TUI() error {
 		return fmt.Errorf("commands List: %w", err)
 	}
 
-    var errorItems []ErrorItem
-    // if no feeds in store, fetchAllFeeds, which will return previews
-    if len(c.config.PreviewFeeds) > 0 {
-        its, errorItems, err = c.fetchAllFeeds()
-        if err != nil {
-            return fmt.Errorf("[commands.go] TUI: %w", err)
-        }
-    // if no items, fetchAllFeeds and GetAllFeeds
-    } else if len(its) == 0 {
-        _, errorItems, err = c.fetchAllFeeds()
-        if err != nil {
-            return fmt.Errorf("[commands.go] TUI: %w", err)
-        }
-        // refetch for consistent data across calls
-        its, err = c.GetAllFeeds()
-        if err != nil {
-            return fmt.Errorf("[commands.go] TUI: %w", err)
-        }
-    }
+	var errorItems []ErrorItem
+	// if no feeds in store, fetchAllFeeds, which will return previews
+	if len(c.config.PreviewFeeds) > 0 {
+		its, errorItems, err = c.fetchAllFeeds()
+		if err != nil {
+			return fmt.Errorf("[commands.go] TUI: %w", err)
+		}
+		// if no items, fetchAllFeeds and GetAllFeeds
+	} else if len(its) == 0 {
+		_, errorItems, err = c.fetchAllFeeds()
+		if err != nil {
+			return fmt.Errorf("[commands.go] TUI: %w", err)
+		}
+		// refetch for consistent data across calls
+		its, err = c.GetAllFeeds()
+		if err != nil {
+			return fmt.Errorf("[commands.go] TUI: %w", err)
+		}
+	}
 
 	items := convertItems(its)
 
@@ -257,7 +257,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 	for _, feed := range feeds {
 		wg.Add(1)
 
-		go fetchFeed(ch, &wg, feed)
+		go fetchFeed(ch, &wg, feed, c.config.Version)
 	}
 
 	go func() {
@@ -336,10 +336,10 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 	return items, nil
 }
 
-func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed) {
+func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed, version string) {
 	defer wg.Done()
 
-	r, err := rss.Fetch(feed)
+	r, err := rss.Fetch(feed, version)
 
 	if err != nil {
 		ch <- FetchResultError{res: rss.RSS{}, err: err, url: feed.URL}

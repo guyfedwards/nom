@@ -9,4 +9,4 @@ dist/
 .LSOverride
 ._*
 github_token
-nom
+./nom
