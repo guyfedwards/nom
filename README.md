@@ -56,6 +56,16 @@ Automatically mark items as read on selection or navigation through items.
 ```yaml
 autoread: true
 ```
+### Theme 
+Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.
+Colors can be hex or ASCII codes, they will be coerced depending on your terminal color settings.
+```yaml
+theme: 
+  glamour: dark
+  titleColor: "62"
+  selectedItemColor: "170"
+  filterColor: "#555555"
+```
 
 ### Backends
 As well as adding feeds directly, you can pull in feeds from another source. You can add multiple backends and the feeds will all be added.

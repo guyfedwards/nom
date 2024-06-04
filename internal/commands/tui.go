@@ -17,6 +17,7 @@ import (
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/term"
 
+	"github.com/guyfedwards/nom/v2/internal/config"
 	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
@@ -24,9 +25,9 @@ var (
 	appStyle               = lipgloss.NewStyle().Padding(1, 0, 0, 0).Margin(0)
 	titleStyle             = list.DefaultStyles().Title.Margin(0).Width(5)
 	itemStyle              = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle      = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	selectedItemStyle      = lipgloss.NewStyle().PaddingLeft(2)
 	readStyle              = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
-	selectedReadStyle      = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	selectedReadStyle      = lipgloss.NewStyle().PaddingLeft(2)
 	favouriteStyle         = itemStyle.Copy().PaddingLeft(2).Bold(true)
 	selectedFavouriteStyle = selectedItemStyle.Copy().Bold(true)
 	paginationStyle        = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
@@ -48,7 +49,9 @@ type TUIItem struct {
 
 func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
 
-type itemDelegate struct{}
+type itemDelegate struct {
+	theme config.Theme
+}
 
 func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
@@ -84,9 +87,9 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 				return selectedReadStyle.Render("> " + strings.Join(s, " "))
 			}
 			if i.Favourite {
-				return selectedFavouriteStyle.Render("* " + strings.Join(s, " "))
+				return selectedFavouriteStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("* " + strings.Join(s, " "))
 			}
-			return selectedItemStyle.Render("> " + strings.Join(s, " "))
+			return selectedItemStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("> " + strings.Join(s, " "))
 		}
 	}
 
@@ -100,6 +103,7 @@ type model struct {
 	selectedArticle *int
 	viewport        viewport.Model
 	errors          []string
+	cfg             config.Config
 }
 
 func (m model) Init() tea.Cmd {
@@ -552,7 +556,7 @@ func CustomFilter(term string, targets []string) []list.Rank {
 
 const defaultTitle = "nom"
 
-func Render(items []list.Item, cmds Commands, errors []string) error {
+func Render(items []list.Item, cmds Commands, errors []string, cfg config.Config) error {
 	const defaultWidth = 20
 	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
 	_, y := appStyle.GetFrameSize()
@@ -560,19 +564,28 @@ func Render(items []list.Item, cmds Commands, errors []string) error {
 
 	appStyle.Height(height)
 
-	l := list.New(items, itemDelegate{}, defaultWidth, height)
+	l := list.New(items, itemDelegate{theme: cfg.Theme}, defaultWidth, height)
 	l.SetShowStatusBar(false)
 	l.Title = defaultTitle
-	l.Styles.Title = titleStyle
+	l.Styles.Title = titleStyle.Background(lipgloss.Color(cfg.Theme.TitleColor))
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
+
+	l.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
 	l.Filter = CustomFilter
 
 	ListKeyMap.SetOverrides(&l)
 
 	vp := viewport.New(78, height)
 
-	m := model{list: l, commands: cmds, viewport: vp, errors: errors, help: help.New()}
+	m := model{
+		cfg:      cfg,
+		commands: cmds,
+		errors:   errors,
+		help:     help.New(),
+		list:     l,
+		viewport: vp,
+	}
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		return fmt.Errorf("tui.Render: %w", err)

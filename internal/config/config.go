@@ -36,20 +36,28 @@ type Opener struct {
 	Cmd   string `yaml:"cmd"`
 }
 
+type Theme struct {
+	Glamour           string `yaml:"glamour,omitempty"`
+	TitleColor        string `yaml:"titleColor,omitempty"`
+	FilterColor       string `yaml:"filterColor,omitempty"`
+	SelectedItemColor string `yaml:"selectedItemColor,omitempty"`
+}
+
 // need to add to Load() below if loading from config file
 type Config struct {
-	configPath string
-	ConfigDir  string `yaml:"-"`
-	Pager      string `yaml:"pager,omitempty"`
-	Feeds      []Feed `yaml:"feeds"`
-	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds   []Feed    `yaml:"previewfeeds,omitempty"`
-	Backends       *Backends `yaml:"backends,omitempty"`
-	ShowRead       bool      `yaml:"showread,omitempty"`
-	AutoRead       bool      `yaml:"autoread,omitempty"`
+	configPath     string
 	ShowFavourites bool
-	Openers        []Opener `yaml:"openers,omitempty"`
 	Version        string
+	ConfigDir      string `yaml:"-"`
+	Pager          string `yaml:"pager,omitempty"`
+	Feeds          []Feed `yaml:"feeds"`
+	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
+	PreviewFeeds []Feed    `yaml:"previewfeeds,omitempty"`
+	Backends     *Backends `yaml:"backends,omitempty"`
+	ShowRead     bool      `yaml:"showread,omitempty"`
+	AutoRead     bool      `yaml:"autoread,omitempty"`
+	Openers      []Opener  `yaml:"openers,omitempty"`
+	Theme        Theme     `yaml:"theme,omitempty"`
 }
 
 func (c *Config) ToggleShowRead() {
@@ -89,6 +97,12 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		Pager:        pager,
 		Feeds:        []Feed{},
 		PreviewFeeds: f,
+		Theme: Theme{
+			Glamour:           "dark",
+			SelectedItemColor: "170",
+			TitleColor:        "62",
+			FilterColor:       "62",
+		},
 	}, nil
 }
 
@@ -116,9 +130,25 @@ func (c *Config) Load() error {
 
 	c.ShowRead = fileConfig.ShowRead
 	c.AutoRead = fileConfig.AutoRead
-
 	c.Feeds = fileConfig.Feeds
 	c.Openers = fileConfig.Openers
+
+	if fileConfig.Theme.Glamour != "" {
+		c.Theme.Glamour = fileConfig.Theme.Glamour
+	}
+
+	if fileConfig.Theme.SelectedItemColor != "" {
+		c.Theme.SelectedItemColor = fileConfig.Theme.SelectedItemColor
+	}
+
+	if fileConfig.Theme.TitleColor != "" {
+		c.Theme.TitleColor = fileConfig.Theme.TitleColor
+	}
+
+	if fileConfig.Theme.FilterColor != "" {
+		c.Theme.FilterColor = fileConfig.Theme.FilterColor
+	}
+
 	// only set pager if it's not defined already, config file is lower
 	// precidence than flags/env that can be passed to New
 	if c.Pager == "" {
