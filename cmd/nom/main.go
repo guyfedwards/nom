@@ -83,7 +83,7 @@ func main() {
 	}
 
 	if err := run(args, opts); err != nil {
-		if opts.Verbose {
+		if opts.Verbose || errors.Is(err, config.ErrFeedAlreadyExists) {
 			fmt.Printf("%v\n", err)
 		}
 

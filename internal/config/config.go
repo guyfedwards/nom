@@ -10,6 +10,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	ErrFeedAlreadyExists = errors.New("config.AddFeed: feed already exists")
+)
+
 type Feed struct {
 	URL  string `yaml:"url"`
 	Name string `yaml:"name,omitempty"`
@@ -201,7 +205,7 @@ func (c *Config) AddFeed(feed Feed) error {
 
 	for _, f := range c.Feeds {
 		if f.URL == feed.URL {
-			return errors.New("config.AddFeed: feed already exists")
+			return ErrFeedAlreadyExists
 		}
 	}
 
