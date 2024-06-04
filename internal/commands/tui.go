@@ -570,7 +570,8 @@ func Render(items []list.Item, cmds Commands, errors []string, cfg config.Config
 	l.Styles.Title = titleStyle.Background(lipgloss.Color(cfg.Theme.TitleColor))
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
-	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
+
+	l.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
 	l.Filter = CustomFilter
 
 	ListKeyMap.SetOverrides(&l)

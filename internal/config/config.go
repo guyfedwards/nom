@@ -101,7 +101,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			Glamour:           "dark",
 			SelectedItemColor: "170",
 			TitleColor:        "62",
-			FilterColor:       "",
+			FilterColor:       "62",
 		},
 	}, nil
 }
