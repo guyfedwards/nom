@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/ansi"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
 	"github.com/guyfedwards/nom/v2/internal/rss"
@@ -188,7 +189,7 @@ func (c Commands) TUI() error {
 		es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
 	}
 
-	if err := Render(items, c, es); err != nil {
+	if err := Render(items, c, es, c.config); err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
 	}
 
@@ -401,7 +402,7 @@ func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
 		}
 	}
 
-	content, err := glamouriseItem(article)
+	content, err := glamouriseItem(article, c.config.Theme)
 	if err != nil {
 		return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
 	}
@@ -409,7 +410,28 @@ func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
 	return content, nil
 }
 
-func glamouriseItem(item store.Item) (string, error) {
+func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
+	switch theme.Glamour {
+	case "light":
+		sc = glamour.LightStyleConfig
+	case "dracula":
+		sc = glamour.DraculaStyleConfig
+	case "pink":
+		sc = glamour.PinkStyleConfig
+	case "ascii":
+		sc = glamour.ASCIIStyleConfig
+	case "notty":
+		sc = glamour.NoTTYStyleConfig
+	default:
+		sc = glamour.DarkStyleConfig
+	}
+
+	sc.H1.BackgroundColor = &theme.TitleColor
+
+	return sc
+}
+
+func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	var mdown string
 
 	mdown += "# " + item.Title
@@ -424,7 +446,11 @@ func glamouriseItem(item store.Item) (string, error) {
 	mdown += "\n\n"
 	mdown += htmlToMd(item.Content)
 
-	out, err := glamour.Render(mdown, "dark")
+	r, _ := glamour.NewTermRenderer(
+		glamour.WithStyles(getStyleConfigWithOverrides(theme)),
+	)
+
+	out, err := r.Render(mdown)
 	if err != nil {
 		return "", fmt.Errorf("GlamouriseItem: %w", err)
 	}
