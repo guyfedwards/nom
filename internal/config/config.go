@@ -49,6 +49,7 @@ type Config struct {
 	AutoRead       bool      `yaml:"autoread,omitempty"`
 	ShowFavourites bool
 	Openers        []Opener `yaml:"openers,omitempty"`
+	Version        string
 }
 
 func (c *Config) ToggleShowRead() {
@@ -59,7 +60,7 @@ func (c *Config) ToggleShowFavourites() {
 	c.ShowFavourites = !c.ShowFavourites
 }
 
-func New(configPath string, pager string, previewFeeds []string) (Config, error) {
+func New(configPath string, pager string, previewFeeds []string, version string) (Config, error) {
 	var configDir string
 
 	if configPath == "" {
