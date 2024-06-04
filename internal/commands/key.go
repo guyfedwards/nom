@@ -12,6 +12,7 @@ type ListKeyMapT struct {
 	Read                  key.Binding
 	Favourite             key.Binding
 	ToggleReads           key.Binding
+	MarkAllRead           key.Binding
 	ToggleFavourites      key.Binding
 	Refresh               key.Binding
 	OpenInBrowser         key.Binding
@@ -57,6 +58,10 @@ var ListKeyMap = ListKeyMapT{
 	ToggleReads: key.NewBinding(
 		key.WithKeys("M"),
 		key.WithHelp("M", "toggle show read"),
+	),
+	MarkAllRead: key.NewBinding(
+		key.WithKeys("alt+m"),
+		key.WithHelp("alt+m", "mark all read"),
 	),
 	Refresh: key.NewBinding(
 		key.WithKeys("r"),
@@ -157,6 +162,7 @@ func (k ListKeyMapT) FullHelp() []key.Binding {
 	return []key.Binding{
 		k.Open, k.Read, k.Favourite, k.Refresh,
 		k.OpenInBrowser, k.ToggleFavourites, k.ToggleReads,
+		k.MarkAllRead,
 	}
 }
 
@@ -175,7 +181,7 @@ func (k ListKeyMapT) SetOverrides(l *list.Model) {
 	l.KeyMap.ClearFilter.SetKeys(k.oClearFilter.Keys()...)
 	l.KeyMap.ClearFilter.SetHelp(k.oClearFilter.Help().Key, k.oClearFilter.Help().Desc)
 	l.KeyMap.CancelWhileFiltering.SetKeys(k.oCancelWhileFiltering.Keys()...)
-    l.KeyMap.CancelWhileFiltering.SetHelp(k.oCancelWhileFiltering.Help().Key, k.oCancelWhileFiltering.Help().Desc)
+	l.KeyMap.CancelWhileFiltering.SetHelp(k.oCancelWhileFiltering.Help().Key, k.oCancelWhileFiltering.Help().Desc)
 	l.KeyMap.NextPage.SetKeys(k.oNextPage.Keys()...)
 	l.KeyMap.NextPage.SetHelp(k.oNextPage.Help().Key, k.oNextPage.Help().Desc)
 	l.KeyMap.PrevPage.SetKeys(k.oPrevPage.Keys()...)

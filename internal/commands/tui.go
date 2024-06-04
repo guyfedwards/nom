@@ -216,6 +216,14 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.commands.config.ToggleShowRead()
 			m.UpdateList()
 
+		case key.Matches(msg, ListKeyMap.MarkAllRead):
+			if m.list.SettingFilter() {
+				break
+			}
+
+			m.commands.store.MarkAllRead()
+			m.UpdateList()
+
 		case key.Matches(msg, ListKeyMap.Favourite):
 			if m.list.SettingFilter() {
 				break

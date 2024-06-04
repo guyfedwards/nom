@@ -35,6 +35,7 @@ type Store interface {
 	GetAllItems() ([]Item, error)
 	GetAllFeedURLs() ([]string, error)
 	ToggleRead(ID int) error
+	MarkAllRead() error
 	ToggleFavourite(ID int) error
 	DeleteByFeedURL(feedurl string, incFavourites bool) error
 }
@@ -221,6 +222,17 @@ func (sls SQLiteStore) ToggleRead(ID int) error {
 	_, err := stmt.Exec(time.Now(), ID)
 	if err != nil {
 		return fmt.Errorf("[store.go] ToggleRead: %w", err)
+	}
+
+	return nil
+}
+
+func (sls SQLiteStore) MarkAllRead() error {
+	stmt, _ := sls.db.Prepare(`update items set readat = ? where readat is null`)
+
+	_, err := stmt.Exec(time.Now())
+	if err != nil {
+		return fmt.Errorf("[store.go] MarkAllRead: %w", err)
 	}
 
 	return nil
