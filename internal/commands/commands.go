@@ -314,27 +314,49 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 		return []store.Item{}, fmt.Errorf("commands.go: GetAllFeeds %w", err)
 	}
 
-	// filter out read and add feedname
-	var items []store.Item
-	for i := range is {
-		if c.config.ShowFavourites && !is[i].Favourite {
-			continue
-		}
+	if c.config.ShowFavourites {
+		is = onlyFavourites(is)
+	} else if c.config.ShowRead {
+		is = showRead(is)
+	} else {
+		is = defaultView(is)
+	}
 
-		if !c.config.ShowRead && is[i].Read() {
-			continue
-		}
-
+	// add FeedName from config for custom names
+	for i := 0; i < len(is); i++ {
 		for _, f := range c.config.Feeds {
 			if f.URL == is[i].FeedURL {
 				is[i].FeedName = f.Name
 			}
 		}
-
-		items = append(items, is[i])
 	}
 
-	return items, nil
+	return is, nil
+}
+
+func onlyFavourites(items []store.Item) (is []store.Item) {
+	for _, v := range items {
+		if v.Favourite {
+			is = append(is, v)
+		}
+	}
+
+	return is
+}
+
+// currently showRead shows all items
+func showRead(items []store.Item) (is []store.Item) {
+	return items
+}
+
+func defaultView(items []store.Item) (is []store.Item) {
+	for _, v := range items {
+		if !v.Read() {
+			is = append(is, v)
+		}
+	}
+
+	return is
 }
 
 func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed, version string) {

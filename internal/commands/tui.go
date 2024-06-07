@@ -28,8 +28,8 @@ var (
 	selectedItemStyle      = lipgloss.NewStyle().PaddingLeft(2)
 	readStyle              = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("240"))
 	selectedReadStyle      = lipgloss.NewStyle().PaddingLeft(2)
-	favouriteStyle         = itemStyle.Copy().PaddingLeft(2).Bold(true)
-	selectedFavouriteStyle = selectedItemStyle.Copy().Bold(true)
+	favouriteStyle         = itemStyle.PaddingLeft(2).Bold(true)
+	selectedFavouriteStyle = selectedItemStyle.Bold(true)
 	paginationStyle        = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle              = list.DefaultStyles().
 				HelpStyle.
@@ -77,17 +77,20 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	if i.Favourite {
 		fn = func(s ...string) string {
+			if i.Read {
+				return favouriteStyle.Foreground(lipgloss.Color("240")).Render("* " + strings.Join(s, " "))
+			}
 			return favouriteStyle.Render("* " + strings.Join(s, " "))
 		}
 	}
 
 	if index == m.Index() {
 		fn = func(s ...string) string {
-			if i.Read {
-				return selectedReadStyle.Render("> " + strings.Join(s, " "))
-			}
 			if i.Favourite {
-				return selectedFavouriteStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("* " + strings.Join(s, " "))
+				return selectedFavouriteStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("> " + strings.Join(s, " "))
+			}
+			if i.Read {
+				return selectedReadStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("> " + strings.Join(s, " "))
 			}
 			return selectedItemStyle.Foreground(lipgloss.Color(d.theme.SelectedItemColor)).Render("> " + strings.Join(s, " "))
 		}
