@@ -86,10 +86,14 @@ backends:
 By default links are opened in the browser, you can specify commands to open certain links based on a regex string.   
 `regex` can be any valid golang regex string, it will be matched against the feed item link.  
 `cmd` is run as a child command. The `%s` denotes the position of the link in the command.  
+`takeover` dictates if the command should takeover the tty from nom. E.g. for opening links in lynx or other TUI.  
 ```yaml
 openers:
   - regex: "youtube"
     cmd: "mpv %s"
+  - regex: ".*"
+    cmd: "lynx %s"
+    takeover: true
 ```
 
 ## Store
