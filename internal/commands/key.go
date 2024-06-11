@@ -36,6 +36,7 @@ type ViewportKeyMapT struct {
 	Prev          key.Binding
 	ShowFullHelp  key.Binding
 	CloseFullHelp key.Binding
+	EditConfig    key.Binding
 }
 
 // ListKeyMap shows either (o)verrides or new keybinds
@@ -140,6 +141,10 @@ var ViewportKeyMap = ViewportKeyMapT{
 	CloseFullHelp: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "close help"),
+	),
+	EditConfig: key.NewBinding(
+		key.WithKeys("E"),
+		key.WithHelp("E", "edit config in $EDITOR"),
 	),
 }
 
