@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"regexp"
 	"sort"
 	"strings"
@@ -106,7 +107,7 @@ type model struct {
 	selectedArticle *int
 	viewport        viewport.Model
 	errors          []string
-	cfg             config.Config
+	cfg             *config.Config
 }
 
 func (m model) Init() tea.Cmd {
@@ -294,6 +295,29 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				cmd = m.UpdateList()
 				cmds = append(cmds, cmd)
 			}
+		case key.Matches(msg, ListKeyMap.EditConfig):
+			// open editor with config file
+			// take output of editor and put into file
+			//
+			filePath := m.cfg.ConfigPath
+
+			cmd := strings.Split(getEditor("NOMEDITOR", "EDITOR"), " ")
+			cmd = append(cmd, filePath)
+
+			execCmd := exec.Command(cmd[0], cmd[1:]...)
+			return m, tea.ExecProcess(execCmd, func(err error) tea.Msg {
+				if err != nil {
+					m.list.NewStatusMessage(err.Error())
+					return nil
+				}
+
+				err = m.cfg.Load()
+				if err != nil {
+					m.list.NewStatusMessage(err.Error())
+					return nil
+				}
+				return nil
+			})
 		}
 	}
 
@@ -567,7 +591,7 @@ func CustomFilter(term string, targets []string) []list.Rank {
 
 const defaultTitle = "nom"
 
-func Render(items []list.Item, cmds Commands, errors []string, cfg config.Config) error {
+func Render(items []list.Item, cmds Commands, errors []string, cfg *config.Config) error {
 	const defaultWidth = 20
 	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
 	_, y := appStyle.GetFrameSize()
@@ -603,4 +627,15 @@ func Render(items []list.Item, cmds Commands, errors []string, cfg config.Config
 	}
 
 	return nil
+}
+
+func getEditor(vars ...string) string {
+	for _, e := range vars {
+		val := os.Getenv(e)
+		if val != "" {
+			return val
+		}
+	}
+
+	return "nano"
 }

@@ -49,7 +49,7 @@ type Theme struct {
 
 // need to add to Load() below if loading from config file
 type Config struct {
-	configPath     string
+	ConfigPath     string
 	ShowFavourites bool
 	Version        string
 	ConfigDir      string `yaml:"-"`
@@ -72,13 +72,13 @@ func (c *Config) ToggleShowFavourites() {
 	c.ShowFavourites = !c.ShowFavourites
 }
 
-func New(configPath string, pager string, previewFeeds []string, version string) (Config, error) {
+func New(configPath string, pager string, previewFeeds []string, version string) (*Config, error) {
 	var configDir string
 
 	if configPath == "" {
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
-			return Config{}, fmt.Errorf("config.New: %w", err)
+			return nil, fmt.Errorf("config.New: %w", err)
 		}
 
 		configDir = filepath.Join(userConfigDir, "nom")
@@ -95,8 +95,8 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		f = append(f, Feed{URL: feedURL})
 	}
 
-	return Config{
-		configPath:   configPath,
+	return &Config{
+		ConfigPath:   configPath,
 		ConfigDir:    configDir,
 		Pager:        pager,
 		Feeds:        []Feed{},
@@ -120,7 +120,7 @@ func (c *Config) Load() error {
 		return fmt.Errorf("config Load: %w", err)
 	}
 
-	rawData, err := os.ReadFile(c.configPath)
+	rawData, err := os.ReadFile(c.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("config.Load: %w", err)
 	}
@@ -189,7 +189,7 @@ func (c *Config) Write() error {
 		return fmt.Errorf("config.Write: %w", err)
 	}
 
-	err = os.WriteFile(c.configPath, []byte(str), 0655)
+	err = os.WriteFile(c.ConfigPath, []byte(str), 0655)
 	if err != nil {
 		return fmt.Errorf("config.Write: %w", err)
 	}

@@ -22,11 +22,11 @@ import (
 )
 
 type Commands struct {
-	config config.Config
+	config *config.Config
 	store  store.Store
 }
 
-func New(config config.Config, store store.Store) Commands {
+func New(config *config.Config, store store.Store) Commands {
 	return Commands{config, store}
 }
 

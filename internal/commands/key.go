@@ -22,6 +22,7 @@ type ListKeyMapT struct {
 	oCancelWhileFiltering key.Binding
 	oNextPage             key.Binding
 	oPrevPage             key.Binding
+	EditConfig            key.Binding
 }
 
 // ViewportKeyMapT shows *all* keybinds, pulling from viewport.DefaultKeyMap()
@@ -35,6 +36,7 @@ type ViewportKeyMapT struct {
 	Prev          key.Binding
 	ShowFullHelp  key.Binding
 	CloseFullHelp key.Binding
+	EditConfig    key.Binding
 }
 
 // ListKeyMap shows either (o)verrides or new keybinds
@@ -70,6 +72,10 @@ var ListKeyMap = ListKeyMapT{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),
 		key.WithHelp("o", "open in browser"),
+	),
+	EditConfig: key.NewBinding(
+		key.WithKeys("E"),
+		key.WithHelp("E", "edit config in $EDITOR"),
 	),
 	// o for override
 	oQuit: key.NewBinding(
@@ -135,6 +141,10 @@ var ViewportKeyMap = ViewportKeyMapT{
 	CloseFullHelp: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "close help"),
+	),
+	EditConfig: key.NewBinding(
+		key.WithKeys("E"),
+		key.WithHelp("E", "edit config in $EDITOR"),
 	),
 }
 
