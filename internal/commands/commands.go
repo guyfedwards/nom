@@ -152,11 +152,6 @@ func (c Commands) TUI() error {
 		defer f.Close()
 	}
 
-	err := c.CleanFeeds()
-	if err != nil {
-		return fmt.Errorf("commands List: %w", err)
-	}
-
 	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
@@ -197,10 +192,6 @@ func (c Commands) TUI() error {
 }
 
 func (c Commands) List(numResults int) error {
-	err := c.CleanFeeds()
-	if err != nil {
-		return fmt.Errorf("commands List: %w", err)
-	}
 	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
@@ -309,6 +300,11 @@ func includes[T comparable](arr []T, item T) bool {
 }
 
 func (c Commands) GetAllFeeds() ([]store.Item, error) {
+	err := c.CleanFeeds()
+	if err != nil {
+		return []store.Item{}, fmt.Errorf("[commands.go] GetAllFeeds: %w", err)
+	}
+
 	is, err := c.store.GetAllItems()
 	if err != nil {
 		return []store.Item{}, fmt.Errorf("commands.go: GetAllFeeds %w", err)
@@ -372,47 +368,8 @@ func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed, v
 	ch <- FetchResultError{res: r, err: nil, url: feed.URL}
 }
 
-func (c Commands) GetArticleByID(ID int) (store.Item, error) {
-	items, err := c.GetAllFeeds()
-	if err != nil {
-		return store.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
-	}
-
-	var item store.Item
-	for _, it := range items {
-		if it.ID == ID {
-			item = it
-			break
-		}
-	}
-
-	return item, nil
-}
-
-func (c Commands) FindArticle(substr string) (item store.Item, err error) {
-	items, err := c.GetAllFeeds()
-	if err != nil {
-		return store.Item{}, fmt.Errorf("commands.FindArticle: %w", err)
-	}
-
-	regex, err := regexp.Compile(strings.ToLower(substr))
-	if err != nil {
-		return store.Item{}, fmt.Errorf("commands.FindArticle: regexp: %w", err)
-	}
-
-	for _, it := range items {
-		// very basic string matching on title to read an article
-		if regex.MatchString(strings.ToLower(it.Title)) {
-			item = it
-			break
-		}
-	}
-
-	return item, nil
-}
-
 func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
-	article, err := c.GetArticleByID(ID)
+	article, err := c.store.GetItemByID(ID)
 	if err != nil {
 		return "", fmt.Errorf("commands.FindGlamourisedArticle: %w", err)
 	}
