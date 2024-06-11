@@ -36,8 +36,9 @@ type Backends struct {
 }
 
 type Opener struct {
-	Regex string `yaml:"regex"`
-	Cmd   string `yaml:"cmd"`
+	Regex    string `yaml:"regex"`
+	Cmd      string `yaml:"cmd"`
+	Takeover bool   `yaml:"takeover"`
 }
 
 type Theme struct {

@@ -269,10 +269,8 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			current := item.(TUIItem)
-			err := m.commands.OpenLink(current.URL)
-			if err != nil {
-				return m, tea.Quit
-			}
+			cmd = m.commands.OpenLink(current.URL)
+			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ListKeyMap.Open):
 			if m.list.SettingFilter() {
@@ -296,9 +294,6 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, cmd)
 			}
 		case key.Matches(msg, ListKeyMap.EditConfig):
-			// open editor with config file
-			// take output of editor and put into file
-			//
 			filePath := m.cfg.ConfigPath
 
 			cmd := strings.Split(getEditor("NOMEDITOR", "EDITOR"), " ")
@@ -350,10 +345,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current := m.list.SelectedItem().(TUIItem)
-			err := m.commands.OpenLink(current.URL)
-			if err != nil {
-				return m, tea.Quit
-			}
+			cmd = m.commands.OpenLink(current.URL)
+			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			current := m.list.Index()
