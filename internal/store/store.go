@@ -33,6 +33,7 @@ func (i Item) Read() bool {
 type Store interface {
 	UpsertItem(item Item) error
 	GetAllItems() ([]Item, error)
+	GetItemByID(ID int) (Item, error)
 	GetAllFeedURLs() ([]string, error)
 	ToggleRead(ID int) error
 	MarkAllRead() error
@@ -288,4 +289,27 @@ func (sls SQLiteStore) DeleteByFeedURL(feedurl string, incFavourites bool) error
 	}
 
 	return nil
+}
+
+func (sls SQLiteStore) GetItemByID(ID int) (Item, error) {
+	var stmt *sql.Stmt
+	stmt, _ = sls.db.Prepare(`select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items where id = ?;`)
+
+	var i Item
+	var readAtNull sql.NullTime
+	var publishedAtNull sql.NullTime
+	var linkNull sql.NullString
+
+	r := stmt.QueryRow(ID)
+
+	err := r.Scan(&i.ID, &i.FeedURL, &linkNull, &i.Title, &i.Content, &i.Author, &readAtNull, &i.Favourite, &publishedAtNull, &i.CreatedAt, &i.UpdatedAt)
+	if err != nil {
+		return Item{}, fmt.Errorf("[store.go] GetItemByID: %w", err)
+	}
+
+	i.Link = linkNull.String
+	i.ReadAt = readAtNull.Time
+	i.PublishedAt = publishedAtNull.Time
+
+	return i, nil
 }

@@ -22,6 +22,7 @@ type ListKeyMapT struct {
 	oCancelWhileFiltering key.Binding
 	oNextPage             key.Binding
 	oPrevPage             key.Binding
+	EditConfig            key.Binding
 }
 
 // ViewportKeyMapT shows *all* keybinds, pulling from viewport.DefaultKeyMap()
@@ -70,6 +71,10 @@ var ListKeyMap = ListKeyMapT{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),
 		key.WithHelp("o", "open in browser"),
+	),
+	EditConfig: key.NewBinding(
+		key.WithKeys("E"),
+		key.WithHelp("E", "edit config in $EDITOR"),
 	),
 	// o for override
 	oQuit: key.NewBinding(
@@ -162,7 +167,7 @@ func (k ListKeyMapT) FullHelp() []key.Binding {
 	return []key.Binding{
 		k.Open, k.Read, k.Favourite, k.Refresh,
 		k.OpenInBrowser, k.ToggleFavourites, k.ToggleReads,
-		k.MarkAllRead,
+		k.MarkAllRead, k.EditConfig,
 	}
 }
 

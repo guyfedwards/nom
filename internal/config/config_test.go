@@ -24,14 +24,14 @@ func TestNewDefault(t *testing.T) {
 	c, _ := New("", "", []string{}, "")
 	ucd, _ := os.UserConfigDir()
 
-	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.configPath, "Wrong defaults set")
+	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.ConfigPath, "Wrong defaults set")
 	test.Equal(t, fmt.Sprintf("%s/nom", ucd), c.ConfigDir, "Wrong default ConfigDir set")
 }
 
 func TestConfigCustomPath(t *testing.T) {
 	c, _ := New("foo/bar.yml", "", []string{}, "")
 
-	test.Equal(t, "foo/bar.yml", c.configPath, "Config path override not set")
+	test.Equal(t, "foo/bar.yml", c.ConfigPath, "Config path override not set")
 }
 
 func TestConfigDir(t *testing.T) {
@@ -43,7 +43,7 @@ func TestConfigDir(t *testing.T) {
 func TestNewOverride(t *testing.T) {
 	c, _ := New("foobar", "", []string{}, "")
 
-	test.Equal(t, "foobar", c.configPath, "Override not respected")
+	test.Equal(t, "foobar", c.ConfigPath, "Override not respected")
 }
 
 func TestPreviewFeedsOverrideFeedsFromConfigFile(t *testing.T) {
@@ -99,7 +99,7 @@ func TestConfigAddFeed(t *testing.T) {
 	c.AddFeed(Feed{URL: "foo"})
 
 	var actual Config
-	rawData, _ := os.ReadFile(c.configPath)
+	rawData, _ := os.ReadFile(c.ConfigPath)
 	_ = yaml.Unmarshal(rawData, &actual)
 
 	hasAdded := false
