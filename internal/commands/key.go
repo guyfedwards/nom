@@ -36,7 +36,6 @@ type ViewportKeyMapT struct {
 	Prev          key.Binding
 	ShowFullHelp  key.Binding
 	CloseFullHelp key.Binding
-	EditConfig    key.Binding
 }
 
 // ListKeyMap shows either (o)verrides or new keybinds
@@ -142,10 +141,6 @@ var ViewportKeyMap = ViewportKeyMapT{
 		key.WithKeys("?"),
 		key.WithHelp("?", "close help"),
 	),
-	EditConfig: key.NewBinding(
-		key.WithKeys("E"),
-		key.WithHelp("E", "edit config in $EDITOR"),
-	),
 }
 
 // This show *all* keybinds, as bubbles/viewport doesn't provide a help function
@@ -172,7 +167,7 @@ func (k ListKeyMapT) FullHelp() []key.Binding {
 	return []key.Binding{
 		k.Open, k.Read, k.Favourite, k.Refresh,
 		k.OpenInBrowser, k.ToggleFavourites, k.ToggleReads,
-		k.MarkAllRead,
+		k.MarkAllRead, k.EditConfig,
 	}
 }
 
