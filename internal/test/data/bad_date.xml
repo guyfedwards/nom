@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+      <atom:link href="https://thecyberwire.com/feeds/rss.xml" rel="self" type="application/rss+xml" />
+      <lastBuildDate>Wed, 17 Apr 2024 10:50:18 GMT</lastBuildDate>
+      <title>The CyberWire</title>
+      <description>The CyberWire is an independent voice delivering concise, accessible, and relevant cyber security news to people all across the globe. We separate the signal from the noise.</description>
+      <link>https://thecyberwire.com/index.html</link>
+      <item>
+      <guid isPermaLink="false">3a01494bf42442dfb5091991ba3720c8</guid>
+      <pubDate>Wed, 17 Apr 2024 10:00:00 GMT</pubDate>
+      <title>Examining CIRCIA and VOLTZITE.</title>
+      <category>Operational Technology</category>
+      <media:content url="https://thecyberwire.com/images/pages/Control-Loop.jpg" type="image/jpg" expression="full" width="2400" height="1256"></media:content>
+      <link>https://thecyberwire.com/podcasts/control-loop/48/notes</link>
+      <description>Chinese-manufactured devices in US networks see a 41% YoY increase. Ukraine-linked hackers deploy ICS malware against Russian infrastructure company. A look at cyberattacks that had physical consequences in 2023. Lessons from NERC’s GridEx exercise. Extension requested for comment period on CISA’s incident reporting rule. Guest Kate Ledesma, Senior Director Government Affairs at Dragos, talks about the Cybersecurity Incident Reporting for Critical Infrastructure Proposed rule (CIRCIA). The Learning Lab returns has part 2 of Mark Urban and Josh Hanrahan&apos;s discussion adversary hunting and VOLTZITE (aka Volt Typhoon).</description>
+    </item><item>
+      <guid isPermaLink="false">b6825b01e200469d9e0c5f753afcd577</guid>
+      <pubDate>Wed, 17 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Building Island’s Brand with Ari Yablok</title>
+      <category>Marketing</category>
+      <media:content url="https://thecyberwire.com/images/pages/breaking-through-in-cybersecurity-marketing.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/breaking-through-in-cybersecurity-marketing/113/notes</link>
+      <description>What if there was a browser designed as an enterprise workspace from the outset? Imagine integrating all essential tools—spanning security, IT, and productivity—directly into the workspace where people operate. That is exactly what Island does, and when the brand came out of stealth in February 2022 with $100 million in funding, it launched with a new category and a splash (no pun intended)!
+
+Today the Head of Brand at Island, Ari Yablok, joins us to talk more about Island, the intricacies of building a brand from the ground up, the strategic pivot from stealth mode to the public eye, and the art of storytelling in the cybersecurity landscape.</description>
+    </item><item>
+      <guid isPermaLink="false">be722203f10f47d98f2a5da3816bf5c2</guid>
+      <pubDate>Tue, 16 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Weathering the phishing front.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-041624.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2047/notes</link>
+      <description>Cisco Dou warns of a third-party MFA-related breach. MGM Resorts sues to stop an FTC breach investigation. Meanwhile the FTC dings another mental telehealth service provider. Open Source foundations call for caution after social engineering attempts. The NSA shares guidance for securing AI systems. IntelBroker claims to have hit a US geospatial intelligence firm. The UK clamps down on deepfakes. Hard-coded passwords provide the key to smart-lock vulnerabilities. On our Industry Voices segment, Ryan Lougheed, Director of Product Management at Onspring, discusses the benefits of artificial intelligence in governance, risk and compliance (GRC). A Law Firm’s Misclick Ends 21 Years of Matrimony.</description>
+    </item><item>
+      <guid isPermaLink="false">d2cba1c1c6a4432b9b802bbfb707a11a</guid>
+      <pubDate>Tue, 16 Apr 2024 16:00:00 GMT</pubDate>
+      <title>RansomHub begins leaking alleged Change Healthcare data.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-041624.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/74</link>
+      <description>Cisco Duo discloses breach of MFA logs. Roku makes MFA mandatory for all customer accounts.</description>
+    </item><item>
+      <guid isPermaLink="false">4b3a1a380dcd4b798e02f9cdd5a5ff0d</guid>
+      <pubDate>Tue, 16 Apr 2024 11:00:00 GMT</pubDate>
+      <title>“The Foundations of American Intelligence in WWI” – with Mark Stout</title>
+      <category>History</category>
+      <media:content url="https://thecyberwire.com/images/social-media/spycast/spycast-0629.jpg" type="image/jpg" expression="full" width="2400" height="1256"></media:content>
+      <link>https://thecyberwire.com/podcasts/spycast/629/notes</link>
+      <description>Mark Stout joins Andrew Hammond to discuss his new book, &quot;World War I and the Foundations of American Intelligence.&quot; Mark Stout is a former intelligence analyst and former SPY Historian.</description>
+    </item><item>
+      <guid isPermaLink="false">b68bf1d5bfe041b586fe635d3680c4b1</guid>
+      <pubDate>Tue, 16 Apr 2024 07:05:00 GMT</pubDate>
+      <title>Insights from LinkedIn&apos;s CISO</title>
+      <category>Technology</category>
+      <media:content url="https://thecyberwire.com/images/pages/afternoon-cyber-tea.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/afternoon-cyber-tea/95/notes</link>
+      <description>Geoff Belknap, Chief Information Security Officer and Vice President of Engineering at LinkedIn join’s Ann on this week&apos;s episode of Afternoon Cyber Tea. Before his tenure at LinkedIn, Jeff was instrumental in fortifying the defenses at Slack, ensuring that both physical and digital assets remained impervious to malicious intent. With a track record of leadership roles in various technology firms, he&apos;s been at the forefront of shaping industry standards and best practices. Ann and Geoff discuss the intersection of AI and cybersecurity talent, highlighting its potential impact on the industry, the importance of maintaining a healthy work-life balance in high-stress roles like cybersecurity, and how diverse perspectives are essential for building robust security programs.</description>
+    </item><item>
+      <guid isPermaLink="false">e450203a6a9642afb5c954cf74383e03</guid>
+      <pubDate>Mon, 15 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Hunting vulnerabilities.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-041524.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2046/notes</link>
+      <description>Palo Alto Networks releases hotfixes for an exploited zero-day. Delinea issues an urgent update for a critical flaw. Giant Tiger data is leaked online. A European semiconductor manufacturer deals with a data breach. Roku suffers its second breach of the year. Operators of the Hive RAT face charges.  A former Amazon security engineer gets three years in prison for hacking cryptocurrency exchanges. Zambian officials arrest 77 in a scam call center crack down. Our guest Deputy Assistant Director Cynthia Kaiser from the FBI Cyber Division describes dual ransomware. And Rob Boyce, Managing Director at Accenture, shares his thoughts on security testing of generative AI. And selling Pokemon cheats leaves one man in Japan feeling like he had a run-in with a Scaldiburn.</description>
+    </item><item>
+      <guid isPermaLink="false">c08bd1e6685c4171a07b5eb0f40ec197</guid>
+      <pubDate>Mon, 15 Apr 2024 16:00:00 GMT</pubDate>
+      <title>Palo Alto Networks warns of critical VPN zero-day.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-041524.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/73</link>
+      <description>Alleged developers of the Firebird RAT arrested. Ukraine-linked hackers deploy ICS malware against Russian infrastructure company.</description>
+    </item><item>
+      <guid isPermaLink="false">67af8365121a4f619d8921325a7ef319</guid>
+      <pubDate>Sat, 13 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Breaking down a high-severity vulnerability in Kubernetes.</title>
+      <category>Research</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-research-saturday-04132024.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/research-saturday/325/notes</link>
+      <description>Tomer Peled, a Security &amp; Vulnerability Researcher from Akamai is sharing their work on &quot;What a Cluster: Local Volumes Vulnerability in Kubernetes.&quot; This research focuses on a high-severity vulnerability in Kubernetes, allowing for remote code execution with system privileges on all Windows endpoints within a Kubernetes cluster.
+
+The research states &quot;The discovery of this vulnerability led to the discovery of two others that share the same root cause: insecure function call and lack of user input sanitization.&quot;</description>
+    </item><item>
+      <guid isPermaLink="false">c4f6276d901f43c98f4be659b434c015</guid>
+      <pubDate>Sat, 13 Apr 2024 04:15:00 GMT</pubDate>
+      <title>CISA issues advisory on Sisense breach. Apple warns individuals of mercenary spyware attacks.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/wtw/2024/week-that-was-24-015.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/week-that-was/8/15</link>
+      <description>New ransomware group demands payment from Change Healthcare. Heritage Foundation discloses cyberattack.</description>
+    </item><item>
+      <guid isPermaLink="false">a09ba25e773a43ea879d1bf72954345b</guid>
+      <pubDate>Fri, 12 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Privacy, power, and the path forward.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-041224.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2045/notes</link>
+      <description>Section 702 edges closer to a vote. CISA provides guidance on Sisense and Microsoft breaches. A major conservative think tank reports a breach. Obsolete D-Link devices are under active exploitation, and Palo Alto warns of a zero-day. Raspberry Robin grows more stealthy. A lastpass employee thwarts a deepfake phishing attempt. Are AI models growing more persuasive? Our guest Kevin Magee from Microsoft Canada joins us to talk about cross domain prompt injection and AI. Floppies keep the trains running on time.</description>
+    </item><item>
+      <guid isPermaLink="false">221a3a1072994f88b28d7a7eea0a2f34</guid>
+      <pubDate>Fri, 12 Apr 2024 16:30:00 GMT</pubDate>
+      <title>CISA issues advisory on Sisense breach. Heritage Foundation discloses cyberattack.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-041224.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/72</link>
+      <description>LastPass employee targeted by audio deepfake. Raspberry Robin gets an upgrade.</description>
+    </item><item>
+      <guid isPermaLink="false">df9ee01d6c86412a9c1178836b44a424</guid>
+      <pubDate>Fri, 12 Apr 2024 11:01:00 GMT</pubDate>
+      <title>N2K CyberWire Network Launches Cyber Talent Insights Special Series Podcast</title>
+      <category>Story</category>
+      <media:content url="https://thecyberwire.com/images/social-media/special-edition/SE-Cyber-Talent-Insights.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/stories/df9ee01d6c86412a9c1178836b44a424/n2k-cyberwire-network-launches-cyber-talent-insights-special-series-podcast</link>
+      <description>N2K Networks today announced the premiere of Cyber Talent Insights, a three-part special series podcast that guides listeners through effective strategies to develop cybersecurity teams in the constantly changing landscape of the industry.</description>
+    </item><item>
+      <guid isPermaLink="false">2d5d296d5b8d4ff9831f040c86290625</guid>
+      <pubDate>Fri, 12 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Cyber Talent Insights: Navigating the landscape for enterprise organizations. (Part 1 of 3)</title>
+      <category>Technology</category>
+      <media:content url="https://thecyberwire.com/images/social-media/special-edition/SE-Cyber-Talent-Insights.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/special-edition/60/notes</link>
+      <description>In the first episode of the series on cybersecurity workforce development, we dive into the complex world of cyber workforce management and planning, particularly as it pertains to the perspective of the enterprise.</description>
+    </item><item>
+      <guid isPermaLink="false">87aa0ee209fa4e158bf1503cb272073f</guid>
+      <pubDate>Thu, 11 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Apple&apos;s worldwide warning on mercenary attacks.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-041124.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2044/notes</link>
+      <description>Apple warns targeted users of mercenary spyware attacks. CISA expands its Malware Next-Gen service to the private sector. US Cyber Command chronicles their “hunt forward” operations. Taxi fleets leak customer data. Trend Micro tracks DeuterBear malware. The BatBadBut vulnerability enables command injection on Windows. Cybercriminals manipulate GitHub&apos;s search functionality. Scully Spider may be utilizing AI generated Powershells scripts. A study from ISC2 shed’s light on salary disparities. On our Threat Vector segment, host David Moulton, Director of Thought Leadership at Unit 42, welcomes Donnie Hasseltine, VP of Security at Second Front Systems and a former Recon Marine, as they delve into the indispensable role of a military mindset in cybersecurity. Guest Dr. Sasha Vanterpool, Cyber Workforce Consultant with N2K, introducing the new podcast series Cyber Talent Insights. And AI music sings the license.</description>
+    </item><item>
+      <guid isPermaLink="false">d995eb6c2e384147b9d1da1f55aa6495</guid>
+      <pubDate>Thu, 11 Apr 2024 20:00:00 GMT</pubDate>
+      <title>House and Senate Commerce Committees unveil new bipartisan data privacy bill.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/pages/caveat-briefing.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/caveat-briefing/2/14</link>
+      <description>Senator McConnell announces his support to force the sale of TikTok.</description>
+    </item><item>
+      <guid isPermaLink="false">4fa8e5b704f14a5bb9ec88276297ab82</guid>
+      <pubDate>Thu, 11 Apr 2024 16:00:00 GMT</pubDate>
+      <title>Apple warns individuals of mercenary spyware attacks.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-041124.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/71</link>
+      <description>Threat actor uses AI-generated malware loader. Earth Hundun deploys Waterbear malware.</description>
+    </item><item>
+      <guid isPermaLink="false">0e9b1e9fa6254e7093ff55dd61d173c0</guid>
+      <pubDate>Thu, 11 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Could AI&apos;s doomsday be deferred?</title>
+      <category>Cybercrime</category>
+      <media:content url="https://thecyberwire.com/images/social-media/hh/hacking-humans-n2k-285.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/hacking-humans/285/notes</link>
+      <description>Dr. Robert Blumofe, CTO at Akamai, sits down to talk about the AI doomsday versus a &quot;very bad day&quot; scenario. Dave shares a story from The Knowledge Project Podcast, where the host talks to Adam Robinson, a multifaceted individual known for his work as an author, educator, entrepreneur, and hedge fund advisor, and he talks about what is all incorporated into the term &quot;stupidity.&quot; Dave goes on to share that while most people may feel stupid when falling for a scam, this research suggests otherwise, and you should never feel that way for falling for any scam. Joe&apos;s story comes from Hayley Compton at BBC, and is on a Facebook scam sneaking it&apos;s way into a family&apos;s home after a couple just had their first child. Our catch of the day comes from listener Michael, who shares an email he received that caught him off guard at first.</description>
+    </item><item>
+      <guid isPermaLink="false">855a215f82ce4cc1bf1f3ff5f279e752</guid>
+      <pubDate>Thu, 11 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Is a department of space in the future?</title>
+      <category>Surveillance</category>
+      <media:content url="https://thecyberwire.com/images/social-media/caveat/Caveat-N2K-213.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/caveat/213/notes</link>
+      <description>Bryce Kennedy, President of the Association of Commercial Space Professionals (ACSP) joins to share his concept for a federal Department of Space. Ben and Dave sit down to discuss a possible breakthrough in online privacy at the Federal level, as well as discussing two new bills in Maryland that were just passed regarding privacy.</description>
+    </item><item>
+      <guid isPermaLink="false">efae9c7bf1814d8d89ae0f4c08309868</guid>
+      <pubDate>Wed, 10 Apr 2024 20:10:00 GMT</pubDate>
+      <title>From deadlock to debate on a revised Section 702 bill.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-041024.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2043/notes</link>
+      <description>The House moves forward on Section 702 reauthorization. Ukraine suspends a top cybersecurity official. A Wisconsin health coop suffers a data breach. Sophos uncovers a malicious backdoor. Fortinet issues patches for critical and high severity vulnerabilities. A Microsoft server exposed employee passwords, keys, and credentials. LG releases patches to secure smart TVs. The IMF warns of cyberattacks potential to trigger bank runs. It was a busy patch Tuesday. On our Learning Layer segment, host Sam Meisenberg and Joe Carrigan continue their discussion of Joe&apos;s CISSP study journey and how to avoid frustration when you get a practice question wrong. X marks the spot where Elon’s impulsiveness turns chaotic.</description>
+    </item><item>
+      <guid isPermaLink="false">7a0bd7dfe689422093dff91f8ef7d209</guid>
+      <pubDate>Wed, 10 Apr 2024 20:00:00 GMT</pubDate>
+      <title>Wiz acquires Gem Security. Cyera raises $300 million in Series C round.</title>
+      <category>Business</category>
+      <media:content url="https://thecyberwire.com/images/social-media/business-briefing/2024/Business-24-041024.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/business-briefing/6/15</link>
+      <description>Wiz acquires Gem Security. Cyera raises $300 million in Series C round.</description>
+    </item><item>
+      <guid isPermaLink="false">37fda5967a4e41a9a6697d89ffa550af</guid>
+      <pubDate>Wed, 10 Apr 2024 18:50:43 GMT</pubDate>
+      <title>Cyber Talent Insights Special Series Podcast Launching Friday, April 12th</title>
+      <category>Story</category>
+      <media:content url="https://thecyberwire.com/images/social-media/special-edition/SE-Cyber-Talent-Insights.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/stories/37fda5967a4e41a9a6697d89ffa550af/cyber-talent-insights-special-series-podcast-launching-friday-april-12th</link>
+      <description>N2K is excited to share the launch of Cyber Talent Insights, a three-part special series podcast, on Friday, April 12th. The new series guides listeners through effective strategies to develop cybersecurity teams in the constantly changing landscape of the industry.</description>
+    </item><item>
+      <guid isPermaLink="false">8fed36356037475eb7db52530a22034f</guid>
+      <pubDate>Wed, 10 Apr 2024 16:15:00 GMT</pubDate>
+      <title>Muddled Libra targets SaaS apps and cloud environments.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-041024.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/70</link>
+      <description>Malvertising targets system administrators. Patch Tuesday notes.</description>
+    </item><item>
+      <guid isPermaLink="false">1c8e8c6a5bbc4c8d91c6fd314dc17244</guid>
+      <pubDate>Wed, 10 Apr 2024 16:00:00 GMT</pubDate>
+      <title>Sellafield nuclear waste site to be prosecuted for alleged cybersecurity failings. CISA issues draft proposal for cyber incident reporting by critical infrastructure entities.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/pages/Control-Loop-Newsletter.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/control-loop/3/4</link>
+      <description>Threat actor targets Indian government and energy entities. Suspicious NuGet package appears to target developers in the industrial sector.</description>
+    </item><item>
+      <guid isPermaLink="false">c31cacb28f104fe5805f0d270c6edc59</guid>
+      <pubDate>Wed, 10 Apr 2024 07:05:00 GMT</pubDate>
+      <title>Microsoft Secure in San Francisco</title>
+      <category>Technology</category>
+      <media:content url="https://thecyberwire.com/images/pages/MTI-Podcast.jpg" type="image/jpg" expression="full" width="2400" height="1256"></media:content>
+      <link>https://thecyberwire.com/podcasts/microsoft-threat-intelligence/16/notes</link>
+      <description>On this week&apos;s episode of The Microsoft Threat Intelligence Podcast, Sherrod DeGrippo is Live from Microsoft Secure in San Francisco and is joined by Brandon Dixon and Vasu Jakkal. As Group Product Manager for Security Copilot, Brandon is helping to shape how generative AI is used to empower professionals to focus on what matters most. Brandon reflects on how security practices have changed, mental health in the security industry and how AI can empower individuals in the tech and infosec fields. Vasu discusses her passion for cybersecurity and its impact on global safety. She emphasizes the importance of inclusivity and optimism in tackling security challenges and shares her journey into cybersecurity, which was influenced by her love for technology instilled by watching Star Trek. Vasu also highlights the transformative potential of AI, particularly Microsoft Copilot for Security, in enhancing defense capabilities and catching new threats.</description>
+    </item><item>
+      <guid isPermaLink="false">109e2cfc68644d1f82f616006c15cc6a</guid>
+      <pubDate>Wed, 10 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Cyber Social Media Strategies with Matt Mullan</title>
+      <category>Marketing</category>
+      <media:content url="https://thecyberwire.com/images/pages/breaking-through-in-cybersecurity-marketing.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/breaking-through-in-cybersecurity-marketing/112/notes</link>
+      <description>This week, we&apos;re diving deep into the world of social media with none other than Matt Mullan, the Senior Social Media Manager at Illumio, a pioneering zero-trust segmentation company. Matt brings a treasure trove of insights from his journey—from starting in sales to mastering the art of social media in our complicated, technical, and fast-paced industry. Today, he&apos;s set to peel back the layers of the unique challenges and opportunities that come with marketing in the cybersecurity industry, drawing contrasts with his diverse experiences in sectors as varied as toy manufacturing and HR/payroll software. Prepare to learn from one of the best in navigating the complex currents of social media in the cybersecurity sector!</description>
+    </item><item>
+      <guid isPermaLink="false">227b94035a534462b690532526f9bba9</guid>
+      <pubDate>Wed, 10 Apr 2024 04:00:00 GMT</pubDate>
+      <title>Vulnerabilities Facing Retail and Hospitality Organizations and How Cybersecurity has Changed During the Past Decade.</title>
+      <category>Retail</category>
+      <media:content url="https://thecyberwire.com/images/pages/RH-ISAC.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/rh-isac/48/notes</link>
+      <description>In this episode of the Retail &amp; Hospitality ISAC podcast, host Luke Vander Linden speaks with Josh Donlan of Hackerone to discuss security research, vulnerabilities facing retail and hospitality organizations, and how generative AI is changing vulnerabilities. Then, RH-ISAC President Suzie Squier talks with David McLeod who is currently VP, Information Security Officer at Disney, and previously helped establish RH-ISAC back in 2014.</description>
+    </item><item>
+      <guid isPermaLink="false">becb101560e54ecd89b40bfb7618dc6c</guid>
+      <pubDate>Tue, 09 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Unraveling a healthcare ransomware web.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-040924.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2042/notes</link>
+      <description>Change Healthcare gets hit with another ransom demand. A French football team warns fans of a cyberattack. The Home Depot breach is chalked up to a misconfigured SaaS application. The FCC looks to sure up car connectivity security to protect survivors of domestic violence. Targus reports a disruptive cyberattack. A massive doxxing event hits El Salvador. India&apos;s top audio and wearables brand investigates a customer data breach. The Israeli military jams GPS. Microsoft Security’s Ann Johnson, host of Afternoon Cyber Tea podcast, shares a segment of her latest episode featuring Jason Healey, founding scholar and director for cyber efforts at Columbia&apos;s School of International and Public Affairs. They discuss nurturing trust in cybersecurity. And, I’ll have a burger with a side of surveillance.</description>
+    </item><item>
+      <guid isPermaLink="false">7040cf63230144a8b58e2664f49ad852</guid>
+      <pubDate>Tue, 09 Apr 2024 16:15:00 GMT</pubDate>
+      <title>New ransomware group demands payment from Change Healthcare.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-040924.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/69</link>
+      <description>EPA investigates claims of breach. Massive data breach affects El Salvador. Starry Addax targets human rights activists in Africa.</description>
+    </item><item>
+      <guid isPermaLink="false">175b34615174482c8c3b7ff43dd1561c</guid>
+      <pubDate>Tue, 09 Apr 2024 11:00:00 GMT</pubDate>
+      <title>“The Director-General of NZ Security Intelligence Service” – with Andrew Hampton</title>
+      <category>History</category>
+      <media:content url="https://thecyberwire.com/images/social-media/spycast/spycast-0628.jpg" type="image/jpg" expression="full" width="2400" height="1256"></media:content>
+      <link>https://thecyberwire.com/podcasts/spycast/628/notes</link>
+      <description>Andrew Hampton joins Andrew Hammond to discuss intelligence in New Zealand. Andrew is the Director General of the New Zealand Security Intelligence Service.</description>
+    </item><item>
+      <guid isPermaLink="false">a1561c99da2446748d3341c468823cea</guid>
+      <pubDate>Tue, 09 Apr 2024 04:00:00 GMT</pubDate>
+      <title>How Rachel Tobac Hacked Me</title>
+      <category>Human Factors</category>
+      <media:content url="https://thecyberwire.com/images/social-media/8LI/8th-layer-insights-044.jpg" type="image/jpg" expression="full" width="2400" height="1256"></media:content>
+      <link>https://thecyberwire.com/podcasts/8th-layer-insights/44/notes</link>
+      <description>In this episode Perry Carpenter sits down with Rachel Tobac to debrief after her recent KB4-CON session, &quot;How I&apos;d Hack You Live&quot; where she... well... hacked Perry live. Perry and Rachel explore how age-old deception techniques are being revamped for the digital age. The discussion spans the future of social engineering, the increasing role of AI in security, and a few other fun bits.</description>
+    </item><item>
+      <guid isPermaLink="false">7002a23b758045819867cf42916aba0e</guid>
+      <pubDate>Mon, 08 Apr 2024 20:10:00 GMT</pubDate>
+      <title>A possible breakthrough in data privacy legislation.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-040824.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2041/notes</link>
+      <description>Might there be motion from Congress on data privacy legislation? Maryland passes a pair of privacy bills. A database allegedly from the EPA shows up on Russian cybercrime forums. HHS issues an alert for the Healthcare and Public Health sectors. CISA gears up for their Cyber Storm. A leading UK veterinary service provider suffers a cyber incident. A hardcoded backdoor is discovered in deprecated Network Attached Storage devices. NSA’s new cybersecurity director takes the reins. Guest Caleb Barlow, CEO of Cyberbit, shares his insights on the evolving role of the CISO. The bull market for Zero-days.</description>
+    </item><item>
+      <guid isPermaLink="false">6f6a8caafc404f40b140cd8ac2c19b15</guid>
+      <pubDate>Mon, 08 Apr 2024 16:00:00 GMT</pubDate>
+      <title>Israel&apos;s Justice Ministry investigates alleged breach.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-040824.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/68</link>
+      <description>US Environmental Protection Agency sustains alleged breach. Threat actors target IT help desks in the healthcare sector. NSA appoints Dave Luber as new cybersecurity director.</description>
+    </item><item>
+      <guid isPermaLink="false">0539ff0fbc5b438dad8960f03be93363</guid>
+      <pubDate>Sat, 06 Apr 2024 05:00:00 GMT</pubDate>
+      <title>Leaking your AWS API keys, on purpose?</title>
+      <category>Research</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-research-saturday-04062024.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/research-saturday/324/notes</link>
+      <description>Noah Pack, a SANS Internet Storm Center Intern, sits down to discuss research on &quot;What happens when you accidentally leak your AWS API keys?&quot; This research is a guest diary from Noah and shares a project he worked on after seeing an online video of someone who created a python script that emailed colleges asking for free swag to be shipped to him. 
+
+The research states &quot;In this article, I will share some research, resources, and real-world data related to leaked AWS API keys.&quot; In this research, Noah shares what he learned while implementing his experiment.</description>
+    </item><item>
+      <guid isPermaLink="false">f420d85ad71f461bac2d729bff9c8146</guid>
+      <pubDate>Sat, 06 Apr 2024 04:15:00 GMT</pubDate>
+      <title>Malicious backdoor infiltrates widespread Linux package. At least five suspected Chinese threat actors exploited Ivanti flaws.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/wtw/2024/week-that-was-24-014.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/week-that-was/8/14</link>
+      <description>Jackson County, Missouri, discloses ransomware attack. Earth Freybug deploys new malware.</description>
+    </item><item>
+      <guid isPermaLink="false">6d52bdd3855e4f4993171f9da7a6b44c</guid>
+      <pubDate>Fri, 05 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Deciphering the Acuity cybersecurity incident.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-040524.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2040/notes</link>
+      <description>Acuity downplays its recent breach. IcedID gives way to a new malware strain. Russia arrests alleged credit card thieves. Wiz uncovers security flaws in Hugging Face AI models. NERC and the E-ISAC review lessons learned from simulated attacks on the electrical grid. UK police track honey traps targeting MPs. Microsoft says China is actively trying to influence US elections. A major global lens maker suffers a cyber attack.  Guest Dick O&apos;Brien from the Symantec Threat Hunter Team shares how ransomware operators adapt to disruption. And SEO under threat of legal action.</description>
+    </item><item>
+      <guid isPermaLink="false">471f312ab4f0415b8f7d0722ea7c1e02</guid>
+      <pubDate>Fri, 05 Apr 2024 16:00:00 GMT</pubDate>
+      <title>US government contractor responds to alleged breach. At least five suspected Chinese threat actors exploited Ivanti flaws.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-040524.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/67</link>
+      <description>Initial access brokers distribute new malware downloader.</description>
+    </item><item>
+      <guid isPermaLink="false">06c4ba31a1634dd7950bd500dfdaff66</guid>
+      <pubDate>Thu, 04 Apr 2024 20:10:00 GMT</pubDate>
+      <title>Securing secrets: The State Department&apos;s cyber hunt.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-podcast-040424.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/podcasts/daily-podcast/2039/notes</link>
+      <description>The State Department investigates an alleged breach. The FCC looks at regulating connected vehicles. A big-tech consortium hopes to mitigate AI-related job losses. Google aims to thwart cookie-thieves. SurveyLama exposes sensitive info of over four millions users. Omni Hotels &amp; Resorts is recovering from a cyberattack. A national cancer treatment center suffers a breach. How cyber is approached on both sides of the pond. In our Industry Voices segment , George Jones, CISO at Critical Start, discusses strategies for maximizing cybersecurity investments to achieve optimal risk reduction. Playing the identity theft long-game.</description>
+    </item><item>
+      <guid isPermaLink="false">cb535ed111124409b5534380ad8127cc</guid>
+      <pubDate>Thu, 04 Apr 2024 20:00:00 GMT</pubDate>
+      <title>New Hampshire House passes new AI election rules. Review panel states that Microsoft could have stopped Chinese email hack.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/pages/caveat-briefing.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/caveat-briefing/2/13</link>
+      <description>New Hampshire House passes new AI election rules. Review panel states that Microsoft could have stopped Chinese email hack.</description>
+    </item><item>
+      <guid isPermaLink="false">ad9297f30c674c2e97074d2ac303cf73</guid>
+      <pubDate>Thu, 04 Apr 2024 16:00:00 GMT</pubDate>
+      <title>US State Department investigates alleged contractor breach. Omni Hotels confirms cyberattack.</title>
+      <category>News</category>
+      <media:content url="https://thecyberwire.com/images/social-media/2024/04/cw-briefing-040424.jpg" type="image/jpg" expression="full" width="2640" height="1320"></media:content>
+      <link>https://thecyberwire.com/newsletters/daily-briefing/13/66</link>
+      <description>Cancer treatment center discloses breach.</description>
+    </item>
+    </channel>
+  </rss>
