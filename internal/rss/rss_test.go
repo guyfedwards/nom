@@ -13,28 +13,29 @@ import (
 )
 
 const dropboxFixture = "../test/data/dropbox_fixture.rss"
+const badPubDateFixture = "../test/data/bad_pub_date.rss"
 
-func getFixtureAsFeed(t *testing.T) *gofeed.Feed {
-	f, err := os.ReadFile(dropboxFixture)
+func getFixtureAsFeed(path string) (*gofeed.Feed, error) {
+	f, err := os.ReadFile(path)
 	if err != nil {
-		t.Logf("error getting fixture: %e", err)
-		t.Fail()
-		return nil
+		return nil, err
 	}
 
 	p := gofeed.NewParser()
 	feed, err := p.Parse(bytes.NewReader(f))
 	if err != nil {
-		t.Logf("error getting fixture: %e", err)
-		t.Fail()
-		return nil
+		return nil, err
 	}
 
-	return feed
+	return feed, nil
 }
 
 func TestFeedToRss(t *testing.T) {
-	fd := getFixtureAsFeed(t)
+	fd, err := getFixtureAsFeed(dropboxFixture)
+	if err != nil {
+		t.Logf("error getting fixture: %e", err)
+		t.Fail()
+	}
 
 	r := feedToRSS(config.Feed{Name: "bigup"}, fd)
 
@@ -52,5 +53,15 @@ func TestFeedToRss(t *testing.T) {
 	test.Equal(t, "Dropbox Platform Team", r.Channel.Items[0].Author, "bad item author")
 	test.Equal(t, "bigup", r.Channel.Items[0].FeedName, "bad feedname")
 	test.Equal(t, 1666161000, r.Channel.Items[0].PubDate.Unix(), "bad feedname")
+}
 
+func TestFeedPubDateBadParse(t *testing.T) {
+	fd, err := getFixtureAsFeed(badPubDateFixture)
+	if err != nil {
+		t.Logf("error getting fixture: %e", err)
+		t.Fail()
+	}
+
+	r := feedToRSS(config.Feed{}, fd)
+	test.Equal(t, "0001-01-01 00:00:00 +0000 UTC", r.Channel.Items[0].PubDate.String(), "dates don't match")
 }

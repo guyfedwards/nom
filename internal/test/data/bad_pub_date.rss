@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	xmlns:mi="http://schemas.ingestion.microsoft.com/common/"
+        xmlns:media="http://search.yahoo.com/mrss/"
+	xmlns:georss="http://www.georss.org/georss"
+	xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+
+>
+
+  <!-- RSS feed defaults -->
+	<channel>
+		<title>SinEmbargo MXCon Claudia "no va a haber retrocesos"; el relevo está asegurado, dice el Presidente</title>
+		<link>https://www.sinembargo.mx</link>
+		<description>Periodismo digital con rigor.</description>
+
+		<lastBuildDate>Dom, 16 Jun 2024 14:09:05 +0000</lastBuildDate>
+
+		<language>es</language>
+		<sy:updatePeriod>hourly</sy:updatePeriod>
+		<sy:updateFrequency>1</sy:updateFrequency>
+		<atom:link href="https://www.sinembargo.mx/feed" rel="self" type="application/rss+xml" />
+
+		<!-- Feed Logo (optional) -->
+		<image>
+			<url>https://www.sinembargo.mx/wp-content/themes/wp-bootstrap-starter-child/assets/img/sinembargo_icon.jpeg</url>
+			<title>
+				Periodismo digital con rigor.			</title>
+			<link>https://www.sinembargo.mx</link>
+		</image>
+
+		<generator>https://wordpress.org/?v=6.4.3</generator>
+<site xmlns="com-wordpress:feed-additions:1">31219980</site>
+		<!-- Start loop -->
+
+			<item>
+				<title>Con Claudia &#8220;no va a haber retrocesos&#8221;; el relevo está asegurado, dice el Presidente</title>
+				<link>https://www.sinembargo.mx/16-06-2024/4514535</link>
+				<guid isPermaLink="false">https://www.sinembargo.mx/?p=4514535</guid>
+				<author>Redacción/SinEmbargo</author>
+				<image>
+					<url>https://i2.wp.com/www.sinembargo.mx/wp-content/uploads/2024/06/amlo-y-claudia-sheinbaum-en-durango.jpg?fit=1100%2C580&#038;quality=80&#038;strip=all&#038;ssl=1"/></url>
+				</image>
+
+				<pubDate>Dom, 16 Jun 2024 14:09:05 +0000 2024-06-16 14:09:05</pubDate>
+
+
+				<content:encoded>
+					<![CDATA[López Obrador destacó que Sheinbaum Pardo ganó las elecciones presidenciales del pasado 2 de junio &#8220;con amplio margen en todo el país&#8221;. &#8220;A nivel nacional, es la Presidenta con más votos en toda la historia de nuestro país. Hasta yo que tenía el primer lugar en votación, me ‘cepilló’. Yo obtuve 31 millones y ella [&#8230;]<br /><a href="https://www.sinembargo.mx/16-06-2024/4514535">Leer el texto completo en sinembargo.mx</a><br /><br />]]>
+				</content:encoded>
+			</item>
+			</channel>
+</rss>
+<!--
+Performance optimized by W3 Total Cache. Learn more: https://www.boldgrid.com/w3-total-cache/
+
+Almacenamiento en caché de páginas con memcached 
+Caché de base de datos 44/58 consultas en 4.842 segundos usando memcached
+
+Served from: www.sinembargo.mx @ 2024-06-16 15:00:08 by W3 Total Cache
+-->

@@ -6,7 +6,7 @@ func Equal[K comparable](t *testing.T, want, have K, msg string) {
 	t.Helper()
 
 	if want != have {
-		t.Fatalf("%s\nWant: %v,\nHave: %v\n", msg, want, have)
+		t.Fatalf("\n%s\nWant: %v\nHave: %v\n", msg, want, have)
 	}
 }
 
