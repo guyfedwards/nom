@@ -73,7 +73,11 @@ func feedToRSS(f config.Feed, feed *gofeed.Feed) RSS {
 
 		ni.Categories = it.Categories
 
-		ni.PubDate = *it.PublishedParsed
+		// PublishedParsed will be nil if parsing failed
+		if it.PublishedParsed != nil {
+			ni.PubDate = *it.PublishedParsed
+		}
+
 		ni.FeedName = f.Name
 
 		items = append(items, ni)
