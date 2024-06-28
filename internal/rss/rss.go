@@ -1,7 +1,9 @@
 package rss
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -33,6 +35,16 @@ type RSS struct {
 
 func Fetch(f config.Feed, version string) (RSS, error) {
 	fp := gofeed.NewParser()
+
+	//CloudFlare blocks requests unless a minimum TLSVersion is specified.
+	fp.Client = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				MinVersion: tls.VersionTLS13,
+			},
+		},
+	}
+
 	fp.UserAgent = fmt.Sprintf("nom/%s", version)
 
 	feed, err := fp.ParseURL(f.URL)
