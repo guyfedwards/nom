@@ -50,8 +50,6 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
-			cmd = m.UpdateList()
-			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ViewportKeyMap.Next):
 			current := m.list.Index()
@@ -71,8 +69,6 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
-			cmd = m.UpdateList()
-			cmds = append(cmds, cmd)
 		case key.Matches(msg, ViewportKeyMap.Quit):
 			return m, tea.Quit
 

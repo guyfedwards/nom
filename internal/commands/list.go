@@ -91,6 +91,50 @@ func (m *model) UpdateList() tea.Cmd {
 	return cmd
 }
 
+func refreshList(m model) func() tea.Msg {
+	return func() tea.Msg {
+		var errorItems []ErrorItem
+		es := []string{}
+		var err error
+		var items []store.Item
+		// if no feeds in store, fetchAllFeeds, which will return previews
+		if len(m.commands.config.PreviewFeeds) > 0 {
+			items, errorItems, err = m.commands.fetchAllFeeds()
+			if err != nil {
+				es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+			}
+			// if no items, fetchAllFeeds and GetAllFeeds
+		} else if len(items) == 0 {
+			_, errorItems, err = m.commands.fetchAllFeeds()
+			if err != nil {
+				es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+			}
+
+			// refetch for consistent data across calls
+			items, err = m.commands.GetAllFeeds()
+			if err != nil {
+				es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
+			}
+		}
+
+		for _, e := range errorItems {
+			es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
+		}
+
+		m.errors = es
+		// return tea.Batch(m.list.SetItems(convertItems(items)), m.list.NewStatusMessage("Refreshed."))
+		return listUpdate{
+			items:  convertItems(items),
+			status: "Refreshed.",
+		}
+	}
+}
+
+type listUpdate struct {
+	status string
+	items  []list.Item
+}
+
 func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
@@ -98,46 +142,18 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
+	case listUpdate:
+		m.list.SetItems(msg.items)
+		m.list.NewStatusMessage(msg.status)
+
 	case tea.KeyMsg:
 		switch {
-
 		case key.Matches(msg, ListKeyMap.Refresh):
-			if m.list.SettingFilter() {
+			if m.list.SettingFilter() || m.list.IsFiltered() {
 				break
 			}
 
-			var errorItems []ErrorItem
-			es := []string{}
-			var err error
-			var items []store.Item
-			// if no feeds in store, fetchAllFeeds, which will return previews
-			if len(m.commands.config.PreviewFeeds) > 0 {
-				items, errorItems, err = m.commands.fetchAllFeeds()
-				if err != nil {
-					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
-				}
-				// if no items, fetchAllFeeds and GetAllFeeds
-			} else if len(items) == 0 {
-				_, errorItems, err = m.commands.fetchAllFeeds()
-				if err != nil {
-					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
-				}
-
-				// refetch for consistent data across calls
-				items, err = m.commands.GetAllFeeds()
-				if err != nil {
-					es = append(es, fmt.Errorf("[tui.go] updateList: %w", err).Error())
-				}
-			}
-
-			for _, e := range errorItems {
-				es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
-			}
-
-			m.list.SetItems(convertItems(items))
-			m.errors = es
-
-			return m, m.list.NewStatusMessage("Refreshed.")
+			cmds = append(cmds, refreshList(m))
 
 		case key.Matches(msg, ListKeyMap.Read):
 			if m.list.SettingFilter() {
@@ -161,7 +177,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.commands.config.ToggleShowRead()
-			m.UpdateList()
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ListKeyMap.MarkAllRead):
 			if m.list.SettingFilter() {
@@ -169,7 +185,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.commands.store.MarkAllRead()
-			m.UpdateList()
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ListKeyMap.Favourite):
 			if m.list.SettingFilter() {
@@ -185,7 +201,8 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			m.UpdateList()
+
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ListKeyMap.ToggleFavourites):
 			if m.list.SettingFilter() {
@@ -199,7 +216,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.commands.config.ToggleShowFavourites()
-			m.UpdateList()
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			if m.list.SettingFilter() {
@@ -233,9 +250,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 				m.viewport.SetContent(content)
 
-				cmd = m.UpdateList()
-				cmds = append(cmds, cmd)
+				cmds = append(cmds, m.UpdateList())
 			}
+
 		case key.Matches(msg, ListKeyMap.EditConfig):
 			filePath := m.cfg.ConfigPath
 
