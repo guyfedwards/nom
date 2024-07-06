@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"os"
@@ -48,6 +49,12 @@ type Theme struct {
 	SelectedItemColor string `yaml:"selectedItemColor,omitempty"`
 }
 
+type HTTPOptions struct {
+	//MinTLSVersion must be set to one of the strings returned by
+	//tls.VersionName. "TLS 1.2" by default.
+	MinTLSVersion string `yaml:mintls,omitempty`
+}
+
 // need to add to Load() below if loading from config file
 type Config struct {
 	ConfigPath     string
@@ -57,12 +64,13 @@ type Config struct {
 	Pager          string `yaml:"pager,omitempty"`
 	Feeds          []Feed `yaml:"feeds"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds []Feed    `yaml:"previewfeeds,omitempty"`
-	Backends     *Backends `yaml:"backends,omitempty"`
-	ShowRead     bool      `yaml:"showread,omitempty"`
-	AutoRead     bool      `yaml:"autoread,omitempty"`
-	Openers      []Opener  `yaml:"openers,omitempty"`
-	Theme        Theme     `yaml:"theme,omitempty"`
+	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
+	Backends     *Backends    `yaml:"backends,omitempty"`
+	ShowRead     bool         `yaml:"showread,omitempty"`
+	AutoRead     bool         `yaml:"autoread,omitempty"`
+	Openers      []Opener     `yaml:"openers,omitempty"`
+	Theme        Theme        `yaml:"theme,omitempty"`
+	HTTPOptions  *HTTPOptions `yaml:"http,omitempty"`
 }
 
 func (c *Config) ToggleShowRead() {
@@ -108,6 +116,9 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			TitleColor:        "62",
 			FilterColor:       "62",
 		},
+		HTTPOptions: &HTTPOptions{
+			MinTLSVersion: tls.VersionName(tls.VersionTLS12),
+		},
 	}, nil
 }
 
@@ -137,6 +148,10 @@ func (c *Config) Load() error {
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
 	c.Openers = fileConfig.Openers
+
+	if fileConfig.HTTPOptions != nil {
+		c.HTTPOptions = fileConfig.HTTPOptions
+	}
 
 	if fileConfig.Theme.Glamour != "" {
 		c.Theme.Glamour = fileConfig.Theme.Glamour
