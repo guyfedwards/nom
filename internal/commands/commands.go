@@ -179,7 +179,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 	for _, feed := range feeds {
 		wg.Add(1)
 
-		go fetchFeed(ch, &wg, feed, c.config.Version)
+		go fetchFeed(ch, &wg, feed, c.config.HTTPOptions, c.config.Version)
 	}
 
 	go func() {

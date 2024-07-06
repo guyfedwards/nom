@@ -49,12 +49,6 @@ type Theme struct {
 	SelectedItemColor string `yaml:"selectedItemColor,omitempty"`
 }
 
-type HTTPOptions struct {
-	//MinTLSVersion must be set to one of the strings returned by
-	//tls.VersionName. "TLS 1.2" by default.
-	MinTLSVersion string `yaml:mintls,omitempty`
-}
-
 // need to add to Load() below if loading from config file
 type Config struct {
 	ConfigPath     string
@@ -150,6 +144,9 @@ func (c *Config) Load() error {
 	c.Openers = fileConfig.Openers
 
 	if fileConfig.HTTPOptions != nil {
+		if _, err := TLSVersion(fileConfig.HTTPOptions.MinTLSVersion); err != nil {
+			return err
+		}
 		c.HTTPOptions = fileConfig.HTTPOptions
 	}
 
