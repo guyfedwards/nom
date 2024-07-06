@@ -19,6 +19,8 @@ type HTTPOptions struct {
 	MinTLSVersion string `yaml:"mintls,omitempty"`
 }
 
+// TLSVersion maps one of a few supported TLS version strings to the corresponding
+// standard TLS library constant so that an HTTP client can be configured.
 func TLSVersion(configStr string) (uint16, error) {
 	if version, ok := tlsVersions[configStr]; ok {
 		return version, nil
