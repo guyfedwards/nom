@@ -1,7 +1,9 @@
 package rss
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -31,8 +33,21 @@ type RSS struct {
 	Channel Channel `xml:"channel"`
 }
 
-func Fetch(f config.Feed, version string) (RSS, error) {
+func Fetch(f config.Feed, httpOpts *config.HTTPOptions, version string) (RSS, error) {
 	fp := gofeed.NewParser()
+
+	fp.Client = &http.Client{}
+
+	if httpOpts != nil {
+		if version, err := config.TLSVersion(httpOpts.MinTLSVersion); err == nil {
+			fp.Client.Transport = &http.Transport{
+				TLSClientConfig: &tls.Config{
+					MinVersion: version,
+				},
+			}
+		}
+	}
+
 	fp.UserAgent = fmt.Sprintf("nom/%s", version)
 
 	feed, err := fp.ParseURL(f.URL)
