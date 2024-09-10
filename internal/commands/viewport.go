@@ -28,8 +28,13 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.selectedArticle = nil
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
-			current := m.list.SelectedItem().(TUIItem)
-			cmd = m.commands.OpenLink(current.URL)
+			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
+			if err != nil {
+				return m, nil
+			}
+
+			it := ItemToTUIItem(current)
+			cmd = m.commands.OpenLink(it.URL)
 			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
