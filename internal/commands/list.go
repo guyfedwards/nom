@@ -47,7 +47,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	if i.FeedName == "" {
 		str = fmt.Sprintf("%3d. %s", index+1, i.Title)
 	} else {
-		str = fmt.Sprintf("%3d. %s: %s", index+1, i.FeedName, i.Title)
+		str = fmt.Sprintf("%3d. %s: %s", index+1, lipgloss.NewStyle().Bold(true).Render(i.FeedName), i.Title)
 	}
 
 	fn := itemStyle.Render
