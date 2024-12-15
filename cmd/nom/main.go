@@ -55,6 +55,10 @@ func run(args []string, opts Options) error {
 	switch args[0] {
 	case "list":
 		return cmds.List(opts.Number)
+	case "refresh":
+		return cmds.Refresh()
+	case "config":
+		return cmds.ShowConfig()
 	case "add":
 		if len(args) != 2 {
 			return ErrNotEnoughArgs
