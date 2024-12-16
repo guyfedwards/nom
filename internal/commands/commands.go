@@ -15,6 +15,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
+	"gopkg.in/yaml.v3"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
 	"github.com/guyfedwards/nom/v2/internal/rss"
@@ -147,6 +148,22 @@ func (c Commands) Add(url string) error {
 		return fmt.Errorf("commands Add: %w", err)
 	}
 
+	return nil
+}
+
+func (c Commands) Refresh() error {
+	_, _, err := c.fetchAllFeeds()
+	if err != nil {
+		return fmt.Errorf("commands Refresh: %w", err)
+	}
+	return nil
+}
+func (c Commands) ShowConfig() error {
+	yaml, err := yaml.Marshal(&c.config)
+	if err != nil {
+		return fmt.Errorf("commands Config: %w", err)
+	}
+	fmt.Print(string(yaml))
 	return nil
 }
 
