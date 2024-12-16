@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -124,11 +123,9 @@ func refreshList(m model) func() tea.Msg {
 
 		m.errors = es
 		// return tea.Batch(m.list.SetItems(convertItems(items)), m.list.NewStatusMessage("Refreshed."))
-		// get date in YYYY-MM-DD hh:mm:ss
-		now := time.Now().Format("2006-01-02 15:04:05")
 		return listUpdate{
 			items:  convertItems(items),
-			status: fmt.Sprintf("Refreshed at %s.", now),
+			status: "Refreshed.",
 		}
 	}
 }
