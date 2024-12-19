@@ -3,4 +3,4 @@ feeds:
   - url: bird
   - url: dog
 general:
-  ordering: asc
+  ordering: desc
