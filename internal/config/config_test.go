@@ -73,6 +73,10 @@ func TestConfigLoad(t *testing.T) {
 	if len(c.Feeds) != 3 || c.Feeds[0].URL != "cattle" {
 		t.Fatalf("Parsing failed")
 	}
+
+	if len(c.General.Ordering) == 0 || c.General.Ordering != "asc" {
+		t.Fatalf("Parsing failed")
+	}
 }
 
 func TestConfigLoadPrecidence(t *testing.T) {

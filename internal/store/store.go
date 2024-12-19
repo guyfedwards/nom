@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/guyfedwards/nom/v2/internal/constants"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -32,7 +33,7 @@ func (i Item) Read() bool {
 
 type Store interface {
 	UpsertItem(item Item) error
-	GetAllItems() ([]Item, error)
+	GetAllItems(ordering string) ([]Item, error)
 	GetItemByID(ID int) (Item, error)
 	GetAllFeedURLs() ([]string, error)
 	ToggleRead(ID int) error
@@ -184,10 +185,18 @@ func (sls SQLiteStore) UpsertItem(item Item) error {
 }
 
 // TODO: pagination
-func (sls SQLiteStore) GetAllItems() ([]Item, error) {
-	stmt := `
-		select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat);
+func (sls SQLiteStore) GetAllItems(ordering string) ([]Item, error) {
+	itemStmt := `
+		select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat) %s;
 	`
+
+	var stmt string
+	switch ordering {
+	case constants.DescendingOrdering:
+		stmt = fmt.Sprintf(itemStmt, constants.DescendingOrdering)
+	default:
+		stmt = fmt.Sprintf(itemStmt, constants.DefaultOrdering)
+	}
 
 	rows, err := sls.db.Query(stmt)
 	if err != nil {
