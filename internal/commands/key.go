@@ -16,6 +16,7 @@ type ListKeyMapT struct {
 	ToggleFavourites      key.Binding
 	Refresh               key.Binding
 	OpenInBrowser         key.Binding
+	Sort                  key.Binding
 	oQuit                 key.Binding
 	oForceQuit            key.Binding
 	oClearFilter          key.Binding
@@ -71,6 +72,10 @@ var ListKeyMap = ListKeyMapT{
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),
 		key.WithHelp("o", "open in browser"),
+	),
+	Sort: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "sort"),
 	),
 	EditConfig: key.NewBinding(
 		key.WithKeys("E"),
@@ -166,7 +171,7 @@ func (k ViewportKeyMapT) ShortHelp() []key.Binding {
 func (k ListKeyMapT) FullHelp() []key.Binding {
 	return []key.Binding{
 		k.Open, k.Read, k.Favourite, k.Refresh,
-		k.OpenInBrowser, k.ToggleFavourites, k.ToggleReads,
+		k.OpenInBrowser, k.Sort, k.ToggleFavourites, k.ToggleReads,
 		k.MarkAllRead, k.EditConfig,
 	}
 }
