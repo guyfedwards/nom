@@ -2,6 +2,7 @@ package constants
 
 // Store constants
 const (
-	DefaultOrdering    = "asc"
+	AscendingOrdering  = "asc"
 	DescendingOrdering = "desc"
+	DefaultOrdering    = AscendingOrdering
 )

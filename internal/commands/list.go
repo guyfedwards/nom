@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/constants"
 	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
@@ -94,10 +95,10 @@ func (m *model) UpdateList() tea.Cmd {
 func sortList(m model) func() tea.Msg {
 	return func() tea.Msg {
 		// reverse sorting order
-		if m.commands.config.General.Ordering == "asc" {
-			m.commands.config.General.Ordering = "desc"
+		if m.commands.config.Ordering == constants.AscendingOrdering {
+			m.commands.config.Ordering = constants.DescendingOrdering
 		} else {
-			m.commands.config.General.Ordering = "asc"
+			m.commands.config.Ordering = constants.AscendingOrdering
 		}
 
 		items, err := m.commands.GetAllFeeds()

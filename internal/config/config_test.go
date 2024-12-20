@@ -74,7 +74,7 @@ func TestConfigLoad(t *testing.T) {
 		t.Fatalf("Parsing failed")
 	}
 
-	if len(c.General.Ordering) == 0 || c.General.Ordering != "desc" {
+	if len(c.Ordering) == 0 || c.Ordering != "desc" {
 		t.Fatalf("Parsing failed")
 	}
 }

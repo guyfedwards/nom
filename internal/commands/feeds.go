@@ -46,7 +46,7 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 		return []store.Item{}, fmt.Errorf("[commands.go] GetAllFeeds: %w", err)
 	}
 
-	is, err := c.store.GetAllItems(c.config.General.Ordering)
+	is, err := c.store.GetAllItems(c.config.Ordering)
 	if err != nil {
 		return []store.Item{}, fmt.Errorf("commands.go: GetAllFeeds %w", err)
 	}
