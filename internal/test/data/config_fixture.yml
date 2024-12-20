@@ -2,3 +2,4 @@ feeds:
   - url: cattle
   - url: bird
   - url: dog
+ordering: desc

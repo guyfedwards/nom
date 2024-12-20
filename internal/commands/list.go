@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/constants"
 	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
@@ -89,6 +90,25 @@ func (m *model) UpdateList() tea.Cmd {
 	cmd := m.list.SetItems(convertItems(fs))
 
 	return cmd
+}
+
+func sortList(m model) func() tea.Msg {
+	return func() tea.Msg {
+		// reverse sorting order
+		if m.commands.config.Ordering == constants.AscendingOrdering {
+			m.commands.config.Ordering = constants.DescendingOrdering
+		} else {
+			m.commands.config.Ordering = constants.AscendingOrdering
+		}
+
+		items, err := m.commands.GetAllFeeds()
+		if err != nil {
+			m.errors = []string{err.Error()}
+		}
+		return listUpdate{
+			items: convertItems(items),
+		}
+	}
 }
 
 func refreshList(m model) func() tea.Msg {
@@ -231,6 +251,17 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			current := item.(TUIItem)
 			cmd = m.commands.OpenLink(current.URL)
 			cmds = append(cmds, cmd)
+
+		case key.Matches(msg, ListKeyMap.Sort):
+			if m.list.SettingFilter() || m.list.IsFiltered() {
+				break
+			}
+
+			if len(m.list.Items()) == 0 {
+				return m, m.list.NewStatusMessage("No items to sort.")
+			}
+
+			cmds = append(cmds, sortList(m))
 
 		case key.Matches(msg, ListKeyMap.Open):
 			if m.list.SettingFilter() {

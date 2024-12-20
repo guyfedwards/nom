@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/guyfedwards/nom/v2/internal/constants"
 	"gopkg.in/yaml.v3"
 )
 
@@ -57,6 +58,7 @@ type Config struct {
 	ConfigDir      string `yaml:"-"`
 	Pager          string `yaml:"pager,omitempty"`
 	Feeds          []Feed `yaml:"feeds"`
+	Ordering       string `yaml:"ordering"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
 	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
 	Backends     *Backends    `yaml:"backends,omitempty"`
@@ -110,6 +112,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			TitleColor:        "62",
 			FilterColor:       "62",
 		},
+		Ordering: constants.DefaultOrdering,
 		HTTPOptions: &HTTPOptions{
 			MinTLSVersion: tls.VersionName(tls.VersionTLS12),
 		},
@@ -148,6 +151,10 @@ func (c *Config) Load() error {
 			return err
 		}
 		c.HTTPOptions = fileConfig.HTTPOptions
+	}
+
+	if len(fileConfig.Ordering) > 0 {
+		c.Ordering = fileConfig.Ordering
 	}
 
 	if fileConfig.Theme.Glamour != "" {
