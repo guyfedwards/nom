@@ -32,6 +32,7 @@ type ViewportKeyMapT struct {
 	Quit          key.Binding
 	Escape        key.Binding
 	OpenInBrowser key.Binding
+	Favourite     key.Binding
 	GotoStart     key.Binding
 	GotoEnd       key.Binding
 	Next          key.Binding
@@ -140,6 +141,10 @@ var ViewportKeyMap = ViewportKeyMapT{
 		key.WithKeys("o"),
 		key.WithHelp("o", "open in browser"),
 	),
+	Favourite: key.NewBinding(
+		key.WithKeys("f"),
+		key.WithHelp("f", "favourite"),
+	),
 	GotoStart: key.NewBinding(
 		key.WithKeys("g", "home"),
 		key.WithHelp("g", "top"),
@@ -164,7 +169,7 @@ func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
 		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
-		{k.Next, k.Prev, k.OpenInBrowser},
+		{k.Next, k.Prev, k.OpenInBrowser, k.Favourite},
 		{k.Escape, k.Quit, k.CloseFullHelp},
 	}
 }
