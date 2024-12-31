@@ -24,6 +24,7 @@ type ListKeyMapT struct {
 	oNextPage             key.Binding
 	oPrevPage             key.Binding
 	EditConfig            key.Binding
+	Suspend               key.Binding
 }
 
 // ViewportKeyMapT shows *all* keybinds, pulling from viewport.DefaultKeyMap()
@@ -37,6 +38,7 @@ type ViewportKeyMapT struct {
 	Prev          key.Binding
 	ShowFullHelp  key.Binding
 	CloseFullHelp key.Binding
+	Suspend       key.Binding
 }
 
 // ListKeyMap shows either (o)verrides or new keybinds
@@ -80,6 +82,10 @@ var ListKeyMap = ListKeyMapT{
 	EditConfig: key.NewBinding(
 		key.WithKeys("E"),
 		key.WithHelp("E", "edit config in $EDITOR"),
+	),
+	Suspend: key.NewBinding(
+		key.WithKeys("ctrl+z"),
+		key.WithHelp("ctrl+z", "suspend"),
 	),
 	// o for override
 	oQuit: key.NewBinding(
@@ -125,6 +131,10 @@ var ViewportKeyMap = ViewportKeyMapT{
 	Escape: key.NewBinding(
 		key.WithKeys("esc", "q"),
 		key.WithHelp("q/esc", "escape"),
+	),
+	Suspend: key.NewBinding(
+		key.WithKeys("ctrl+z"),
+		key.WithHelp("ctrl+z", "suspend"),
 	),
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),

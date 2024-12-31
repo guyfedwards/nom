@@ -16,8 +16,12 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.help.Width = msg.Width
 
+	case tea.ResumeMsg:
+		return m, nil
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, ViewportKeyMap.Suspend):
+			return m, tea.Suspend
 		case key.Matches(msg, ViewportKeyMap.GotoStart):
 			m.viewport.GotoTop()
 
