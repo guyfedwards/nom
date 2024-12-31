@@ -170,7 +170,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, ViewportKeyMap.Suspend):
+		case key.Matches(msg, ListKeyMap.Suspend):
 			return m, tea.Suspend
 		case key.Matches(msg, ListKeyMap.Refresh):
 			if m.list.SettingFilter() || m.list.IsFiltered() {
