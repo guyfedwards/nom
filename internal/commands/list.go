@@ -166,8 +166,12 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.list.SetItems(msg.items)
 		m.list.NewStatusMessage(msg.status)
 
+	case tea.ResumeMsg:
+		return m, nil
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, ListKeyMap.Suspend):
+			return m, tea.Suspend
 		case key.Matches(msg, ListKeyMap.Refresh):
 			if m.list.SettingFilter() || m.list.IsFiltered() {
 				break
