@@ -16,6 +16,15 @@ jobs:
         with:
           go-version: '>=1.19.0'
       -
+        name: Validate
+        run: |
+          # Check that go mod tidy produces a zero diff; clean up any changes afterwards.
+          go mod tidy && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
+          # Check that go vet ./... produces a zero diff; clean up any changes afterwards.
+          go vet ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
+          # Check that go fmt ./... produces a zero diff; clean up any changes afterwards.
+          go fmt ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
+      -
         name: Run tests
         run: make test
   build:
