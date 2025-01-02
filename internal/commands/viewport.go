@@ -53,6 +53,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Read):
+			if m.commands.config.AutoRead {
+				return m, nil
+			}
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 			if err != nil {
 				return m, nil
