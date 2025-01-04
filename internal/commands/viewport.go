@@ -29,7 +29,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
-			// if last nav was marked read navigate to last read not new
+			// if post marked read navigate to last read not next if ShowLastRead
 			if m.markedRead && !m.commands.config.ShowRead && m.commands.config.ShowLastRead {
 				current := m.list.Index()
 				if current-1 >= 0 {
