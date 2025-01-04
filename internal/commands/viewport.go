@@ -29,6 +29,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
+			// if last nav was marked read navigate to last read not new
+			if m.markedRead && !m.commands.config.ShowRead && m.commands.config.ShowLastRead {
+				current := m.list.Index()
+				if current-1 >= 0 {
+					m.list.Select(current - 1)
+				}
+			}
+
 			m.selectedArticle = nil
 			m.markedRead = false
 
@@ -65,7 +73,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			if !m.cfg.ShowRead {
+
+			// don't use special nav when showing read posts
+			if !m.commands.config.ShowRead {
 				m.markedRead = true
 			}
 			cmds = append(cmds, m.UpdateList())

@@ -63,6 +63,7 @@ type Config struct {
 	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
 	Backends     *Backends    `yaml:"backends,omitempty"`
 	ShowRead     bool         `yaml:"showread,omitempty"`
+	ShowLastRead bool         `yaml:"showlastread,omitempty"`
 	AutoRead     bool         `yaml:"autoread,omitempty"`
 	Openers      []Opener     `yaml:"openers,omitempty"`
 	Theme        Theme        `yaml:"theme,omitempty"`
@@ -142,6 +143,7 @@ func (c *Config) Load() error {
 	}
 
 	c.ShowRead = fileConfig.ShowRead
+	c.ShowLastRead = fileConfig.ShowLastRead
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
 	c.Openers = fileConfig.Openers
