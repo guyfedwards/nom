@@ -42,6 +42,7 @@ type model struct {
 	list            list.Model
 	help            help.Model
 	viewport        viewport.Model
+	markedRead      bool
 }
 
 func (m model) Init() tea.Cmd {

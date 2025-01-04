@@ -143,8 +143,8 @@ var ViewportKeyMap = ViewportKeyMapT{
 		key.WithHelp("o", "open in browser"),
 	),
 	Favourite: key.NewBinding(
-		key.WithKeys("f"),
-		key.WithHelp("f", "favourite"),
+		key.WithKeys("F"),
+		key.WithHelp("F", "favourite"),
 	),
 	Read: key.NewBinding(
 		key.WithKeys("m"),

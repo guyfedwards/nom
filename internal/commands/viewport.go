@@ -30,6 +30,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
 			m.selectedArticle = nil
+			m.markedRead = false
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
@@ -64,6 +65,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
+			if !m.cfg.ShowRead {
+				m.markedRead = true
+			}
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
@@ -72,9 +76,10 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 
-			m.list.Select(current - 1)
+			navIndex := getPrevIndex(current)
+			m.list.Select(navIndex)
 			items := m.list.Items()
-			item := items[current-1]
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -83,6 +88,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+			m.markedRead = false
 			m.viewport.SetContent(content)
 
 		case key.Matches(msg, ViewportKeyMap.Next):
@@ -92,8 +98,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 
-			m.list.Select(current + 1)
-			item := items[current+1]
+			navIndex := getNextIndex(m.markedRead, current)
+			m.list.Select(navIndex)
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -102,6 +109,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+			m.markedRead = false
 			m.viewport.SetContent(content)
 		case key.Matches(msg, ViewportKeyMap.Quit):
 			return m, tea.Quit
@@ -120,6 +128,17 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func getPrevIndex(current int) int {
+	return current - 1
+}
+
+func getNextIndex(marked bool, current int) int {
+	if marked {
+		return current
+	}
+	return current + 1
 }
 
 func viewportView(m model) string {
