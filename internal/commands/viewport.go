@@ -133,14 +133,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 }
 
 func isOutOfBounds(i int, l int, m *model) bool {
-	length := l - 1
+	index := l - 1
 
 	// when autoread and don't show read the first opened item doesn't exist in list
 	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
-		length = l
+		index = l
 	}
 
-	if i < 0 || i > length || length <= 0 || (i == 0 && length <= 0) {
+	if i < 0 || i > index || index < 0 || l == 0 {
 		return true
 	}
 	return false
