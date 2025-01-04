@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"log"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -64,17 +67,22 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
+
+			m.list.RemoveItem(m.list.Index())
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
-			current := m.list.Index()
-			if current-1 < 0 {
+			debugIndex(&m)
+			debugList(&m)
+			navIndex := getPrevIndex(&m)
+			debugNav(navIndex)
+			items := m.list.Items()
+			if isOutOfBounds(navIndex, len(items), &m) {
 				return m, nil
 			}
 
-			m.list.Select(current - 1)
-			items := m.list.Items()
-			item := items[current-1]
+			m.list.Select(navIndex)
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -84,16 +92,20 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Next):
-			current := m.list.Index()
+			debugIndex(&m)
+			debugList(&m)
+			navIndex := getNextIndex(&m)
+			debugNav(navIndex)
 			items := m.list.Items()
-			if current+1 >= len(items) {
+			if isOutOfBounds(navIndex, len(items), &m) {
 				return m, nil
 			}
 
-			m.list.Select(current + 1)
-			item := items[current+1]
+			m.list.Select(navIndex)
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -103,6 +115,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			cmds = append(cmds, m.UpdateList())
+
 		case key.Matches(msg, ViewportKeyMap.Quit):
 			return m, tea.Quit
 
@@ -120,6 +134,62 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func isOutOfBounds(i int, l int, m *model) bool {
+	length := l - 1
+
+	// when autoread and don't show read the first opened item doesn't exist in list
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+		length = l
+	}
+
+	if i < 0 || i > length || length <= 0 || (i == 0 && length <= 0) {
+		return true
+	}
+	return false
+}
+
+func getNextIndex(m *model) int {
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+		return m.list.Index()
+	}
+
+	// check for favorite within post
+	current, err := m.commands.store.GetItemByID(*m.selectedArticle)
+	if err != nil {
+		return m.list.Index()
+	}
+	if !m.commands.config.AutoRead && current.Read() && !m.commands.config.ShowRead {
+		return m.list.Index()
+	}
+
+	return m.list.Index() + 1
+}
+
+func getPrevIndex(m *model) int {
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+		return m.list.Index()
+	}
+
+	return m.list.Index() - 1
+}
+
+func debugIndex(m *model) {
+	log.Printf("Index: %d", m.list.Index())
+}
+
+func debugNav(i int) {
+	log.Printf("Nav: %d", i)
+}
+
+func debugList(m *model) {
+	arr := []string{}
+
+	for _, item := range m.list.Items() {
+		arr = append(arr, item.(TUIItem).Title)
+	}
+	log.Println(strings.Join(arr, ","))
 }
 
 func viewportView(m model) string {
