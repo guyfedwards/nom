@@ -1,9 +1,6 @@
 package commands
 
 import (
-	"log"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -72,12 +69,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
-			debugIndex(&m)
-			debugList(&m)
 			navIndex := getPrevIndex(&m)
-			debugNav(navIndex)
 			items := m.list.Items()
 			if isOutOfBounds(navIndex, len(items), &m) {
+				return m, nil
+			}
+
+			// secondary check on autoread to prevent it navigating to next item on prev
+			if navIndex == 0 && m.commands.config.AutoRead && !m.commands.config.ShowRead {
 				return m, nil
 			}
 
@@ -95,10 +94,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Next):
-			debugIndex(&m)
-			debugList(&m)
 			navIndex := getNextIndex(&m)
-			debugNav(navIndex)
 			items := m.list.Items()
 			if isOutOfBounds(navIndex, len(items), &m) {
 				return m, nil
@@ -173,23 +169,6 @@ func getPrevIndex(m *model) int {
 	}
 
 	return m.list.Index() - 1
-}
-
-func debugIndex(m *model) {
-	log.Printf("Index: %d", m.list.Index())
-}
-
-func debugNav(i int) {
-	log.Printf("Nav: %d", i)
-}
-
-func debugList(m *model) {
-	arr := []string{}
-
-	for _, item := range m.list.Items() {
-		arr = append(arr, item.(TUIItem).Title)
-	}
-	log.Println(strings.Join(arr, ","))
 }
 
 func viewportView(m model) string {
