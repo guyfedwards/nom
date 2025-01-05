@@ -220,7 +220,12 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, m.list.NewStatusMessage("No items to favourite.")
 			}
 
-			current := m.list.SelectedItem().(TUIItem)
+			item := m.list.SelectedItem()
+			if item == nil {
+				return m, m.list.NewStatusMessage("No item selected.")
+			}
+
+			current := item.(TUIItem)
 			err := m.commands.store.ToggleFavourite(current.ID)
 			if err != nil {
 				return m, tea.Quit
