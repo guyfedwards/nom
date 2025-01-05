@@ -30,6 +30,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
 			m.selectedArticle = nil
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
@@ -50,7 +51,6 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Read):
 			if m.commands.config.AutoRead {
@@ -65,18 +65,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
-			m.list.RemoveItem(m.list.Index())
-			cmds = append(cmds, m.UpdateList())
+			if !m.commands.config.ShowRead {
+				m.list.RemoveItem(m.list.Index())
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			navIndex := getPrevIndex(&m)
 			items := m.list.Items()
-			if isOutOfBounds(navIndex, len(items), &m) {
-				return m, nil
-			}
-
-			// secondary check on autoread to prevent it navigating to next item on prev
-			if navIndex == 0 && m.commands.config.AutoRead && !m.commands.config.ShowRead {
+			if isPrevOutOfBounds(navIndex, &m) {
 				return m, nil
 			}
 
@@ -91,12 +87,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
-			cmds = append(cmds, m.UpdateList())
+			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+				m.list.RemoveItem(m.list.Index())
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Next):
 			navIndex := getNextIndex(&m)
 			items := m.list.Items()
-			if isOutOfBounds(navIndex, len(items), &m) {
+			if isNextOutOfBounds(navIndex, len(items), &m) {
 				return m, nil
 			}
 
@@ -111,7 +109,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
-			cmds = append(cmds, m.UpdateList())
+			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+				m.list.RemoveItem(m.list.Index())
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Quit):
 			return m, tea.Quit
@@ -132,15 +132,22 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func isOutOfBounds(i int, l int, m *model) bool {
-	index := l - 1
+func isPrevOutOfBounds(i int, m *model) bool {
+	if len(m.list.Items()) == 0 {
+		return true
+	}
+	return i < 0
+}
+
+func isNextOutOfBounds(i int, l int, m *model) bool {
+	maxIndex := l - 1
 
 	// when autoread and don't show read the first opened item doesn't exist in list
-	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
-		index = l
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead && i == 0 {
+		maxIndex = l
 	}
 
-	if i < 0 || i > index || index < 0 || l == 0 {
+	if i < 0 || i > maxIndex || maxIndex < 0 || l == 0 {
 		return true
 	}
 	return false
@@ -164,8 +171,13 @@ func getNextIndex(m *model) int {
 }
 
 func getPrevIndex(m *model) int {
-	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+	current := m.list.Index()
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead && current < len(m.list.Items()) {
 		return m.list.Index()
+	}
+
+	if current == 0 {
+		return 0
 	}
 
 	return m.list.Index() - 1
