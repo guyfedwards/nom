@@ -143,8 +143,8 @@ var ViewportKeyMap = ViewportKeyMapT{
 		key.WithHelp("o", "open in browser"),
 	),
 	Favourite: key.NewBinding(
-		key.WithKeys("F"),
-		key.WithHelp("F", "favourite"),
+		key.WithKeys("f"),
+		key.WithHelp("f", "favourite"),
 	),
 	Read: key.NewBinding(
 		key.WithKeys("m"),
@@ -173,7 +173,7 @@ func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
 	v := viewport.DefaultKeyMap()
 	return [][]key.Binding{
 		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
-		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
+		{k.GotoStart, k.GotoEnd},
 		{k.Next, k.Prev, k.OpenInBrowser, k.Favourite, k.Read},
 		{k.Escape, k.Quit, k.CloseFullHelp},
 	}
