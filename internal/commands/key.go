@@ -173,7 +173,7 @@ func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
 	v := viewport.DefaultKeyMap()
 	return [][]key.Binding{
 		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
-		{k.GotoStart, k.GotoEnd},
+		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
 		{k.Next, k.Prev, k.OpenInBrowser, k.Favourite, k.Read},
 		{k.Escape, k.Quit, k.CloseFullHelp},
 	}
