@@ -292,9 +292,8 @@ func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	var mdown string
 
 	title := item.Title
-	// check mark indication post has been read
 	if item.Read() {
-		title = fmt.Sprintf("\u2713 - %s", item.Title)
+		title = fmt.Sprintf("%s - %s", item.Title, theme.ReadIcon)
 	}
 
 	mdown += "# " + title

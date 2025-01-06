@@ -48,6 +48,7 @@ type Theme struct {
 	TitleColor        string `yaml:"titleColor,omitempty"`
 	FilterColor       string `yaml:"filterColor,omitempty"`
 	SelectedItemColor string `yaml:"selectedItemColor,omitempty"`
+	ReadIcon          string `yaml:"readIcon,omitempty"`
 }
 
 // need to add to Load() below if loading from config file
@@ -111,6 +112,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			SelectedItemColor: "170",
 			TitleColor:        "62",
 			FilterColor:       "62",
+			ReadIcon:          "\u2713",
 		},
 		Ordering: constants.DefaultOrdering,
 		HTTPOptions: &HTTPOptions{
@@ -155,6 +157,10 @@ func (c *Config) Load() error {
 
 	if len(fileConfig.Ordering) > 0 {
 		c.Ordering = fileConfig.Ordering
+	}
+
+	if len(fileConfig.Theme.ReadIcon) > 0 {
+		c.Theme.ReadIcon = fileConfig.Theme.ReadIcon
 	}
 
 	if fileConfig.Theme.Glamour != "" {
