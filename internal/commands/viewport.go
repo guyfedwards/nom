@@ -98,9 +98,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(content)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
-			navIndex := getPrevIndex(&m)
+			navIndex := m.getPrevIndex()
 			items := m.list.Items()
-			if isPrevOutOfBounds(navIndex, &m) {
+			if m.isPrevOutOfBounds(navIndex) {
 				return m, nil
 			}
 
@@ -120,9 +120,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, ViewportKeyMap.Next):
-			navIndex := getNextIndex(&m)
+			navIndex := m.getNextIndex()
 			items := m.list.Items()
-			if isNextOutOfBounds(navIndex, len(items), &m) {
+			if m.isNextOutOfBounds(navIndex, len(items)) {
 				return m, nil
 			}
 
@@ -160,14 +160,14 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func isPrevOutOfBounds(i int, m *model) bool {
+func (m *model) isPrevOutOfBounds(i int) bool {
 	if len(m.list.Items()) == 0 {
 		return true
 	}
 	return i < 0
 }
 
-func isNextOutOfBounds(i int, l int, m *model) bool {
+func (m *model) isNextOutOfBounds(i int, l int) bool {
 	maxIndex := l - 1
 
 	// when autoread and don't show read the first opened item doesn't exist in list
@@ -181,7 +181,7 @@ func isNextOutOfBounds(i int, l int, m *model) bool {
 	return false
 }
 
-func getNextIndex(m *model) int {
+func (m *model) getNextIndex() int {
 	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
 		return m.list.Index()
 	}
@@ -198,7 +198,7 @@ func getNextIndex(m *model) int {
 	return m.list.Index() + 1
 }
 
-func getPrevIndex(m *model) int {
+func (m *model) getPrevIndex() int {
 	current := m.list.Index()
 	if m.commands.config.AutoRead && !m.commands.config.ShowRead && current < len(m.list.Items()) {
 		return m.list.Index()
