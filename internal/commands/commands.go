@@ -291,7 +291,13 @@ func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
 func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	var mdown string
 
-	mdown += "# " + item.Title
+	title := item.Title
+	// check mark indication post has been read
+	if item.Read() {
+		title = fmt.Sprintf("\u2713 - %s", item.Title)
+	}
+
+	mdown += "# " + title
 	mdown += "\n"
 	mdown += item.Author
 	if !item.PublishedAt.IsZero() {

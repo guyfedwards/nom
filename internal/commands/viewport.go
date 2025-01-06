@@ -29,6 +29,13 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
+			// reset cursor if last post is read and quit
+			index := m.list.Index()
+			length := len(m.list.Items())
+			if index >= length && length >= 1 {
+				m.list.Select(index - 1)
+			}
+
 			m.selectedArticle = nil
 			cmds = append(cmds, m.UpdateList())
 
@@ -66,8 +73,29 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			if !m.commands.config.ShowRead {
-				m.list.RemoveItem(m.list.Index())
+				index := m.list.Index()
+
+				if m.lastRead != nil && current.ID == (*m.lastRead).(TUIItem).ID {
+					// un-read re-add post back to list
+					m.list.InsertItem(index, *m.lastRead)
+					m.lastReadIndex = index
+					m.lastRead = nil
+				} else {
+					// remove post and store backup for un-read
+					items := m.list.Items()
+					item := items[index]
+					m.list.RemoveItem(index)
+					m.lastReadIndex = index
+					m.lastRead = &item
+				}
 			}
+
+			// trigger refresh to update read indication
+			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
+			if err != nil {
+				return m, tea.Quit
+			}
+			m.viewport.SetContent(content)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			navIndex := getPrevIndex(&m)
