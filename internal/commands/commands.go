@@ -252,7 +252,7 @@ func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
 		return "", fmt.Errorf("commands.FindGlamourisedArticle: %w", err)
 	}
 
-	if c.config.AutoRead {
+	if c.config.AutoRead && !article.Read() {
 		err = c.store.ToggleRead(article.ID)
 		if err != nil {
 			return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
@@ -291,7 +291,12 @@ func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
 func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	var mdown string
 
-	mdown += "# " + item.Title
+	title := item.Title
+	if item.Read() {
+		title = fmt.Sprintf("%s - %s", item.Title, theme.ReadIcon)
+	}
+
+	mdown += "# " + title
 	mdown += "\n"
 	mdown += item.Author
 	if !item.PublishedAt.IsZero() {

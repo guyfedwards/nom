@@ -42,6 +42,8 @@ type model struct {
 	list            list.Model
 	help            help.Model
 	viewport        viewport.Model
+	lastRead        *list.Item
+	lastReadIndex   int
 }
 
 func (m model) Init() tea.Cmd {

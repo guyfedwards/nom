@@ -29,7 +29,15 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 
 		case key.Matches(msg, ViewportKeyMap.Escape):
+			// reset cursor if last post is read and quit
+			index := m.list.Index()
+			length := len(m.list.Items())
+			if index >= length && length >= 1 {
+				m.list.Select(index - 1)
+			}
+
 			m.selectedArticle = nil
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
@@ -50,7 +58,6 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.Read):
 			if m.commands.config.AutoRead {
@@ -64,17 +71,41 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			cmds = append(cmds, m.UpdateList())
+
+			if !m.commands.config.ShowRead {
+				index := m.list.Index()
+
+				if m.lastRead != nil && current.ID == (*m.lastRead).(TUIItem).ID {
+					// un-read re-add post back to list
+					m.list.InsertItem(index, *m.lastRead)
+					m.lastReadIndex = index
+					m.lastRead = nil
+				} else {
+					// remove post and store backup for un-read
+					items := m.list.Items()
+					item := items[index]
+					m.list.RemoveItem(index)
+					m.lastReadIndex = index
+					m.lastRead = &item
+				}
+			}
+
+			// trigger refresh to update read indication
+			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
+			if err != nil {
+				return m, tea.Quit
+			}
+			m.viewport.SetContent(content)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
-			current := m.list.Index()
-			if current-1 < 0 {
+			navIndex := m.getPrevIndex()
+			items := m.list.Items()
+			if m.isPrevOutOfBounds(navIndex) {
 				return m, nil
 			}
 
-			m.list.Select(current - 1)
-			items := m.list.Items()
-			item := items[current-1]
+			m.list.Select(navIndex)
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -84,16 +115,19 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+				m.list.RemoveItem(m.list.Index())
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Next):
-			current := m.list.Index()
+			navIndex := m.getNextIndex()
 			items := m.list.Items()
-			if current+1 >= len(items) {
+			if m.isNextOutOfBounds(navIndex, len(items)) {
 				return m, nil
 			}
 
-			m.list.Select(current + 1)
-			item := items[current+1]
+			m.list.Select(navIndex)
+			item := items[navIndex]
 			id := item.(TUIItem).ID
 			m.selectedArticle = &id
 
@@ -103,6 +137,10 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+				m.list.RemoveItem(m.list.Index())
+			}
+
 		case key.Matches(msg, ViewportKeyMap.Quit):
 			return m, tea.Quit
 
@@ -120,6 +158,57 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *model) isPrevOutOfBounds(i int) bool {
+	if len(m.list.Items()) == 0 {
+		return true
+	}
+	return i < 0
+}
+
+func (m *model) isNextOutOfBounds(i int, l int) bool {
+	maxIndex := l - 1
+
+	// when autoread and don't show read the first opened item doesn't exist in list
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead && i == 0 {
+		maxIndex = l
+	}
+
+	if i < 0 || i > maxIndex || maxIndex < 0 || l == 0 {
+		return true
+	}
+	return false
+}
+
+func (m *model) getNextIndex() int {
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead {
+		return m.list.Index()
+	}
+
+	// check for favorite within post
+	current, err := m.commands.store.GetItemByID(*m.selectedArticle)
+	if err != nil {
+		return m.list.Index()
+	}
+	if !m.commands.config.AutoRead && current.Read() && !m.commands.config.ShowRead {
+		return m.list.Index()
+	}
+
+	return m.list.Index() + 1
+}
+
+func (m *model) getPrevIndex() int {
+	current := m.list.Index()
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead && current < len(m.list.Items()) {
+		return m.list.Index()
+	}
+
+	if current == 0 {
+		return 0
+	}
+
+	return m.list.Index() - 1
 }
 
 func viewportView(m model) string {
