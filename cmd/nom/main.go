@@ -57,7 +57,6 @@ func (r *List) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Println(options.Number)
 	return cmds.List(options.Number)
 }
 
