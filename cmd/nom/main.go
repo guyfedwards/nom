@@ -12,7 +12,6 @@ import (
 
 type Options struct {
 	Verbose      bool     `short:"v" long:"verbose" description:"Show verbose logging"`
-	Number       int      `short:"n" long:"number" description:"Number of results to show"`
 	Pager        string   `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
 	ConfigPath   string   `long:"config-path" description:"Location of config.yml"`
 	PreviewFeeds []string `short:"f" long:"feed" description:"Feed(s) URL(s) for preview"`
@@ -57,7 +56,7 @@ func (r *List) Execute(args []string) error {
 		return err
 	}
 
-	return cmds.List(options.Number)
+	return cmds.List()
 }
 
 type Version struct{}

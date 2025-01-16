@@ -122,7 +122,7 @@ func GetWslHostName() string {
 	return strings.TrimSpace(string(out))
 }
 
-func (c Commands) List(numResults int) error {
+func (c Commands) List() error {
 	its, err := c.GetAllFeeds()
 	if err != nil {
 		return fmt.Errorf("commands List: %w", err)
