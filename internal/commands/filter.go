@@ -19,23 +19,6 @@ type Filterer struct {
 	}
 }
 
-// Filters by specific filterValue/s on the Filterer.Term
-func (f *Filterer) FilterBy(filterValues []string, targetFilterValues []string, ranks []fuzzy.Match) []fuzzy.Match {
-	if filterValues != nil && len(filterValues) > 0 {
-		var filteredRanks []fuzzy.Match
-		for _, filterValue := range filterValues {
-			for _, rank := range ranks {
-				if strings.ToLower(targetFilterValues[rank.Index]) == filterValue {
-					filteredRanks = append(filteredRanks, rank)
-				}
-			}
-		}
-		return filteredRanks
-	}
-
-	return ranks
-}
-
 // Breaks what's returned from TUIItem.FilterValue() into a TUIItem.
 func (f *Filterer) GetItem(filterValue string) TUIItem {
 	var i TUIItem
