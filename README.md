@@ -81,6 +81,11 @@ backends:
     password: muchstrong
 ```
 
+#### FreshRSS
+To use freshrss you need to enable API access and set the API password explicitly, separate to your user password.
+1. To enable the API go to Settings > Authentication > Allow API access.  
+1. You can set the API password in Settings > Profile > API password.  
+
 ### Openers
 By default links are opened in the browser, you can specify commands to open certain links based on a regex string.   
 `regex` can be any valid golang regex string, it will be matched against the feed item link.  
