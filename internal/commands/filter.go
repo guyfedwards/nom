@@ -109,9 +109,14 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 		targetFeedNames = append(targetFeedNames, i.FeedName)
 	}
 
-	ranks := fuzzy.Find(f.Term.Title, targetTitles)
-
-	ranks = f.FilterBy(f.FeedNames, targetFeedNames, ranks)
+	var ranks fuzzy.Matches
+	if len(f.FeedNames) == 0 {
+		ranks = fuzzy.Find(f.Term.Title, targetTitles)
+	} else {
+		for _, feedName := range f.FeedNames {
+			ranks = append(ranks, fuzzy.Find(feedName, targetFeedNames)...)
+		}
+	}
 
 	sort.Stable(ranks)
 
