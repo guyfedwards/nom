@@ -42,6 +42,10 @@ func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
 		return []Feed{}, err
 	}
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return []Feed{}, fmt.Errorf("could not login to freshrss, statusCode: %d", resp.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return []Feed{}, err
