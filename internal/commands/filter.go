@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -19,19 +20,34 @@ type Filterer struct {
 	}
 }
 
-// Filters by specific filterValue/s on the Filterer.Term
-func (f *Filterer) FilterBy(filterValues []string, targetFilterValues []string, ranks []fuzzy.Match) []fuzzy.Match {
-	if filterValues != nil && len(filterValues) > 0 {
-		var filteredRanks []fuzzy.Match
-		for _, filterValue := range filterValues {
-			for _, rank := range ranks {
-				if strings.ToLower(targetFilterValues[rank.Index]) == filterValue {
-					filteredRanks = append(filteredRanks, rank)
+// Filters by feednames
+func (f *Filterer) FilterByFeedName(filterValues []string, targetFilterValues []string) fuzzy.Matches {
+	// find matching feeds and keep the best matching one in case there are multiple
+	ranksGrouped := map[int]fuzzy.Match{}
+	for _, feedName := range filterValues {
+		matches := fuzzy.Find(feedName, targetFilterValues)
+		for _, m := range matches {
+			prevMatch, ok := ranksGrouped[m.Index]
+			if !ok {
+				ranksGrouped[m.Index] = m
+			} else {
+				if prevMatch.Score < m.Score {
+					ranksGrouped[m.Index] = m
 				}
 			}
 		}
-		return filteredRanks
 	}
+
+	var ranks fuzzy.Matches
+	for _, m := range ranksGrouped {
+		ranks = append(ranks, m)
+	}
+
+	// keep the same order as the input
+	// this keeps the same order of items in the UI and prevents the items from being shuffled
+	slices.SortStableFunc(ranks, func(left fuzzy.Match, right fuzzy.Match) int {
+		return right.Index - left.Index
+	})
 
 	return ranks
 }
@@ -109,9 +125,12 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 		targetFeedNames = append(targetFeedNames, i.FeedName)
 	}
 
-	ranks := fuzzy.Find(f.Term.Title, targetTitles)
-
-	ranks = f.FilterBy(f.FeedNames, targetFeedNames, ranks)
+	var ranks fuzzy.Matches
+	if len(f.FeedNames) == 0 {
+		ranks = fuzzy.Find(f.Term.Title, targetTitles)
+	} else {
+		ranks = f.FilterByFeedName(f.FeedNames, targetFeedNames)
+	}
 
 	sort.Stable(ranks)
 
