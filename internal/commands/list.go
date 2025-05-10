@@ -252,6 +252,20 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.commands.config.ToggleShowFavourites()
 			cmds = append(cmds, m.UpdateList())
 
+		case key.Matches(msg, ViewportKeyMap.OpenInEditor):
+			if m.list.SettingFilter() {
+				break
+			}
+
+			item := m.list.SelectedItem()
+			if item == nil {
+				return m, m.list.NewStatusMessage("No link selected.")
+			}
+
+			current := item.(TUIItem)
+			cmd = m.commands.OpenBody(current.URL)
+			cmds = append(cmds, cmd)
+
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			if m.list.SettingFilter() {
 				break

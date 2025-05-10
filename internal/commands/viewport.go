@@ -39,6 +39,16 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			m.selectedArticle = nil
 			cmds = append(cmds, m.UpdateList())
 
+		case key.Matches(msg, ViewportKeyMap.OpenInEditor):
+			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
+			if err != nil {
+				return m, nil
+			}
+
+			it := ItemToTUIItem(current)
+			cmd = m.commands.OpenBody(it.URL)
+			cmds = append(cmds, cmd)
+
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 			if err != nil {

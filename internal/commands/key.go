@@ -15,6 +15,7 @@ type ListKeyMapT struct {
 	MarkAllRead           key.Binding
 	ToggleFavourites      key.Binding
 	Refresh               key.Binding
+	OpenInEditor          key.Binding
 	OpenInBrowser         key.Binding
 	Sort                  key.Binding
 	oQuit                 key.Binding
@@ -31,6 +32,7 @@ type ListKeyMapT struct {
 type ViewportKeyMapT struct {
 	Quit          key.Binding
 	Escape        key.Binding
+	OpenInEditor  key.Binding
 	OpenInBrowser key.Binding
 	Favourite     key.Binding
 	Read          key.Binding
@@ -72,6 +74,10 @@ var ListKeyMap = ListKeyMapT{
 	Refresh: key.NewBinding(
 		key.WithKeys("r"),
 		key.WithHelp("r", "refresh"),
+	),
+	OpenInEditor: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "open in $EDITOR"),
 	),
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),
@@ -138,6 +144,10 @@ var ViewportKeyMap = ViewportKeyMapT{
 		key.WithKeys("ctrl+z"),
 		key.WithHelp("ctrl+z", "suspend"),
 	),
+	OpenInEditor: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "open in $EDITOR"),
+	),
 	OpenInBrowser: key.NewBinding(
 		key.WithKeys("o"),
 		key.WithHelp("o", "open in browser"),
@@ -174,7 +184,7 @@ func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
 		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
-		{k.Next, k.Prev, k.OpenInBrowser, k.Favourite, k.Read},
+		{k.Next, k.Prev, k.OpenInEditor, k.OpenInBrowser, k.Favourite, k.Read},
 		{k.Escape, k.Quit, k.CloseFullHelp},
 	}
 }
@@ -191,7 +201,7 @@ func (k ViewportKeyMapT) ShortHelp() []key.Binding {
 func (k ListKeyMapT) FullHelp() []key.Binding {
 	return []key.Binding{
 		k.Open, k.Read, k.Favourite, k.Refresh,
-		k.OpenInBrowser, k.Sort, k.ToggleFavourites, k.ToggleReads,
+		k.OpenInEditor, k.OpenInBrowser, k.Sort, k.ToggleFavourites, k.ToggleReads,
 		k.MarkAllRead, k.EditConfig,
 	}
 }
