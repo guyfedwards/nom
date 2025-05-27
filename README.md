@@ -37,7 +37,7 @@ feeds:
 ```
 You can also add feeds with the `add` command:
 ```sh
-$ nom add <url> <optional name>
+$ nom add <url> <optional feed_name>
 ```
 Feeds are editable within `nom` by pressing `E` to open the config in your `$EDITOR` or `$NOMEDITOR`. After editing feeds, you will need to then refresh with `r`.
 
