@@ -26,7 +26,8 @@ var (
 
 type Add struct {
 	Positional struct {
-		Url string `positional-arg-name:"URL" required:"yes"`
+		Url  string `positional-arg-name:"URL" required:"yes"`
+		Name string `positional-arg-name:"NAME" required:"no"`
 	} `positional-args:"yes"`
 }
 
@@ -35,7 +36,7 @@ func (r *Add) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	return cmds.Add(r.Positional.Url)
+	return cmds.Add(r.Positional.Url, r.Positional.Name)
 }
 
 type Config struct{}

@@ -142,8 +142,8 @@ func (c Commands) List() error {
 	return outputToPager(output)
 }
 
-func (c Commands) Add(url string) error {
-	err := c.config.AddFeed(config.Feed{URL: url})
+func (c Commands) Add(url string, name string) error {
+	err := c.config.AddFeed(config.Feed{URL: url, Name: name})
 	if err != nil {
 		return fmt.Errorf("commands Add: %w", err)
 	}
