@@ -18,7 +18,7 @@ $ curl -L https://github.com/guyfedwards/nom/releases/download/v2.1.4/nom_2.1.4_
 ## Usage
 ```sh
 $ nom # start TUI
-$ nom add <feed_url>
+$ nom add <feed_url> <optional feed_name>
 $ nom -h # see all available command and options
 ```
 
@@ -37,7 +37,7 @@ feeds:
 ```
 You can also add feeds with the `add` command:
 ```sh
-$ nom add <url>
+$ nom add <url> <optional name>
 ```
 Feeds are editable within `nom` by pressing `E` to open the config in your `$EDITOR` or `$NOMEDITOR`. After editing feeds, you will need to then refresh with `r`.
 
