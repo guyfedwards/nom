@@ -27,7 +27,7 @@ var (
 type Add struct {
 	Positional struct {
 		Url  string `positional-arg-name:"URL" required:"yes"`
-		Name string `positional-arg-name:"NAME" required:"no"`
+		Name string `positional-arg-name:"NAME"`
 	} `positional-args:"yes"`
 }
 
