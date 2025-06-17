@@ -28,9 +28,10 @@ type MinifluxBackend struct {
 }
 
 type FreshRSSBackend struct {
-	Host     string `yaml:"host"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
+	Host       string `yaml:"host"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	PrefixCats bool   `yaml:"prefixCats"`
 }
 
 type Backends struct {

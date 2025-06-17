@@ -80,6 +80,7 @@ backends:
     host: http://myfreshrss.bar
     user: admin
     password: muchstrong
+    prefixCats: true # prefix feed name for freshrss entries
 ```
 
 #### FreshRSS

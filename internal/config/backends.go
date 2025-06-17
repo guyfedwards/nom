@@ -32,8 +32,24 @@ type FreshRSSResponse struct {
 	Subscriptions []FreshRSSFeed `yaml:"subscriptions,omitempty"`
 }
 
+type Cat struct {
+	Label string `yaml:"label,omitempty"`
+}
+
 type FreshRSSFeed struct {
-	URL string `yaml:"url,omitempty"`
+	URL        string `yaml:"url,omitempty"`
+	Categories []Cat  `yaml:"categories,omitempty"`
+}
+
+func (frss FreshRSSFeed) GetCats() string {
+	ret := ""
+	for i, v := range frss.Categories {
+		if i != 0 {
+			ret += ","
+		}
+		ret += v.Label
+	}
+	return ret
 }
 
 func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
@@ -82,7 +98,11 @@ func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
 	var ret []Feed
 
 	for _, f := range b.Subscriptions {
-		ret = append(ret, Feed{URL: f.URL})
+		name := ""
+		if config.PrefixCats {
+			name = f.GetCats()
+		}
+		ret = append(ret, Feed{URL: f.URL, Name: name})
 	}
 
 	return ret, nil
