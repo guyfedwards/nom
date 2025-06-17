@@ -284,6 +284,7 @@ func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
 	}
 
 	sc.H1.BackgroundColor = &theme.TitleColor
+	sc.H1.Color = &theme.TitleColorFg
 
 	return sc
 }

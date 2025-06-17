@@ -64,6 +64,7 @@ Colors can be hex or ASCII codes, they will be coerced depending on your termina
 theme: 
   glamour: dark
   titleColor: "62"
+  titleColorFg: "231"
   selectedItemColor: "170"
   filterColor: "#555555"
 ```

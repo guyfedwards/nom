@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/guyfedwards/nom/v2/internal/constants"
 	"gopkg.in/yaml.v3"
+
+	"github.com/guyfedwards/nom/v2/internal/constants"
 )
 
 var (
@@ -46,6 +47,7 @@ type Opener struct {
 type Theme struct {
 	Glamour           string `yaml:"glamour,omitempty"`
 	TitleColor        string `yaml:"titleColor,omitempty"`
+	TitleColorFg      string `yaml:"titleColorFg,omitempty"`
 	FilterColor       string `yaml:"filterColor,omitempty"`
 	SelectedItemColor string `yaml:"selectedItemColor,omitempty"`
 	ReadIcon          string `yaml:"readIcon,omitempty"`
@@ -111,6 +113,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			Glamour:           "dark",
 			SelectedItemColor: "170",
 			TitleColor:        "62",
+			TitleColorFg:      "231",
 			FilterColor:       "62",
 			ReadIcon:          "\u2713",
 		},
@@ -173,6 +176,10 @@ func (c *Config) Load() error {
 
 	if fileConfig.Theme.TitleColor != "" {
 		c.Theme.TitleColor = fileConfig.Theme.TitleColor
+	}
+
+	if fileConfig.Theme.TitleColorFg != "" {
+		c.Theme.TitleColorFg = fileConfig.Theme.TitleColorFg
 	}
 
 	if fileConfig.Theme.FilterColor != "" {

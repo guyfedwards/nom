@@ -157,7 +157,10 @@ func Render(items []list.Item, cmds Commands, errors []string, cfg *config.Confi
 	l := list.New(items, itemDelegate{theme: cfg.Theme}, defaultWidth, height)
 	l.SetShowStatusBar(false)
 	l.Title = defaultTitle
-	l.Styles.Title = titleStyle.Background(lipgloss.Color(cfg.Theme.TitleColor))
+	l.Styles.Title = titleStyle.
+		Background(lipgloss.Color(cfg.Theme.TitleColor)).
+		Foreground(lipgloss.Color(cfg.Theme.TitleColorFg))
+
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 
