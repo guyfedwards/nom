@@ -46,7 +46,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			it := ItemToTUIItem(current)
-			cmd = m.commands.OpenLink(it.URL)
+			cmd = m.OpenLink(it.URL)
 			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ViewportKeyMap.Favourite):

@@ -6,13 +6,11 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"runtime"
 	"strings"
 	"sync"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
 	"gopkg.in/yaml.v3"
@@ -27,8 +25,8 @@ type Commands struct {
 	store  store.Store
 }
 
-func New(config *config.Config, store store.Store) Commands {
-	return Commands{config, store}
+func New(config *config.Config, store store.Store) *Commands {
+	return &Commands{config, store}
 }
 
 func convertItems(its []store.Item) []list.Item {
@@ -39,61 +37,6 @@ func convertItems(its []store.Item) []list.Item {
 	}
 
 	return items
-}
-
-func (c Commands) OpenLink(url string) tea.Cmd {
-	for _, o := range c.config.Openers {
-		match, err := regexp.MatchString(o.Regex, url)
-		if err != nil {
-			return tea.Quit
-		}
-
-		if match {
-			c := fmt.Sprintf(o.Cmd, url)
-			parts := strings.Fields(c)
-			cmd := exec.Command(parts[0], parts[1:]...)
-
-			if o.Takeover {
-				return tea.ExecProcess(cmd, func(err error) tea.Msg {
-					log.Println("OpenLink: takeover exec:", err)
-					return nil
-				})
-			} else {
-				if err := cmd.Run(); err != nil {
-					log.Println("OpenLink: exec: ", err)
-					return tea.Quit
-				}
-				return nil
-			}
-		}
-	}
-
-	c.OpenInBrowser(url)
-
-	return nil
-}
-
-func (c Commands) OpenInBrowser(url string) error {
-	var cmd string
-	var args []string
-
-	switch runtime.GOOS {
-	case "windows":
-		cmd = "cmd"
-		args = []string{"/c", "start"}
-	case "darwin":
-		cmd = "open"
-	default: // "linux", "freebsd", "openbsd", "netbsd"
-		if IsWSL() {
-			cmd = "cmd.exe"
-			args = []string{"/c", "start"}
-		} else {
-			cmd = "xdg-open"
-		}
-	}
-
-	args = append(args, url)
-	return exec.Command(cmd, args...).Start()
 }
 
 func IsWSL() bool {
