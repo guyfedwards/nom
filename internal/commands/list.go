@@ -155,6 +155,10 @@ type listUpdate struct {
 	items  []list.Item
 }
 
+type statusUpdate struct {
+	status string
+}
+
 func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
@@ -162,6 +166,8 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
+	case statusUpdate:
+		m.list.NewStatusMessage(msg.status)
 	case listUpdate:
 		m.list.SetItems(msg.items)
 		m.list.NewStatusMessage(msg.status)
@@ -253,6 +259,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
+			cmds = append(cmds, m.list.NewStatusMessage("Opening..."))
 			if m.list.SettingFilter() {
 				break
 			}
@@ -263,7 +270,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			current := item.(TUIItem)
-			cmd = m.commands.OpenLink(current.URL)
+			cmd = m.OpenLink(current.URL)
 			cmds = append(cmds, cmd)
 
 		case key.Matches(msg, ListKeyMap.Sort):

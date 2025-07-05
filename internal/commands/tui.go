@@ -2,7 +2,12 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"regexp"
+	"runtime"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -37,7 +42,7 @@ func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.
 type model struct {
 	selectedArticle *int
 	cfg             *config.Config
-	commands        Commands
+	commands        *Commands
 	errors          []string
 	list            list.Model
 	help            help.Model
@@ -85,6 +90,78 @@ func (m model) View() string {
 	return appStyle.Render(s)
 }
 
+func (m model) OpenLink(url string) tea.Cmd {
+	hasOpener := false
+	for _, o := range m.cfg.Openers {
+		match, err := regexp.MatchString(o.Regex, url)
+		if err != nil {
+			return tea.Quit
+		}
+
+		if match {
+			hasOpener = true
+			cmdStr := fmt.Sprintf(o.Cmd, url)
+			parts := strings.Fields(cmdStr)
+			cmd := exec.Command(parts[0], parts[1:]...)
+
+			if o.Takeover {
+				return tea.ExecProcess(cmd, func(err error) tea.Msg {
+					log.Println("OpenLink: takeover exec:", err)
+					return nil
+				})
+			} else {
+				return func() tea.Msg {
+					if err := cmd.Run(); err != nil {
+						log.Println("OpenLink: exec: ", err)
+						return statusUpdate{
+							status: err.Error(),
+						}
+					}
+					return nil
+				}
+			}
+		}
+	}
+
+	// if no opener, default to browser
+	if !hasOpener {
+		err := m.OpenInBrowser(url)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	return nil
+}
+
+func (m model) OpenInBrowser(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default: // "linux", "freebsd", "openbsd", "netbsd"
+		if IsWSL() {
+			cmd = "cmd.exe"
+			args = []string{"/c", "start"}
+		} else {
+			cmd = "xdg-open"
+		}
+	}
+
+	args = append(args, url)
+	err := exec.Command(cmd, args...).Start()
+	if err != nil {
+		return fmt.Errorf("OpenInBrowser: %w", err)
+	}
+
+	return nil
+}
+
 func ItemToTUIItem(i store.Item) TUIItem {
 	return TUIItem{
 		ID:        i.ID,
@@ -96,7 +173,7 @@ func ItemToTUIItem(i store.Item) TUIItem {
 	}
 }
 
-func (c Commands) TUI() error {
+func (c *Commands) TUI() error {
 	debug := os.Getenv("DEBUGNOM")
 	if debug != "" {
 		f, err := tea.LogToFile(debug, "debug")
@@ -146,7 +223,7 @@ func (c Commands) TUI() error {
 	return nil
 }
 
-func Render(items []list.Item, cmds Commands, errors []string, cfg *config.Config) error {
+func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Config) error {
 	const defaultWidth = 20
 	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
 	_, y := appStyle.GetFrameSize()

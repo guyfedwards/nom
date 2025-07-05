@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jessevdk/go-flags"
+
 	"github.com/guyfedwards/nom/v2/internal/commands"
 	"github.com/guyfedwards/nom/v2/internal/config"
 	"github.com/guyfedwards/nom/v2/internal/store"
-	"github.com/jessevdk/go-flags"
 )
 
 type Options struct {
@@ -97,7 +98,7 @@ func getCmds() (*commands.Commands, error) {
 		return nil, fmt.Errorf("main.go: %w", err)
 	}
 	cmds := commands.New(cfg, s)
-	return &cmds, nil
+	return cmds, nil
 }
 
 func main() {
