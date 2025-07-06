@@ -61,7 +61,7 @@ type FilterConfig struct {
 // need to add to Load() below if loading from config file
 type Config struct {
 	ConfigPath     string
-	ShowFavourites bool
+	ShowFavourites bool `yaml:"showfavourites,omitempty"`
 	Version        string
 	ConfigDir      string       `yaml:"-"`
 	Pager          string       `yaml:"pager,omitempty"`
@@ -159,6 +159,7 @@ func (c *Config) Load() error {
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
 	c.Openers = fileConfig.Openers
+	c.ShowFavourites = fileConfig.ShowFavourites
 	c.Filtering = fileConfig.Filtering
 
 	if fileConfig.HTTPOptions != nil {
