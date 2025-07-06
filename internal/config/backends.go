@@ -24,8 +24,8 @@ type FreshRSSBackend struct {
 }
 
 type Backends struct {
-	Miniflux *MinifluxBackend `yaml:"miniflux,omitempty"`
-	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
+	Miniflux []MinifluxBackend `yaml:"miniflux,omitempty"`
+	FreshRSS []FreshRSSBackend `yaml:"freshrss,omitempty"`
 }
 
 func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {

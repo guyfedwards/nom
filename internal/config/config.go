@@ -161,7 +161,7 @@ func (c *Config) Load() error {
 	var fileConfig Config
 	err = yaml.Unmarshal(rawData, &fileConfig)
 	if err != nil {
-		return fmt.Errorf("config.Read: %w", err)
+		return fmt.Errorf("config.Load: %w", err)
 	}
 
 	c.ShowRead = fileConfig.ShowRead
@@ -217,22 +217,26 @@ func (c *Config) Load() error {
 	}
 
 	if fileConfig.Backends != nil {
-		if fileConfig.Backends.Miniflux != nil {
-			mffeeds, err := fileConfig.Backends.Miniflux.GetFeeds()
-			if err != nil {
-				return err
-			}
+		if len(fileConfig.Backends.Miniflux) > 0 {
+			for _, be := range fileConfig.Backends.Miniflux {
+				mffeeds, err := be.GetFeeds()
+				if err != nil {
+					return err
+				}
 
-			c.Feeds = append(c.Feeds, mffeeds...)
+				c.Feeds = append(c.Feeds, mffeeds...)
+			}
 		}
 
-		if fileConfig.Backends.FreshRSS != nil {
-			freshfeeds, err := fileConfig.Backends.FreshRSS.GetFeeds()
-			if err != nil {
-				return err
-			}
+		if len(fileConfig.Backends.FreshRSS) > 0 {
+			for _, be := range fileConfig.Backends.FreshRSS {
+				freshfeeds, err := be.GetFeeds()
+				if err != nil {
+					return err
+				}
 
-			c.Feeds = append(c.Feeds, freshfeeds...)
+				c.Feeds = append(c.Feeds, freshfeeds...)
+			}
 		}
 	}
 

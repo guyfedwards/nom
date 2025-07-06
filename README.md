@@ -146,13 +146,13 @@ As well as adding feeds directly, you can pull in feeds from another source. You
 ```yaml
 backends:
   miniflux:
-    host: http://myminiflux.foo
-    api_key: jafksdljfladjfk
+    - host: http://myminiflux.foo
+      api_key: jafksdljfladjfk
   freshrss:
-    host: http://myfreshrss.bar
-    user: admin
-    password: muchstrong
-    prefixCats: true # prefix feed name for freshrss entries
+    - host: http://myfreshrss.bar
+      user: admin
+      password: muchstrong
+      prefixCats: true # prefix feed name for freshrss entries
 ```
 
 #### FreshRSS
