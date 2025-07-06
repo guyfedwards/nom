@@ -166,10 +166,13 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case statusUpdate:
-		m.list.NewStatusMessage(msg.status)
+		cmds = append(cmds, m.list.NewStatusMessage(msg.status))
 	case listUpdate:
+		if m.list.SettingFilter() {
+			break
+		}
 		m.list.SetItems(msg.items)
-		m.list.NewStatusMessage(msg.status)
+		cmds = append(cmds, m.list.NewStatusMessage(msg.status))
 
 	case tea.ResumeMsg:
 		return m, nil
