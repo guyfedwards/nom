@@ -83,6 +83,18 @@ func (r *Refresh) Execute(args []string) error {
 	return cmds.Refresh()
 }
 
+type Unread struct{}
+
+func (r *Unread) Execute(args []string) error {
+	cmds, err := getCmds()
+	if err != nil {
+		return err
+	}
+	count := cmds.CountUnread()
+	fmt.Printf("%d\n", count)
+	return nil
+}
+
 func getCmds() (*commands.Commands, error) {
 	cfg, err := config.New(options.ConfigPath, options.Pager, options.PreviewFeeds, version)
 	if err != nil {
@@ -112,6 +124,7 @@ func main() {
 	parser.AddCommand("list", "List feeds", "List all feeds", &List{})
 	parser.AddCommand("version", "Show Vesion", "Display version information", &Version{})
 	parser.AddCommand("refresh", "Refresh feeds", "refresh feed(s) without opening TUI", &Refresh{})
+	parser.AddCommand("unread", "Count unread", "Get count of unread items", &Unread{})
 
 	// parse the command line arguments
 	_, err := parser.Parse()

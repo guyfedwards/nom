@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/guyfedwards/nom/v2/internal/constants"
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/guyfedwards/nom/v2/internal/constants"
 )
 
 type Item struct {
@@ -40,6 +41,7 @@ type Store interface {
 	MarkAllRead() error
 	ToggleFavourite(ID int) error
 	DeleteByFeedURL(feedurl string, incFavourites bool) error
+	CountUnread() (int, error)
 }
 
 type SQLiteStore struct {
@@ -321,4 +323,19 @@ func (sls SQLiteStore) GetItemByID(ID int) (Item, error) {
 	i.PublishedAt = publishedAtNull.Time
 
 	return i, nil
+}
+
+func (sls SQLiteStore) CountUnread() (int, error) {
+	var stmt *sql.Stmt
+	stmt, _ = sls.db.Prepare(`select count(*) from items where readat is null;`)
+	var count int
+
+	r := stmt.QueryRow()
+
+	err := r.Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("CountUnread: %w", err)
+	}
+
+	return count, nil
 }
