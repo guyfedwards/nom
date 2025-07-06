@@ -142,7 +142,6 @@ func refreshList(m model) func() tea.Msg {
 		}
 
 		m.errors = es
-		// return tea.Batch(m.list.SetItems(convertItems(items)), m.list.NewStatusMessage("Refreshed."))
 		return listUpdate{
 			items:  convertItems(items),
 			status: "Refreshed.",

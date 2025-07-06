@@ -54,15 +54,20 @@ type Theme struct {
 	ReadIcon          string `yaml:"readIcon,omitempty"`
 }
 
+type FilterConfig struct {
+	DefaultIncludeFeedName bool `yaml:"defaultIncludeFeedName"`
+}
+
 // need to add to Load() below if loading from config file
 type Config struct {
 	ConfigPath     string
 	ShowFavourites bool
 	Version        string
-	ConfigDir      string `yaml:"-"`
-	Pager          string `yaml:"pager,omitempty"`
-	Feeds          []Feed `yaml:"feeds"`
-	Ordering       string `yaml:"ordering"`
+	ConfigDir      string       `yaml:"-"`
+	Pager          string       `yaml:"pager,omitempty"`
+	Feeds          []Feed       `yaml:"feeds"`
+	Ordering       string       `yaml:"ordering"`
+	Filtering      FilterConfig `yaml:"filtering"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
 	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
 	Backends     *Backends    `yaml:"backends,omitempty"`
@@ -119,6 +124,9 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			ReadIcon:          "\u2713",
 		},
 		Ordering: constants.DefaultOrdering,
+		Filtering: FilterConfig{
+			DefaultIncludeFeedName: false,
+		},
 		HTTPOptions: &HTTPOptions{
 			MinTLSVersion: tls.VersionName(tls.VersionTLS12),
 		},
@@ -151,6 +159,7 @@ func (c *Config) Load() error {
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
 	c.Openers = fileConfig.Openers
+	c.Filtering = fileConfig.Filtering
 
 	if fileConfig.HTTPOptions != nil {
 		if _, err := TLSVersion(fileConfig.HTTPOptions.MinTLSVersion); err != nil {

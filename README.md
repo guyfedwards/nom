@@ -57,6 +57,21 @@ Automatically mark items as read on selection or navigation through items.
 ```yaml
 autoread: true
 ```
+
+### Ordering
+Set the default sort ordering of the list
+```yaml
+ordering: asc
+```
+
+### Filtering
+Default to include the feedname prefix in filtering query. Removes need to use `f:xxx` for simple queries. This will mean that multi-feed filters won't work, e.g. `f:xxx f:yyy`
+```yaml
+filtering: 
+  defaultIncludeFeedName: true
+```
+
+
 ### Theme 
 Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.
 Colors can be hex or ASCII codes, they will be coerced depending on your terminal color settings.
@@ -111,6 +126,9 @@ Within the `nom` view, you can filter by title pressing the `/` character. Filte
 - `feedname:"my feed - with spaces"` - matches `my feed - with spaces`
 - `feed:'my feed, with single quotes!'` - matches `my feed, with single quotes!`
 - `feed:my\ feed\ with\ escaped\ spaces!` - matches `my feed with escaped spaces!`
+
+### Include feedname in filtering
+If you want to include the feedname in the default filtering query, use `config.filtering.defaultIncludeFeedName: true`. This simplifies the above `f:xxx` queries but means that you can't filter by multiple feeds at once, e.g. `f:xxx f:yyy`.
 
 More filters to be added soon!
 

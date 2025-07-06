@@ -242,7 +242,8 @@ func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Conf
 	l.Styles.HelpStyle = helpStyle
 
 	l.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
-	l.Filter = CustomFilter
+
+	l.Filter = CustomFilter(cfg.Filtering)
 
 	ListKeyMap.SetOverrides(&l)
 

@@ -9,6 +9,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/sahilm/fuzzy"
+
+	"github.com/guyfedwards/nom/v2/internal/config"
 )
 
 // Struct to aid in filtering items into ranks for BubbleTea
@@ -18,6 +20,7 @@ type Filterer struct {
 		Title     string
 		FeedNames []string
 	}
+	Config config.FilterConfig
 }
 
 // Filters by feednames
@@ -68,7 +71,7 @@ func (f *Filterer) GetItem(filterValue string) TUIItem {
 func (f *Filterer) ExtractFiltersFor(tags ...string) []string {
 	var extractedTags []string
 	done := false
-	for done == false {
+	for !done {
 		// `complete` matches 3 potential capture groups after tags, in which
 		// `[^"]` matches a character that isn't a `"`, `[^']` that isn't a `'`,
 		// etc. If it's no quotes, you can also do `feed:with\ spaces`
@@ -121,7 +124,11 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 
 	for _, target := range targets {
 		i := f.GetItem(target)
-		targetTitles = append(targetTitles, i.Title)
+		title := i.Title
+		if f.Config.DefaultIncludeFeedName {
+			title = strings.Join([]string{i.FeedName, i.Title}, " ")
+		}
+		targetTitles = append(targetTitles, title)
 		targetFeedNames = append(targetFeedNames, i.FeedName)
 	}
 
@@ -137,27 +144,30 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 	return ranks
 }
 
-func NewFilterer(term string) Filterer {
+func NewFilterer(term string, config config.FilterConfig) Filterer {
 	var f Filterer
 
+	f.Config = config
 	f.Term.Title = term
 	f.FeedNames = f.ExtractFiltersFor("feedname", "feed", "f")
 
 	return f
 }
 
-func CustomFilter(term string, targets []string) []list.Rank {
-	filterer := NewFilterer(term)
+func CustomFilter(config config.FilterConfig) list.FilterFunc {
+	return func(term string, targets []string) []list.Rank {
+		filterer := NewFilterer(term, config)
 
-	ranks := filterer.Filter(targets)
+		ranks := filterer.Filter(targets)
 
-	result := make([]list.Rank, len(ranks))
-	for i, rank := range ranks {
-		result[i] = list.Rank{
-			Index:          rank.Index,
-			MatchedIndexes: rank.MatchedIndexes,
+		result := make([]list.Rank, len(ranks))
+		for i, rank := range ranks {
+			result[i] = list.Rank{
+				Index:          rank.Index,
+				MatchedIndexes: rank.MatchedIndexes,
+			}
 		}
-	}
 
-	return result
+		return result
+	}
 }
