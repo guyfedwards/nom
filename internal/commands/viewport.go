@@ -115,6 +115,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			m.viewport.GotoTop()
 			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
 				m.list.RemoveItem(m.list.Index())
 			}
@@ -137,6 +138,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.viewport.SetContent(content)
+			m.viewport.GotoTop()
 			if m.commands.config.AutoRead && !m.commands.config.ShowRead {
 				m.list.RemoveItem(m.list.Index())
 			}
