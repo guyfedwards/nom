@@ -189,6 +189,14 @@ func includes[T comparable](arr []T, item T) bool {
 	return false
 }
 
+func (c Commands) CountUnread() int {
+	count, err := c.store.CountUnread()
+	if err != nil {
+		log.Println(err)
+	}
+	return count
+}
+
 func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
 	article, err := c.store.GetItemByID(ID)
 	if err != nil {
