@@ -3,10 +3,13 @@ package rss
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/mmcdole/gofeed"
+
+	readability "github.com/go-shiori/go-readability"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
 )
@@ -79,9 +82,17 @@ func feedToRSS(f config.Feed, feed *gofeed.Feed) RSS {
 		}
 
 		if it.Content == "" {
-			// If there's no content (as is the case for YouTube RSS items), fallback
-			// to the link.
-			ni.Content = it.Description
+			article, err := readability.FromURL(it.Link, 30*time.Second)
+			if err != nil {
+				log.Printf("readability error for %s: %v\n", it.Link, err)
+			}
+			if article.Content != "" {
+				ni.Content = article.Content
+			} else {
+				// If there's no content (as is the case for YouTube RSS items), *and* readability cannot grab anything from the link, fallback
+				// to the link.
+				ni.Content = it.Description
+			}
 		} else {
 			ni.Content = it.Content
 		}
