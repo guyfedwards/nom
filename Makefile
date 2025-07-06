@@ -15,6 +15,8 @@ sqlite:
 vhs:
 	docker run --rm -v $PWD:/vhs ghcr.io/charmbracelet/vhs .github/demo.tape
 
+backends:
+	docker-compose -f backends-compose.yml up
 
 # Copied from https://github.com/goreleaser/goreleaser-cross-example/blob/master/Makefile
 PACKAGE_NAME          := github.com/guyfedwards/nom
