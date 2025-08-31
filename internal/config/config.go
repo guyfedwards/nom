@@ -66,6 +66,7 @@ type Config struct {
 	ConfigDir      string       `yaml:"-"`
 	Pager          string       `yaml:"pager,omitempty"`
 	Feeds          []Feed       `yaml:"feeds"`
+	Database       string       `yaml:"database"`
 	Ordering       string       `yaml:"ordering"`
 	Filtering      FilterConfig `yaml:"filtering"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
@@ -113,6 +114,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		ConfigPath:   configPath,
 		ConfigDir:    configDir,
 		Pager:        pager,
+		Database:	  "nom.db",
 		Feeds:        []Feed{},
 		PreviewFeeds: f,
 		Theme: Theme{
@@ -158,6 +160,7 @@ func (c *Config) Load() error {
 	c.ShowRead = fileConfig.ShowRead
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
+	c.Database = fileConfig.Database
 	c.Openers = fileConfig.Openers
 	c.ShowFavourites = fileConfig.ShowFavourites
 	c.Filtering = fileConfig.Filtering

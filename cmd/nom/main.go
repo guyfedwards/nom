@@ -105,7 +105,7 @@ func getCmds() (*commands.Commands, error) {
 		return nil, err
 	}
 
-	s, err := store.NewSQLiteStore(cfg.ConfigDir)
+	s, err := store.NewSQLiteStore(cfg.ConfigDir, cfg.Database)
 	if err != nil {
 		return nil, fmt.Errorf("main.go: %w", err)
 	}
