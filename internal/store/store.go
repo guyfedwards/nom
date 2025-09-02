@@ -49,8 +49,8 @@ type SQLiteStore struct {
 	db   *sql.DB
 }
 
-func NewSQLiteStore(basePath string, dbname string) (*SQLiteStore, error) {
-	dbpath := filepath.Join(basePath, dbname)
+func NewSQLiteStore(basePath string, dbName string) (*SQLiteStore, error) {
+	dbpath := filepath.Join(basePath, dbName)
 
 	info, _ := os.Stat(dbpath)
 

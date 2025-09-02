@@ -160,7 +160,9 @@ func (c *Config) Load() error {
 	c.ShowRead = fileConfig.ShowRead
 	c.AutoRead = fileConfig.AutoRead
 	c.Feeds = fileConfig.Feeds
-	c.Database = fileConfig.Database
+	if fileConfig.Database != "" {
+		c.Database = fileConfig.Database
+	}
 	c.Openers = fileConfig.Openers
 	c.ShowFavourites = fileConfig.ShowFavourites
 	c.Filtering = fileConfig.Filtering
