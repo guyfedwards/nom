@@ -114,7 +114,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		ConfigPath:   configPath,
 		ConfigDir:    configDir,
 		Pager:        pager,
-		Database:	  "nom.db",
+		Database:     "nom.db",
 		Feeds:        []Feed{},
 		PreviewFeeds: f,
 		Theme: Theme{
