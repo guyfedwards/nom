@@ -122,7 +122,7 @@ func main() {
 	parser.AddCommand("add", "Add feed", "Add a new feed", &Add{})
 	parser.AddCommand("config", "Show config", "Show configuration", &Config{})
 	parser.AddCommand("list", "List feeds", "List all feeds", &List{})
-	parser.AddCommand("version", "Show Vesion", "Display version information", &Version{})
+	parser.AddCommand("version", "Show Version", "Display version information", &Version{})
 	parser.AddCommand("refresh", "Refresh feeds", "refresh feed(s) without opening TUI", &Refresh{})
 	parser.AddCommand("unread", "Count unread", "Get count of unread items", &Unread{})
 
