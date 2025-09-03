@@ -120,6 +120,12 @@ openers:
 ## Store
 `nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
 
+The name of the sqlite file can be overridden in the config file, allowing you to have multiple configs each with their own data store.
+
+```yaml
+database: news.db
+```
+
 ## Filtering
 Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
 - `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
