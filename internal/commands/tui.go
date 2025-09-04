@@ -216,14 +216,22 @@ func (c *Commands) TUI() error {
 		es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
 	}
 
-	if err := Render(items, c, es, c.config); err != nil {
+	prog, err := Render(items, c, es, c.config)
+
+	if err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
+	}
+
+	c.Monitor(prog)
+
+	if _, err := prog.Run(); err != nil {
+		return fmt.Errorf("tui.Render: %w", err)
 	}
 
 	return nil
 }
 
-func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Config) error {
+func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Config) (*tea.Program, error) {
 	const defaultWidth = 20
 	_, ts, _ := term.GetSize(int(os.Stdout.Fd()))
 	_, y := appStyle.GetFrameSize()
@@ -258,9 +266,7 @@ func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Conf
 		viewport: vp,
 	}
 
-	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
-		return fmt.Errorf("tui.Render: %w", err)
-	}
+	prog := tea.NewProgram(m, tea.WithAltScreen())
 
-	return nil
+	return prog, nil
 }
