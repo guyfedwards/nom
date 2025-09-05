@@ -35,8 +35,8 @@ type FreshRSSBackend struct {
 }
 
 type Backends struct {
-	Miniflux *MinifluxBackend `yaml:"miniflux,omitempty"`
-	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
+	Miniflux []MinifluxBackend `yaml:"miniflux,omitempty"`
+	FreshRSS []FreshRSSBackend `yaml:"freshrss,omitempty"`
 }
 
 type Opener struct {
@@ -71,7 +71,7 @@ type Config struct {
 	Filtering      FilterConfig `yaml:"filtering"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
 	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
-	Backends     *Backends    `yaml:"backends,omitempty"`
+	Backends     Backends     `yaml:"backends,omitempty"`
 	ShowRead     bool         `yaml:"showread,omitempty"`
 	AutoRead     bool         `yaml:"autoread,omitempty"`
 	Openers      []Opener     `yaml:"openers,omitempty"`
@@ -154,7 +154,7 @@ func (c *Config) Load() error {
 	var fileConfig Config
 	err = yaml.Unmarshal(rawData, &fileConfig)
 	if err != nil {
-		return fmt.Errorf("config.Read: %w", err)
+		return fmt.Errorf("config.Load: %w", err)
 	}
 
 	c.ShowRead = fileConfig.ShowRead
@@ -208,18 +208,21 @@ func (c *Config) Load() error {
 		c.Pager = fileConfig.Pager
 	}
 
-	if fileConfig.Backends != nil {
-		if fileConfig.Backends.Miniflux != nil {
-			mffeeds, err := getMinifluxFeeds(fileConfig.Backends.Miniflux)
+	if len(fileConfig.Backends.Miniflux) > 0 {
+		for _, v := range fileConfig.Backends.Miniflux {
+			mffeeds, err := getMinifluxFeeds(v)
 			if err != nil {
 				return err
 			}
 
 			c.Feeds = append(c.Feeds, mffeeds...)
-		}
 
-		if fileConfig.Backends.FreshRSS != nil {
-			freshfeeds, err := getFreshRSSFeeds(fileConfig.Backends.FreshRSS)
+		}
+	}
+
+	if len(fileConfig.Backends.FreshRSS) > 0 {
+		for _, v := range fileConfig.Backends.FreshRSS {
+			freshfeeds, err := getFreshRSSFeeds(v)
 			if err != nil {
 				return err
 			}

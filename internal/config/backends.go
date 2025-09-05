@@ -10,7 +10,7 @@ import (
 	miniflux "miniflux.app/client"
 )
 
-func getMinifluxFeeds(config *MinifluxBackend) ([]Feed, error) {
+func getMinifluxFeeds(config MinifluxBackend) ([]Feed, error) {
 	mf := miniflux.New(config.Host, config.APIKey)
 
 	// Fetch all feeds.
@@ -52,7 +52,7 @@ func (frss FreshRSSFeed) GetCats() string {
 	return ret
 }
 
-func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
+func getFreshRSSFeeds(config FreshRSSBackend) ([]Feed, error) {
 	resp, err := http.Get(fmt.Sprintf("%v/api/greader.php/accounts/ClientLogin?Email=%v&Passwd=%v", config.Host, config.User, config.Password))
 	if err != nil {
 		return []Feed{}, err
