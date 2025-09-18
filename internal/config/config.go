@@ -70,13 +70,14 @@ type Config struct {
 	Ordering       string       `yaml:"ordering"`
 	Filtering      FilterConfig `yaml:"filtering"`
 	// Preview feeds are distinguished from Feeds because we don't want to inadvertenly write those into the config file.
-	PreviewFeeds []Feed       `yaml:"previewfeeds,omitempty"`
-	Backends     *Backends    `yaml:"backends,omitempty"`
-	ShowRead     bool         `yaml:"showread,omitempty"`
-	AutoRead     bool         `yaml:"autoread,omitempty"`
-	Openers      []Opener     `yaml:"openers,omitempty"`
-	Theme        Theme        `yaml:"theme,omitempty"`
-	HTTPOptions  *HTTPOptions `yaml:"http,omitempty"`
+	PreviewFeeds    []Feed       `yaml:"previewfeeds,omitempty"`
+	Backends        *Backends    `yaml:"backends,omitempty"`
+	ShowRead        bool         `yaml:"showread,omitempty"`
+	AutoRead        bool         `yaml:"autoread,omitempty"`
+	Openers         []Opener     `yaml:"openers,omitempty"`
+	Theme           Theme        `yaml:"theme,omitempty"`
+	HTTPOptions     *HTTPOptions `yaml:"http,omitempty"`
+	RefreshInterval int          `yaml:"refreshinterval,omitempty"`
 }
 
 func (c *Config) ToggleShowRead() {
@@ -125,7 +126,8 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			FilterColor:       "62",
 			ReadIcon:          "\u2713",
 		},
-		Ordering: constants.DefaultOrdering,
+		RefreshInterval: 0,
+		Ordering:        constants.DefaultOrdering,
 		Filtering: FilterConfig{
 			DefaultIncludeFeedName: false,
 		},
@@ -166,6 +168,7 @@ func (c *Config) Load() error {
 	c.Openers = fileConfig.Openers
 	c.ShowFavourites = fileConfig.ShowFavourites
 	c.Filtering = fileConfig.Filtering
+	c.RefreshInterval = fileConfig.RefreshInterval
 
 	if fileConfig.HTTPOptions != nil {
 		if _, err := TLSVersion(fileConfig.HTTPOptions.MinTLSVersion); err != nil {

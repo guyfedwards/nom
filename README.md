@@ -71,6 +71,12 @@ filtering:
   defaultIncludeFeedName: true
 ```
 
+### Refresh interval
+Background refresh interval in minutes. Setting this to anything but 0 will make `nom` refresh automatically.
+```yaml
+refreshinterval: 5
+```
+
 
 ### Theme 
 Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.

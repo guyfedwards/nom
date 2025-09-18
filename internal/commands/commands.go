@@ -8,9 +8,11 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
 	"gopkg.in/yaml.v3"
@@ -99,8 +101,10 @@ func (c Commands) Refresh() error {
 	if err != nil {
 		return fmt.Errorf("commands Refresh: %w", err)
 	}
+
 	return nil
 }
+
 func (c Commands) ShowConfig() error {
 	yaml, err := yaml.Marshal(&c.config)
 	if err != nil {
@@ -187,6 +191,37 @@ func includes[T comparable](arr []T, item T) bool {
 		}
 	}
 	return false
+}
+
+func (c Commands) Monitor(prog *tea.Program) {
+	if c.config.RefreshInterval == 0 {
+		return
+	}
+
+	go func() {
+		t := time.NewTicker(time.Duration(c.config.RefreshInterval) * time.Minute)
+		for _ = range t.C {
+			err := c.Refresh()
+			if err != nil {
+				log.Println("Refresh failed: ", err)
+				prog.Send(statusUpdate{
+					status: "Refresh failed",
+				})
+			} else {
+				items, err := c.GetAllFeeds()
+				if err != nil {
+					log.Println("Refresh failed: ", err)
+					prog.Send(statusUpdate{
+						status: "Refresh failed",
+					})
+				}
+				prog.Send(listUpdate{
+					items:  convertItems(items),
+					status: "Refreshed.",
+				})
+			}
+		}
+	}()
 }
 
 func (c Commands) CountUnread() int {
