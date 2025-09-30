@@ -36,16 +36,20 @@ type RSS struct {
 func Fetch(f config.Feed, httpOpts *config.HTTPOptions, version string) (RSS, error) {
 	fp := gofeed.NewParser()
 
-	fp.Client = &http.Client{}
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+	}
 
 	if httpOpts != nil {
 		if version, err := config.TLSVersion(httpOpts.MinTLSVersion); err == nil {
-			fp.Client.Transport = &http.Transport{
-				TLSClientConfig: &tls.Config{
-					MinVersion: version,
-				},
+			tr.TLSClientConfig = &tls.Config{
+				MinVersion: version,
 			}
 		}
+	}
+
+	fp.Client = &http.Client{
+		Transport: tr,
 	}
 
 	fp.UserAgent = fmt.Sprintf("nom/%s", version)
