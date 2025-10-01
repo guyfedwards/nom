@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -118,17 +117,18 @@ func TestConfigAddFeed(t *testing.T) {
 		t.Fatalf("did not write feed correctly")
 	}
 }
-
 func TestConfigSetupDir(t *testing.T) {
-	err := setupConfigDir(configDir)
+	err := os.MkdirAll(configDir, 0755)
 	if err != nil {
-		t.Fail()
-		return
+		t.Fatalf("Failed to create %s", configDir)
 	}
 
-	_, err = os.Stat(filepath.Join(configDir, "config.yml"))
+	c, _ := New(configPath, "", []string{}, "")
+	c.Load()
+
+	_, err = os.Stat(configPath)
 	if err != nil {
-		t.Fail()
+		t.Fatalf("Did not create %s as expected", configPath)
 	}
 
 	cleanup()
