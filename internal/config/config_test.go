@@ -78,6 +78,23 @@ func TestConfigLoad(t *testing.T) {
 	}
 }
 
+func TestConfigLoadFromDirectory(t *testing.T) {
+	err := os.MkdirAll(configDir, 0755)
+	defer cleanup()
+
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	c, _ := New(configDir, "", []string{}, "")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if c.ConfigPath != configPath {
+		t.Fatalf("Failed to find config file in directory")
+	}
+}
+
 func TestConfigLoadPrecidence(t *testing.T) {
 	c, _ := New(configFixturePath, "testpager", []string{}, "")
 
