@@ -13,7 +13,10 @@ import (
 )
 
 var (
-	ErrFeedAlreadyExists = errors.New("config.AddFeed: feed already exists")
+	ErrFeedAlreadyExists  = errors.New("config.AddFeed: feed already exists")
+	DefaultConfigDirName  = "nom"
+	DefaultConfigFileName = "config.yml"
+	DefaultDatabaseName   = "nom.db"
 )
 
 type Feed struct {
@@ -96,6 +99,15 @@ func (c *Config) ToggleShowFavourites() {
 	c.ShowFavourites = !c.ShowFavourites
 }
 
+func updateConfigPathIfDir(configPath string) string {
+	stat, err := os.Stat(configPath)
+	if err == nil && stat.IsDir() {
+		configPath = filepath.Join(configPath, DefaultConfigFileName)
+	}
+
+	return configPath
+}
+
 func New(configPath string, pager string, previewFeeds []string, version string) (*Config, error) {
 	if configPath == "" {
 		userConfigDir, err := os.UserConfigDir()
@@ -103,7 +115,9 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			return nil, fmt.Errorf("config.New: %w", err)
 		}
 
-		configPath = filepath.Join(userConfigDir, "nom", "config.yml")
+		configPath = filepath.Join(userConfigDir, DefaultConfigDirName, DefaultConfigFileName)
+	} else {
+		configPath = updateConfigPathIfDir(configPath)
 	}
 
 	configDir, _ := filepath.Split(configPath)
@@ -117,7 +131,7 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		ConfigPath:      configPath,
 		ConfigDir:       configDir,
 		Pager:           pager,
-		Database:        "nom.db",
+		Database:        DefaultDatabaseName,
 		Feeds:           []Feed{},
 		PreviewFeeds:    f,
 		Theme:           DefaultTheme,
