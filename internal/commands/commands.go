@@ -151,6 +151,12 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 		close(ch)
 	}()
 
+	err := c.store.BeginBatch()
+	if err != nil {
+		return items, errorItems, fmt.Errorf("fetchAllFeeds: failed to begin batch: %w", err)
+	}
+	defer c.store.EndBatch()
+
 	for result := range ch {
 		if result.err != nil {
 			errorItems = append(errorItems, ErrorItem{FeedURL: result.url, Err: result.err})
