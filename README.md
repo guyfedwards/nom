@@ -77,7 +77,6 @@ Background refresh interval in minutes. Setting this to anything but 0 will make
 refreshinterval: 5
 ```
 
-
 ### Theme 
 Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.
 Colors can be hex or ASCII codes, they will be coerced depending on your terminal color settings.
@@ -122,6 +121,28 @@ openers:
     cmd: "lynx %s"
     takeover: true
 ```
+
+### Proxy support
+
+If you need to use a proxy server for internet access, you can configure `nom`
+by setting the environment variables `HTTP_PROXY` and `HTTPS_PROXY` to point to
+your proxy server:
+
+```sh
+export HTTP_PROXY=https://proxy.example.com
+export HTTPS_PROXY=https://proxy.example.com
+nom
+```
+
+From the [ProxyFromEnvironment documentation](https://pkg.go.dev/net/http#ProxyFromEnvironment):
+
+> [Use a proxy] as indicated by the environment variables `HTTP_PROXY`,
+> `HTTPS_PROXY` and `NO_PROXY` (or the lowercase versions thereof). Requests use
+> the proxy from the environment variable matching their scheme, unless
+> excluded by `NO_PROXY`.
+> 
+> The environment values may be either a complete URL or a "host[:port]", in
+> which case the "http" scheme is assumed.
 
 ## Store
 `nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
