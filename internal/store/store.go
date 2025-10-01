@@ -34,6 +34,8 @@ func (i Item) Read() bool {
 
 type Store interface {
 	UpsertItem(item Item) error
+	BeginBatch() error
+	EndBatch() error
 	GetAllItems(ordering string) ([]Item, error)
 	GetItemByID(ID int) (Item, error)
 	GetAllFeedURLs() ([]string, error)
@@ -45,8 +47,9 @@ type Store interface {
 }
 
 type SQLiteStore struct {
-	path string
-	db   *sql.DB
+	path  string
+	db    *sql.DB
+	batch *sql.Tx
 }
 
 func NewSQLiteStore(basePath string, dbName string) (*SQLiteStore, error) {
@@ -148,8 +151,46 @@ func runMigrations(db *sql.DB) (err error) {
 	return err
 }
 
-func (sls SQLiteStore) UpsertItem(item Item) error {
-	stmt, err := sls.db.Prepare(`select count(id), id from items where feedurl = ? and title = ?;`)
+// Begin a transaction. UpsertItem will use this transaction until
+// client code calls EndBatch().
+func (sls *SQLiteStore) BeginBatch() error {
+	tx, err := sls.db.Begin()
+	if err != nil {
+		return fmt.Errorf("BeginBatch: %w", err)
+	}
+	sls.batch = tx
+	return nil
+}
+
+// Commit a transaction. This commits any changes made since BeginBatch()
+// and reset sls.batch to nil so that subsequent calls to UpsertItem()
+// will not use a transaction.
+func (sls *SQLiteStore) EndBatch() error {
+	if sls.batch == nil {
+		return nil
+	}
+	err := sls.batch.Commit()
+	sls.batch = nil
+	if err != nil {
+		return fmt.Errorf("EndBatch: %w", err)
+	}
+	return nil
+}
+
+func (sls *SQLiteStore) UpsertItem(item Item) error {
+	if sls.batch != nil {
+		return sls.upsertItem(sls.batch, item)
+	}
+	return sls.upsertItem(sls.db, item)
+}
+
+// This interface is implemented by both sql.DB and by sql.Tx
+type statementPreparer interface {
+	Prepare(query string) (*sql.Stmt, error)
+}
+
+func (sls *SQLiteStore) upsertItem(db statementPreparer, item Item) error {
+	stmt, err := db.Prepare(`select count(id), id from items where feedurl = ? and title = ?;`)
 	if err != nil {
 		return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 	}
@@ -162,7 +203,7 @@ func (sls SQLiteStore) UpsertItem(item Item) error {
 	}
 
 	if count == 0 {
-		stmt, err = sls.db.Prepare(`insert into items (feedurl, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?)`)
+		stmt, err = db.Prepare(`insert into items (feedurl, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?)`)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
@@ -172,7 +213,7 @@ func (sls SQLiteStore) UpsertItem(item Item) error {
 			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
 	} else {
-		stmt, err = sls.db.Prepare(`update items set content = ?, updatedat = ? where id = ?`)
+		stmt, err = db.Prepare(`update items set content = ?, updatedat = ? where id = ?`)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
