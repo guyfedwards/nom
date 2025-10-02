@@ -79,6 +79,15 @@ type Config struct {
 	RefreshInterval int          `yaml:"refreshinterval,omitempty"`
 }
 
+var DefaultTheme = Theme{
+	Glamour:           "dark",
+	SelectedItemColor: "170",
+	TitleColor:        "62",
+	TitleColorFg:      "231",
+	FilterColor:       "62",
+	ReadIcon:          "\u2713",
+}
+
 func (c *Config) ToggleShowRead() {
 	c.ShowRead = !c.ShowRead
 }
@@ -105,20 +114,13 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 	}
 
 	return &Config{
-		ConfigPath:   configPath,
-		ConfigDir:    configDir,
-		Pager:        pager,
-		Database:     "nom.db",
-		Feeds:        []Feed{},
-		PreviewFeeds: f,
-		Theme: Theme{
-			Glamour:           "dark",
-			SelectedItemColor: "170",
-			TitleColor:        "62",
-			TitleColorFg:      "231",
-			FilterColor:       "62",
-			ReadIcon:          "\u2713",
-		},
+		ConfigPath:      configPath,
+		ConfigDir:       configDir,
+		Pager:           pager,
+		Database:        "nom.db",
+		Feeds:           []Feed{},
+		PreviewFeeds:    f,
+		Theme:           DefaultTheme,
 		RefreshInterval: 0,
 		Ordering:        constants.DefaultOrdering,
 		Filtering: FilterConfig{
