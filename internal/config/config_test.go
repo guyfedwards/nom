@@ -25,7 +25,7 @@ func TestNewDefault(t *testing.T) {
 	ucd, _ := os.UserConfigDir()
 
 	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", ucd), c.ConfigPath, "Wrong defaults set")
-	test.Equal(t, fmt.Sprintf("%s/nom", ucd), c.ConfigDir, "Wrong default ConfigDir set")
+	test.Equal(t, fmt.Sprintf("%s/nom/", ucd), c.ConfigDir, "Wrong default ConfigDir set")
 }
 
 func TestConfigCustomPath(t *testing.T) {
@@ -37,7 +37,7 @@ func TestConfigCustomPath(t *testing.T) {
 func TestConfigDir(t *testing.T) {
 	c, _ := New("foo/bizzle/bar.yml", "", []string{}, "")
 
-	test.Equal(t, "foo/bizzle", c.ConfigDir, "ConfigDir not correctly parsed")
+	test.Equal(t, "foo/bizzle/", c.ConfigDir, "ConfigDir not correctly parsed")
 }
 
 func TestNewOverride(t *testing.T) {

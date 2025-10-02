@@ -14,7 +14,7 @@ import (
 type Options struct {
 	Verbose      bool     `short:"v" long:"verbose" description:"Show verbose logging"`
 	Pager        string   `short:"p" long:"pager" description:"Pager to use for longer output. Set to false for no pager"`
-	ConfigPath   string   `long:"config-path" description:"Location of config.yml"`
+	ConfigPath   string   `short:"c" long:"config-path" description:"Location of config.yml"`
 	PreviewFeeds []string `short:"f" long:"feed" description:"Feed(s) URL(s) for preview"`
 }
 
