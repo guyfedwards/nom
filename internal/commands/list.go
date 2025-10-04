@@ -310,7 +310,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ListKeyMap.EditConfig):
 			filePath := m.cfg.ConfigPath
 
-			cmd := strings.Split(getEditor("NOMEDITOR", "EDITOR"), " ")
+			cmd := strings.Split(getEditor("NOMEDITOR", "VISUAL", "EDITOR"), " ")
 			cmd = append(cmd, filePath)
 
 			execCmd := exec.Command(cmd[0], cmd[1:]...)
