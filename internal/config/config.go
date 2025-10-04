@@ -13,7 +13,10 @@ import (
 )
 
 var (
-	ErrFeedAlreadyExists = errors.New("config.AddFeed: feed already exists")
+	ErrFeedAlreadyExists  = errors.New("config.AddFeed: feed already exists")
+	DefaultConfigDirName  = "nom"
+	DefaultConfigFileName = "config.yml"
+	DefaultDatabaseName   = "nom.db"
 )
 
 type Feed struct {
@@ -79,12 +82,30 @@ type Config struct {
 	RefreshInterval int          `yaml:"refreshinterval,omitempty"`
 }
 
+var DefaultTheme = Theme{
+	Glamour:           "dark",
+	SelectedItemColor: "170",
+	TitleColor:        "62",
+	TitleColorFg:      "231",
+	FilterColor:       "62",
+	ReadIcon:          "\u2713",
+}
+
 func (c *Config) ToggleShowRead() {
 	c.ShowRead = !c.ShowRead
 }
 
 func (c *Config) ToggleShowFavourites() {
 	c.ShowFavourites = !c.ShowFavourites
+}
+
+func updateConfigPathIfDir(configPath string) string {
+	stat, err := os.Stat(configPath)
+	if err == nil && stat.IsDir() {
+		configPath = filepath.Join(configPath, DefaultConfigFileName)
+	}
+
+	return configPath
 }
 
 func New(configPath string, pager string, previewFeeds []string, version string) (*Config, error) {
@@ -94,7 +115,9 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 			return nil, fmt.Errorf("config.New: %w", err)
 		}
 
-		configPath = filepath.Join(userConfigDir, "nom", "config.yml")
+		configPath = filepath.Join(userConfigDir, DefaultConfigDirName, DefaultConfigFileName)
+	} else {
+		configPath = updateConfigPathIfDir(configPath)
 	}
 
 	configDir, _ := filepath.Split(configPath)
@@ -105,20 +128,13 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 	}
 
 	return &Config{
-		ConfigPath:   configPath,
-		ConfigDir:    configDir,
-		Pager:        pager,
-		Database:     "nom.db",
-		Feeds:        []Feed{},
-		PreviewFeeds: f,
-		Theme: Theme{
-			Glamour:           "dark",
-			SelectedItemColor: "170",
-			TitleColor:        "62",
-			TitleColorFg:      "231",
-			FilterColor:       "62",
-			ReadIcon:          "\u2713",
-		},
+		ConfigPath:      configPath,
+		ConfigDir:       configDir,
+		Pager:           pager,
+		Database:        DefaultDatabaseName,
+		Feeds:           []Feed{},
+		PreviewFeeds:    f,
+		Theme:           DefaultTheme,
 		RefreshInterval: 0,
 		Ordering:        constants.DefaultOrdering,
 		Filtering: FilterConfig{
@@ -135,7 +151,7 @@ func (c *Config) IsPreviewMode() bool {
 }
 
 func (c *Config) Load() error {
-	err := setupConfigDir(c.ConfigDir)
+	err := c.setupConfigDir()
 	if err != nil {
 		return fmt.Errorf("config Load: %w", err)
 	}
@@ -272,10 +288,8 @@ func (c *Config) GetFeeds() []Feed {
 	return c.Feeds
 }
 
-func setupConfigDir(configDir string) error {
-	configFile := filepath.Join(configDir, "config.yml")
-
-	_, err := os.Stat(configFile)
+func (c *Config) setupConfigDir() error {
+	_, err := os.Stat(c.ConfigPath)
 
 	// if configFile exists, do nothing
 	if !errors.Is(err, os.ErrNotExist) {
@@ -283,13 +297,13 @@ func setupConfigDir(configDir string) error {
 	}
 
 	// if not, create directory. noop if directory exists
-	err = os.MkdirAll(configDir, 0755)
+	err = os.MkdirAll(c.ConfigDir, 0755)
 	if err != nil {
 		return fmt.Errorf("setupConfigDir: %w", err)
 	}
 
 	// then create the file
-	_, err = os.Create(configFile)
+	_, err = os.Create(c.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("setupConfigDir: %w", err)
 	}

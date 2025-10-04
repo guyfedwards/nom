@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -79,6 +78,23 @@ func TestConfigLoad(t *testing.T) {
 	}
 }
 
+func TestConfigLoadFromDirectory(t *testing.T) {
+	err := os.MkdirAll(configDir, 0755)
+	defer cleanup()
+
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	c, _ := New(configDir, "", []string{}, "")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if c.ConfigPath != configPath {
+		t.Fatalf("Failed to find config file in directory")
+	}
+}
+
 func TestConfigLoadPrecidence(t *testing.T) {
 	c, _ := New(configFixturePath, "testpager", []string{}, "")
 
@@ -118,17 +134,18 @@ func TestConfigAddFeed(t *testing.T) {
 		t.Fatalf("did not write feed correctly")
 	}
 }
-
 func TestConfigSetupDir(t *testing.T) {
-	err := setupConfigDir(configDir)
+	err := os.MkdirAll(configDir, 0755)
 	if err != nil {
-		t.Fail()
-		return
+		t.Fatalf("Failed to create %s", configDir)
 	}
 
-	_, err = os.Stat(filepath.Join(configDir, "config.yml"))
+	c, _ := New(configPath, "", []string{}, "")
+	c.Load()
+
+	_, err = os.Stat(configPath)
 	if err != nil {
-		t.Fail()
+		t.Fatalf("Did not create %s as expected", configPath)
 	}
 
 	cleanup()
