@@ -1,7 +1,9 @@
 # nom
+
 > Feed me
 
 `nom` is a terminal based RRS feed reader using [Glow](https://github.com/charmbracelet/glow) styled markdown to improve the reading experience and a simple TUI using [Bubbletea](https://github.com/charmbracelet/bubbletea).
+
 - Local sync and offline reading
 - Backend connections (miniflux, freshrss supported)
 - Vim style keybindings for navigation
@@ -10,78 +12,117 @@
 ![](./.github/demo.gif)
 
 ## Install
+
 See [releases](https://github.com/guyfedwards/nom/releases) for binaries. E.g.
+
 ```sh
-$ curl -L https://github.com/guyfedwards/nom/releases/download/v2.1.4/nom_2.1.4_darwin_amd64.tar.gz | tar -xzvf -
+curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_darwin_amd64.tar.gz | tar -xzvf -
+```
+
+To install the `nom` binary into `/usr/local/bin` (or into the location of your choice) in a single step:
+
+```sh
+curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_darwin_amd64.tar.gz |
+  sudo tar -C /usr/local/bin -xvzf - nom
 ```
 
 ## Usage
+
 ```sh
 $ nom # start TUI
 $ nom add <feed_url> <optional feed_name>
 $ nom -h # see all available command and options
 ```
 
-## Config
-Config lives by default in `$XDG_CONFIG_HOME/nom/config.yml` or `$HOME/Library/Application Support/nom/config.yml` on darwin.  
-You can customise the location of the config file with the `--config-path` flag.
+## Configuration
+
+Configuration lives by default in `$XDG_CONFIG_HOME/nom/config.yml` or `$HOME/Library/Application Support/nom/config.yml` on darwin. You can customise the location of the configuration file with the `--config-path` (`-c`) flag:
+
+```sh
+nom -c my-custom-config.yml
+```
 
 ### Feeds
-Feeds are added to the config file and have a url and name.
+
+Feeds are added to the configuration file and have a url and an optional name:
+
 ```yaml
 feeds:
-  - url: https://dropbox.tech/feed
-    # name will be prefixed to all entries in the list
-    name: dropbox 
-  - url: https://snyk.io/blog/feed
+- url: https://dropbox.tech/feed
+  # name will be prefixed to all entries in the list
+  name: dropbox
+- url: https://snyk.io/blog/feed
 ```
+
 You can also add feeds with the `add` command:
+
 ```sh
 $ nom add <url> <optional feed_name>
 ```
-Feeds are editable within `nom` by pressing `E` to open the config in your `$EDITOR` or `$NOMEDITOR`. After editing feeds, you will need to then refresh with `r`.
 
-#### Youtube feeds
-To add youtube feeds you can go to a channel and run the following in the browser console to get the rss feed link:
+Feeds are editable within `nom` by pressing `E` to open the configuration in your editor. You can configure which editor Nom will use by setting (in order of preference) your `$NOMEDITOR`, `$VISUAL`, or `$EDITOR` environment variable. After editing feeds, you will need to then refresh with `r`.
+
+#### YouTube feeds
+
+To add YouTube feeds you can go to a channel and run the following in the browser console to get the rss feed link:
+
 ```js
-console.log(`https://www.youtube.com/feeds/videos.xml?channel_id=${document.querySelector("link[rel='canonical']").href.split('/channel/').reverse()[0]}`)
+console.log(
+  `https://www.youtube.com/feeds/videos.xml?channel_id=${
+    document.querySelector("link[rel='canonical']").href.split("/channel/")
+      .reverse()[0]
+  }`,
+);
 ```
 
 ### Show read (default: false)
+
 Show read items by default. (can be toggled with M)
+
 ```yaml
 showread: true
 ```
+
 ### Auto read (default: false)
-Automatically mark items as read on selection or navigation through items. 
+
+Automatically mark items as read on selection or navigation through items.
+
 ```yaml
 autoread: true
 ```
 
 ### Ordering
+
 Set the default sort ordering of the list
+
 ```yaml
 ordering: asc
 ```
 
 ### Filtering
+
 Default to include the feedname prefix in filtering query. Removes need to use `f:xxx` for simple queries. This will mean that multi-feed filters won't work, e.g. `f:xxx f:yyy`
+
 ```yaml
-filtering: 
+filtering:
   defaultIncludeFeedName: true
 ```
 
 ### Refresh interval
+
 Background refresh interval in minutes. Setting this to anything but 0 will make `nom` refresh automatically.
+
 ```yaml
 refreshinterval: 5
 ```
 
-### Theme 
+### Theme
+
 Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.
 Colors can be hex or ASCII codes, they will be coerced depending on your terminal color settings.
+
 ```yaml
-theme: 
+theme:
   glamour: dark
   titleColor: "62"
   titleColorFg: "231"
@@ -90,7 +131,9 @@ theme:
 ```
 
 ### Backends
+
 As well as adding feeds directly, you can pull in feeds from another source. You can add multiple backends and the feeds will all be added.
+
 ```yaml
 backends:
   miniflux:
@@ -104,22 +147,26 @@ backends:
 ```
 
 #### FreshRSS
+
 To use freshrss you need to enable API access and set the API password explicitly, separate to your user password.
-1. To enable the API go to Settings > Authentication > Allow API access.  
-1. You can set the API password in Settings > Profile > API password.  
+
+1. To enable the API go to Settings > Authentication > Allow API access.
+1. You can set the API password in Settings > Profile > API password.
 
 ### Openers
-By default links are opened in the browser, you can specify commands to open certain links based on a regex string.   
-`regex` can be any valid golang regex string, it will be matched against the feed item link.  
-`cmd` is run as a child command. The `%s` denotes the position of the link in the command.  
-`takeover` dictates if the command should takeover the tty from nom. E.g. for opening links in lynx or other TUI.  
+
+By default links are opened in the browser, you can specify commands to open certain links based on a regex string.\
+`regex` can be any valid golang regex string, it will be matched against the feed item link.\
+`cmd` is run as a child command. The `%s` denotes the position of the link in the command.\
+`takeover` dictates if the command should takeover the tty from nom. E.g. for opening links in lynx or other TUI.
+
 ```yaml
 openers:
-  - regex: "youtube"
-    cmd: "mpv %s"
-  - regex: ".*"
-    cmd: "lynx %s"
-    takeover: true
+- regex: "youtube"
+  cmd: "mpv %s"
+- regex: ".*"
+  cmd: "lynx %s"
+  takeover: true
 ```
 
 ### Proxy support
@@ -140,51 +187,62 @@ From the [ProxyFromEnvironment documentation](https://pkg.go.dev/net/http#ProxyF
 > `HTTPS_PROXY` and `NO_PROXY` (or the lowercase versions thereof). Requests use
 > the proxy from the environment variable matching their scheme, unless
 > excluded by `NO_PROXY`.
-> 
+>
 > The environment values may be either a complete URL or a "host[:port]", in
 > which case the "http" scheme is assumed.
 
 ## Store
-`nom` uses sqlite as a store for feeds and metadata. It is stored next to the config in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch redownloading all articles and no state.
 
-The name of the sqlite file can be overridden in the config file, allowing you to have multiple configs each with their own data store.
+Nom uses sqlite as a store for feeds and metadata. It is stored adjacent to the configuration file in `$XDG_CONFIG_HOME/nom/nom.db`. This can be backed up like any file and will store articles, read state etc. It can also be deleted to start from scratch, re-downloading all articles and no state.
+
+The name of the sqlite file can be overridden in the configuration file, allowing you to have multiple configurations each with their own data store.
 
 ```yaml
 database: news.db
 ```
 
 ## Filtering
+
 Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
+
 - `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
 - `feedname:"my feed - with spaces"` - matches `my feed - with spaces`
 - `feed:'my feed, with single quotes!'` - matches `my feed, with single quotes!`
 - `feed:my\ feed\ with\ escaped\ spaces!` - matches `my feed with escaped spaces!`
 
 ### Include feedname in filtering
-If you want to include the feedname in the default filtering query, use `config.filtering.defaultIncludeFeedName: true`. This simplifies the above `f:xxx` queries but means that you can't filter by multiple feeds at once, e.g. `f:xxx f:yyy`.
 
-More filters to be added soon!
+If you want to include the feed name in the default filtering query, use `config.filtering.defaultIncludeFeedName: true`. This simplifies the above `f:xxx` queries but means that you can't filter by multiple feeds at once, e.g. `f:xxx f:yyy`.
 
 ## Building and Running via Docker
+
 Build nom image
+
 ```sh
 docker build -t nom .
 ```
-This embeds the local docker-config.yml file into the container and will be used by default.
 
-Running the nom via docker
+This embeds the local `docker-config.yml`` file into the container and will be used by default.
+
+Running Nom via docker
+
 ```sh
 docker run --rm -it nom
 ```
-Use the `-v` command line argument to mount a local config onto `/app/docker-config.yml` as desired.
 
-
-## Dev setup
-You can use the `backends-compose.yml` to spin up a local instance of miniflux and freshrss if needed for development.
+Use the `-v` command line argument to mount a local configuration onto `/app/docker-config.yml` as desired:
 
 ```sh
-$ docker-compose -f backends-compose.yml up
+docker run --rm -it -v $PWD/my-nom-config.yml:/app/docker-config.yml nom
 ```
 
-### Debug logging
-You can enable logging to a file using the `DEBUGNOM` env var. Passing any path will cause `log` calls to write there e.g. `DEBUGNOM=debug.log`
+## Dev setup
+
+You can use `backends-compose.yml` to spin up a local instance of [MiniFlux] and [FreshRSS] if needed for development.
+
+[miniflux]: https://miniflux.app/
+[freshrss]: https://www.freshrss.org/
+
+```sh
+docker-compose -f backends-compose.yml up -d
+```
