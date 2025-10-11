@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -114,6 +115,32 @@ func (c Commands) ShowConfig() error {
 	return nil
 }
 
+func (c Commands) ImportFeeds(source string) error {
+	if URL, err := url.Parse(source); err == nil && URL.Host != "" && URL.Scheme != "" {
+		fmt.Println("Fetch OPML from remote URL: " + URL.String())
+	} else {
+		fmt.Println("Read OMPL from file: " + source)
+	}
+
+	return nil
+}
+
+func (c Commands) importFeedsFromFile(filepath string) error {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return fmt.Errorf("import opml file error: %w", err)
+	}
+	defer file.Close()
+
+	opml, err := parseOPML(file)
+	if err != nil {
+		return fmt.Errorf("import opml file error: %w", err)
+	}
+
+	fmt.Printf("%+v\n", opml)
+	return nil
+}
+
 type FetchResultError struct {
 	res rss.RSS
 	err error
@@ -206,7 +233,7 @@ func (c Commands) Monitor(prog *tea.Program) {
 
 	go func() {
 		t := time.NewTicker(time.Duration(c.config.RefreshInterval) * time.Minute)
-		for _ = range t.C {
+		for range t.C {
 			err := c.Refresh()
 			if err != nil {
 				log.Println("Refresh failed: ", err)
