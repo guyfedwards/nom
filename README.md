@@ -29,9 +29,9 @@ curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_
 ## Usage
 
 ```sh
-$ nom # start TUI
-$ nom add <feed_url> <optional feed_name>
-$ nom -h # see all available command and options
+nom # start TUI
+nom add <feed_url> <optional feed_name>
+nom -h # see all available command and options
 ```
 
 ## Configuration
@@ -57,10 +57,16 @@ feeds:
 You can also add feeds with the `add` command:
 
 ```sh
-$ nom add <url> <optional feed_name>
+nom add <url> <optional feed_name>
 ```
 
 Feeds are editable within `nom` by pressing `E` to open the configuration in your editor. You can configure which editor Nom will use by setting (in order of preference) your `$NOMEDITOR`, `$VISUAL`, or `$EDITOR` environment variable. After editing feeds, you will need to then refresh with `r`.
+
+Alternatively you can import feeds from an OPML file:
+
+```sh
+nom import <path/to/opml|url/to/opm;
+```
 
 #### YouTube feeds
 

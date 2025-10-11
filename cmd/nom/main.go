@@ -95,6 +95,25 @@ func (r *Unread) Execute(args []string) error {
 	return nil
 }
 
+type Import struct {
+	Positional struct {
+		Source string `positional-arg-name:"SOURCE" required:"yes" description:"Source OPML data. Can be either a file path or a URL"`
+	} `positional-args:"yes"`
+}
+
+func (r *Import) Execute(args []string) error {
+	cmds, err := getCmds()
+	if err != nil {
+		return err
+	}
+
+	err = cmds.ImportFeeds(r.Positional.Source)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func getCmds() (*commands.Commands, error) {
 	cfg, err := config.New(options.ConfigPath, options.Pager, options.PreviewFeeds, version)
 	if err != nil {
@@ -125,10 +144,10 @@ func main() {
 	parser.AddCommand("version", "Show Version", "Display version information", &Version{})
 	parser.AddCommand("refresh", "Refresh feeds", "refresh feed(s) without opening TUI", &Refresh{})
 	parser.AddCommand("unread", "Count unread", "Get count of unread items", &Unread{})
+	parser.AddCommand("import", "Import feeds", "Import feeds from an OMPL file", &Import{})
 
 	// parse the command line arguments
 	_, err := parser.Parse()
-
 	// check for help flag
 	if err != nil {
 		if flagErr, ok := err.(*flags.Error); ok && flagErr.Type != flags.ErrHelp {

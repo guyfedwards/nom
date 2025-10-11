@@ -1,8 +1,6 @@
 module github.com/guyfedwards/nom/v2
 
-go 1.21
-
-toolchain go1.22.1
+go 1.24.0
 
 require (
 	github.com/JohannesKaufmann/html-to-markdown v1.6.0
