@@ -98,7 +98,7 @@ func (r *Unread) Execute(args []string) error {
 type Import struct {
 	Positional struct {
 		Source string `positional-arg-name:"SOURCE" required:"yes" description:"Source OPML data. Can be either a file path or a URL"`
-	}
+	} `positional-args:"yes"`
 }
 
 func (r *Import) Execute(args []string) error {

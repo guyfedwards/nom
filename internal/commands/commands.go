@@ -2,11 +2,14 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -116,29 +119,74 @@ func (c Commands) ShowConfig() error {
 }
 
 func (c Commands) ImportFeeds(source string) error {
+	var opmlText string
 	if URL, err := url.Parse(source); err == nil && URL.Host != "" && URL.Scheme != "" {
 		fmt.Println("Fetch OPML from remote URL: " + URL.String())
+		res, err := http.Get(URL.String())
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: opml fetch error: %w", err)
+		}
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: error reading opml body: %w", err)
+		}
+		opmlText = string(body)
 	} else {
 		fmt.Println("Read OMPL from file: " + source)
+		file, err := os.ReadFile(source)
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: error reading opml from file: %w", err)
+		}
+		opmlText = string(file)
 	}
+	opml, err := parseOPML(opmlText)
+	if err != nil {
+		return fmt.Errorf("config.ImportFeeds: error parsing OPML: %w", err)
+	}
+	feeds := make([]config.Feed, 0)
+	for _, outline := range opml.Body.Outlines {
+		if outline.XMLUrl == nil {
+			log.Printf("config.ImportFeeds: No url for outline %s\n", outline.Title)
+		} else {
+			feeds = append(feeds, config.Feed{
+				Name: outline.Title,
+				URL:  outline.XMLUrl.String(),
+			})
+		}
+
+		feeds = slices.Concat(feeds, getChildFeeds(outline))
+	}
+
+	errors := 0
+	for _, feed := range feeds {
+		err := c.config.AddFeed(feed)
+		if err != nil {
+			errors++
+			log.Printf("config.ImportFeeds: %s\n", err)
+		}
+	}
+
+	fmt.Printf("added %d feeds with %d errors", len(feeds)-errors, errors)
 
 	return nil
 }
 
-func (c Commands) importFeedsFromFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return fmt.Errorf("import opml file error: %w", err)
-	}
-	defer file.Close()
+func getChildFeeds(outline Outline) []config.Feed {
+	feeds := make([]config.Feed, 0)
+	for _, child := range outline.Outlines {
+		if child.XMLUrl == nil {
+			log.Printf("getChildFeeds: No url for outline %s\n", child.Title)
+		} else {
+			feeds = append(feeds, config.Feed{
+				Name: child.Title,
+				URL:  child.XMLUrl.String(),
+			})
+		}
 
-	opml, err := parseOPML(file)
-	if err != nil {
-		return fmt.Errorf("import opml file error: %w", err)
+		feeds = slices.Concat(feeds, getChildFeeds(child))
 	}
 
-	fmt.Printf("%+v\n", opml)
-	return nil
+	return feeds
 }
 
 type FetchResultError struct {
