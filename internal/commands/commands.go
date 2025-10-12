@@ -2,10 +2,14 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -114,6 +118,76 @@ func (c Commands) ShowConfig() error {
 	return nil
 }
 
+func (c Commands) ImportFeeds(source string) error {
+	var opmlData []byte
+	URL, err := url.Parse(source)
+	if err == nil && URL.Host != "" && URL.Scheme != "" {
+		fmt.Println("Fetch OPML from remote URL: " + URL.String())
+		res, err := http.Get(URL.String())
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: opml fetch error: %w", err)
+		}
+		opmlData, err = io.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: error reading opml body: %w", err)
+		}
+	} else {
+		fmt.Println("Read OMPL from file: " + source)
+		opmlData, err = os.ReadFile(source)
+		if err != nil {
+			return fmt.Errorf("config.ImportFeeds: error reading opml from file: %w", err)
+		}
+	}
+	opml, err := parseOPML(opmlData)
+	if err != nil {
+		return fmt.Errorf("config.ImportFeeds: error parsing OPML: %w", err)
+	}
+	feeds := make([]config.Feed, 0)
+	for _, outline := range opml.Body.Outlines {
+		if outline.XMLUrl == nil {
+			log.Printf("config.ImportFeeds: No url for outline %s\n", outline.Title)
+		} else {
+			feeds = append(feeds, config.Feed{
+				Name: outline.Title,
+				URL:  outline.XMLUrl.String(),
+			})
+		}
+
+		feeds = slices.Concat(feeds, getChildFeeds(outline))
+	}
+
+	errors := 0
+	for _, feed := range feeds {
+		err := c.config.AddFeed(feed)
+		if err != nil {
+			errors++
+			log.Printf("config.ImportFeeds: %s\n", err)
+		}
+	}
+
+	fmt.Printf("added %d feeds with %d errors", len(feeds)-errors, errors)
+
+	return nil
+}
+
+func getChildFeeds(outline Outline) []config.Feed {
+	feeds := make([]config.Feed, 0)
+	for _, child := range outline.Outlines {
+		if child.XMLUrl == nil {
+			log.Printf("getChildFeeds: No url for outline %s\n", child.Title)
+		} else {
+			feeds = append(feeds, config.Feed{
+				Name: child.Title,
+				URL:  child.XMLUrl.String(),
+			})
+		}
+
+		feeds = slices.Concat(feeds, getChildFeeds(child))
+	}
+
+	return feeds
+}
+
 type FetchResultError struct {
 	res rss.RSS
 	err error
@@ -206,7 +280,7 @@ func (c Commands) Monitor(prog *tea.Program) {
 
 	go func() {
 		t := time.NewTicker(time.Duration(c.config.RefreshInterval) * time.Minute)
-		for _ = range t.C {
+		for range t.C {
 			err := c.Refresh()
 			if err != nil {
 				log.Println("Refresh failed: ", err)

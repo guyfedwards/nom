@@ -310,3 +310,12 @@ func (c *Config) setupConfigDir() error {
 
 	return err
 }
+
+func (c *Config) ImportFeeds() ([]Feed, error) {
+	err := c.Load()
+	if err != nil {
+		return nil, fmt.Errorf("config.ImportFeeds: %w", err)
+	}
+
+	return nil, nil
+}

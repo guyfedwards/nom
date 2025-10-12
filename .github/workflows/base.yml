@@ -7,16 +7,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '>=1.19.0'
-      -
-        name: Validate
+          go-version: ">=1.19.0"
+      - name: Validate
         run: |
           # Check that go mod tidy produces a zero diff; clean up any changes afterwards.
           go mod tidy && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
@@ -24,21 +21,17 @@ jobs:
           go vet ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
           # Check that go fmt ./... produces a zero diff; clean up any changes afterwards.
           go fmt ./... && git diff --exit-code; code=$?; git checkout -- .; (exit $code)
-      -
-        name: Run tests
+      - name: Run tests
         run: make test
   build:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '>=1.19.0'
-      -
-        name: Build
+          go-version: ">=1.19.0"
+      - name: Build
         run: make build
