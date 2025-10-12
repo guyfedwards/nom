@@ -119,7 +119,7 @@ func (c Commands) ShowConfig() error {
 }
 
 func (c Commands) ImportFeeds(source string) error {
-	var opmlText string
+	var opmlData []byte
 	URL, err := url.Parse(source)
 	if err == nil && URL.Host != "" && URL.Scheme != "" {
 		fmt.Println("Fetch OPML from remote URL: " + URL.String())
@@ -127,20 +127,18 @@ func (c Commands) ImportFeeds(source string) error {
 		if err != nil {
 			return fmt.Errorf("config.ImportFeeds: opml fetch error: %w", err)
 		}
-		body, err := io.ReadAll(res.Body)
+		opmlData, err = io.ReadAll(res.Body)
 		if err != nil {
 			return fmt.Errorf("config.ImportFeeds: error reading opml body: %w", err)
 		}
-		opmlText = string(body)
 	} else {
 		fmt.Println("Read OMPL from file: " + source)
-		file, err := os.ReadFile(source)
+		opmlData, err = os.ReadFile(source)
 		if err != nil {
 			return fmt.Errorf("config.ImportFeeds: error reading opml from file: %w", err)
 		}
-		opmlText = string(file)
 	}
-	opml, err := parseOPML(opmlText)
+	opml, err := parseOPML(opmlData)
 	if err != nil {
 		return fmt.Errorf("config.ImportFeeds: error parsing OPML: %w", err)
 	}

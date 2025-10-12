@@ -81,9 +81,9 @@ func (o *Outline) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	return nil
 }
 
-func parseOPML(text string) (*OPML, error) {
+func parseOPML(input []byte) (*OPML, error) {
 	var opml OPML
-	err := xml.Unmarshal([]byte(text), &opml)
+	err := xml.Unmarshal(input, &opml)
 	if err != nil {
 		return nil, fmt.Errorf("parseOPML: unable to unmarshal OPML data: %w", err)
 	}
