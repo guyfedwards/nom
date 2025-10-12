@@ -250,7 +250,7 @@ func (c *Config) Write() error {
 		return fmt.Errorf("config.Write: %w", err)
 	}
 
-	err = os.WriteFile(c.ConfigPath, []byte(str), 0o655)
+	err = os.WriteFile(c.ConfigPath, []byte(str), 0655)
 	if err != nil {
 		return fmt.Errorf("config.Write: %w", err)
 	}
@@ -297,7 +297,7 @@ func (c *Config) setupConfigDir() error {
 	}
 
 	// if not, create directory. noop if directory exists
-	err = os.MkdirAll(c.ConfigDir, 0o755)
+	err = os.MkdirAll(c.ConfigDir, 0755)
 	if err != nil {
 		return fmt.Errorf("setupConfigDir: %w", err)
 	}
@@ -314,7 +314,7 @@ func (c *Config) setupConfigDir() error {
 func (c *Config) ImportFeeds() ([]Feed, error) {
 	err := c.Load()
 	if err != nil {
-		return nil, fmt.Errorf("config.AddFeed: %w", err)
+		return nil, fmt.Errorf("config.ImportFeeds: %w", err)
 	}
 
 	return nil, nil

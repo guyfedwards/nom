@@ -120,7 +120,8 @@ func (c Commands) ShowConfig() error {
 
 func (c Commands) ImportFeeds(source string) error {
 	var opmlText string
-	if URL, err := url.Parse(source); err == nil && URL.Host != "" && URL.Scheme != "" {
+	URL, err := url.Parse(source)
+	if err == nil && URL.Host != "" && URL.Scheme != "" {
 		fmt.Println("Fetch OPML from remote URL: " + URL.String())
 		res, err := http.Get(URL.String())
 		if err != nil {

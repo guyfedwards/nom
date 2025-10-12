@@ -66,7 +66,7 @@ func TestConfigLoad(t *testing.T) {
 	c, _ := New(configFixturePath, "", []string{}, "")
 	err := c.Load()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err)
 	}
 
 	if len(c.Feeds) != 3 || c.Feeds[0].URL != "cattle" {
@@ -83,11 +83,11 @@ func TestConfigLoadFromDirectory(t *testing.T) {
 	defer cleanup()
 
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err)
 	}
 	c, _ := New(configDir, "", []string{}, "")
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err)
 	}
 
 	if c.ConfigPath != configPath {
@@ -100,7 +100,7 @@ func TestConfigLoadPrecidence(t *testing.T) {
 
 	err := c.Load()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err)
 	}
 
 	if c.Pager != "testpager" {
@@ -113,7 +113,7 @@ func TestConfigAddFeed(t *testing.T) {
 
 	err := c.Load()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("%s", err)
 	}
 
 	c.AddFeed(Feed{URL: "foo"})
