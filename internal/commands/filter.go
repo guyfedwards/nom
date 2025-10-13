@@ -16,11 +16,46 @@ import (
 // Struct to aid in filtering items into ranks for BubbleTea
 type Filterer struct {
 	FeedNames []string
+	Tags      []string
 	Term      struct {
 		Title     string
 		FeedNames []string
+		Tags      []string
 	}
-	Config config.FilterConfig
+	Config config.Config
+}
+
+func (f *Filterer) FilterByTag(filterValues []string, targetFilterValues [][]string) fuzzy.Matches {
+	// find matching feeds and keep the best matching one in case there are multiple
+	ranksGrouped := map[int]fuzzy.Match{}
+	for _, tag := range filterValues {
+		for _, tags := range targetFilterValues {
+			matches := fuzzy.Find(tag, tags)
+			for _, m := range matches {
+				prevMatch, ok := ranksGrouped[m.Index]
+				if !ok {
+					ranksGrouped[m.Index] = m
+				} else {
+					if prevMatch.Score < m.Score {
+						ranksGrouped[m.Index] = m
+					}
+				}
+			}
+		}
+	}
+
+	var ranks fuzzy.Matches
+	for _, m := range ranksGrouped {
+		ranks = append(ranks, m)
+	}
+
+	// keep the same order as the input
+	// this keeps the same order of items in the UI and prevents the items from being shuffled
+	slices.SortStableFunc(ranks, func(left fuzzy.Match, right fuzzy.Match) int {
+		return right.Index - left.Index
+	})
+
+	return ranks
 }
 
 // Filters by feednames
@@ -121,22 +156,26 @@ func (f *Filterer) ExtractFiltersFor(tags ...string) []string {
 func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 	var targetTitles []string
 	var targetFeedNames []string
+	var targetTags [][]string
 
 	for _, target := range targets {
 		i := f.GetItem(target)
 		title := i.Title
-		if f.Config.DefaultIncludeFeedName {
+		if f.Config.Filtering.DefaultIncludeFeedName {
 			title = strings.Join([]string{i.FeedName, i.Title}, " ")
 		}
 		targetTitles = append(targetTitles, title)
 		targetFeedNames = append(targetFeedNames, i.FeedName)
+		targetTags = append(targetTags, i.Tags)
 	}
 
 	var ranks fuzzy.Matches
-	if len(f.FeedNames) == 0 {
+	if len(f.FeedNames) == 0 && len(f.Tags) == 0 {
 		ranks = fuzzy.Find(f.Term.Title, targetTitles)
-	} else {
+	} else if len(f.FeedNames) > 0 {
 		ranks = f.FilterByFeedName(f.FeedNames, targetFeedNames)
+	} else {
+		ranks = f.FilterByTag(f.Tags, targetTags)
 	}
 
 	sort.Stable(ranks)
@@ -144,17 +183,18 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 	return ranks
 }
 
-func NewFilterer(term string, config config.FilterConfig) Filterer {
+func NewFilterer(term string, config config.Config) Filterer {
 	var f Filterer
 
 	f.Config = config
 	f.Term.Title = term
 	f.FeedNames = f.ExtractFiltersFor("feedname", "feed", "f")
+	f.Tags = f.ExtractFiltersFor("tag", "t")
 
 	return f
 }
 
-func CustomFilter(config config.FilterConfig) list.FilterFunc {
+func CustomFilter(config config.Config) list.FilterFunc {
 	return func(term string, targets []string) []list.Rank {
 		filterer := NewFilterer(term, config)
 

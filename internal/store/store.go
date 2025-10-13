@@ -22,6 +22,7 @@ type Item struct {
 	FeedName    string // added from config if set
 	Link        string
 	Content     string
+	Tags        []string
 	ReadAt      time.Time
 	PublishedAt time.Time
 	UpdatedAt   time.Time

@@ -261,15 +261,6 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 	return items, errorItems, nil
 }
 
-func includes[T comparable](arr []T, item T) bool {
-	for _, v := range arr {
-		if v == item {
-			return true
-		}
-	}
-	return false
-}
-
 func (c Commands) Monitor(prog *tea.Program) {
 	if c.config.RefreshInterval == 0 {
 		return

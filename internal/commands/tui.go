@@ -35,6 +35,7 @@ type TUIItem struct {
 	ID        int
 	Read      bool
 	Favourite bool
+	Tags      []string
 }
 
 func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
@@ -244,7 +245,7 @@ func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Conf
 
 	l.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
 
-	l.Filter = CustomFilter(cfg.Filtering)
+	l.Filter = CustomFilter(*cfg)
 
 	ListKeyMap.SetOverrides(&l)
 
