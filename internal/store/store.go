@@ -33,7 +33,7 @@ func (i Item) Read() bool {
 }
 
 type Store interface {
-	UpsertItem(item Item) (int, error)
+	UpsertItem(item *Item) error
 	BeginBatch() error
 	EndBatch() error
 	GetAllItems(ordering string) ([]Item, error)
@@ -198,7 +198,7 @@ func (sls *SQLiteStore) EndBatch() error {
 	return nil
 }
 
-func (sls *SQLiteStore) UpsertItem(item Item) (int, error) {
+func (sls *SQLiteStore) UpsertItem(item *Item) error {
 	if sls.batch != nil {
 		return sls.upsertItem(sls.batch, item)
 	}
@@ -210,42 +210,45 @@ type statementPreparer interface {
 	Prepare(query string) (*sql.Stmt, error)
 }
 
-func (sls *SQLiteStore) upsertItem(db statementPreparer, item Item) (int, error) {
+func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
 	stmt, err := db.Prepare(`select count(id), id from items where feedurl = ? and title = ?;`)
 	if err != nil {
-		return 0, fmt.Errorf("sqlite.go: could not prepare query: %w", err)
+		return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 	}
 
 	var count int
 	var id sql.NullInt32
 	err = stmt.QueryRow(item.FeedURL, item.Title).Scan(&count, &id)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return 0, fmt.Errorf("store.go: write %w", err)
+		return fmt.Errorf("store.go: write %w", err)
 	}
 	if count == 0 {
 		stmt, err = db.Prepare(`insert into items (feedurl, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?)`)
 		if err != nil {
-			return 0, fmt.Errorf("sqlite.go: could not prepare query: %w", err)
+			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
 
 		result, err := stmt.Exec(item.FeedURL, item.Link, item.Title, item.Content, item.Author, item.PublishedAt, time.Now(), time.Now())
 		if err != nil {
-			return 0, fmt.Errorf("sqlite.go: Upsert failed: %w", err)
+			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
 		lastID, err := result.LastInsertId()
-		return int(lastID), err
+		if err != nil {
+			return fmt.Errorf("sqlite.go: No inserted ID: %w", err)
+		}
+		item.ID = int(lastID)
 	} else {
 		stmt, err = db.Prepare(`update items set content = ?, updatedat = ? where id = ?`)
 		if err != nil {
-			return 0, fmt.Errorf("sqlite.go: could not prepare query: %w", err)
+			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
 
 		_, err = stmt.Exec(item.Content, time.Now(), id)
 		if err != nil {
-			return 0, fmt.Errorf("sqlite.go: Upsert failed: %w", err)
+			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
-		return item.ID, nil
 	}
+	return nil
 }
 
 // TODO: pagination

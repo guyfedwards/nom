@@ -248,13 +248,11 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 				Title:       r.Title,
 			}
 
-			id, err := c.store.UpsertItem(i)
+			err := c.store.UpsertItem(&i)
 			if err != nil {
 				log.Fatalf("[commands.go] fetchAllFeeds: %e", err)
 				continue
 			}
-
-			i.ID = id
 
 			items = append(items, i)
 		}
