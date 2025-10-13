@@ -8,6 +8,7 @@ import (
 
 	"github.com/guyfedwards/nom/v2/internal/commands"
 	"github.com/guyfedwards/nom/v2/internal/config"
+	"github.com/guyfedwards/nom/v2/internal/constants"
 	"github.com/guyfedwards/nom/v2/internal/store"
 )
 
@@ -123,8 +124,13 @@ func getCmds() (*commands.Commands, error) {
 	if err = cfg.Load(); err != nil {
 		return nil, err
 	}
-
-	s, err := store.NewSQLiteStore(cfg.ConfigDir, cfg.Database)
+	var s store.Store
+	if cfg.IsPreviewMode() {
+		cfg.Ordering = constants.DescendingOrdering
+		s, err = store.NewInMemorySQLiteStore()
+	} else {
+		s, err = store.NewSQLiteStore(cfg.ConfigDir, cfg.Database)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("main.go: %w", err)
 	}

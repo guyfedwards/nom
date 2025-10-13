@@ -217,7 +217,6 @@ func (c *Commands) TUI() error {
 	}
 
 	prog, err := Render(items, c, es, c.config)
-
 	if err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
 	}

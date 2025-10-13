@@ -17,9 +17,16 @@ func (c Commands) CleanFeeds() error {
 
 	var urlsToRemove []string
 
+	var feeds []config.Feed
+	if c.config.IsPreviewMode() {
+		feeds = c.config.PreviewFeeds
+	} else {
+		feeds = c.config.Feeds
+	}
+
 	for _, u := range urls {
 		inFeeds := false
-		for _, f := range c.config.Feeds {
+		for _, f := range feeds {
 			if f.URL == u {
 				inFeeds = true
 			}
@@ -29,7 +36,6 @@ func (c Commands) CleanFeeds() error {
 			urlsToRemove = append(urlsToRemove, u)
 		}
 	}
-
 	for _, url := range urlsToRemove {
 		err := c.store.DeleteByFeedURL(url, false)
 		if err != nil {
@@ -100,7 +106,6 @@ func fetchFeed(ch chan FetchResultError, wg *sync.WaitGroup, feed config.Feed, h
 	defer wg.Done()
 
 	r, err := rss.Fetch(feed, httpOpts, version)
-
 	if err != nil {
 		ch <- FetchResultError{res: rss.RSS{}, err: err, url: feed.URL}
 		return

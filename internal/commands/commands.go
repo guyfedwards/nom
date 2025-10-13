@@ -248,14 +248,13 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 				Title:       r.Title,
 			}
 
-			// only store if non-preview feed
-			if !includes(c.config.PreviewFeeds, config.Feed{URL: result.url}) {
-				err := c.store.UpsertItem(i)
-				if err != nil {
-					log.Fatalf("[commands.go] fetchAllFeeds: %e", err)
-					continue
-				}
+			id, err := c.store.UpsertItem(i)
+			if err != nil {
+				log.Fatalf("[commands.go] fetchAllFeeds: %e", err)
+				continue
 			}
+
+			i.ID = id
 
 			items = append(items, i)
 		}
