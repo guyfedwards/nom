@@ -38,7 +38,9 @@ type TUIItem struct {
 	Tags      []string
 }
 
-func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
+func (i TUIItem) FilterValue() string {
+	return fmt.Sprintf("%s||%s||%s", i.Title, i.FeedName, strings.Join(i.Tags, "||"))
+}
 
 type model struct {
 	selectedArticle *int
@@ -171,6 +173,7 @@ func ItemToTUIItem(i store.Item) TUIItem {
 		URL:       i.Link,
 		Read:      i.Read(),
 		Favourite: i.Favourite,
+		Tags:      i.Tags,
 	}
 }
 
