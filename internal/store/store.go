@@ -33,7 +33,7 @@ func (i Item) Read() bool {
 }
 
 type Store interface {
-	UpsertItem(item Item) error
+	UpsertItem(item *Item) error
 	BeginBatch() error
 	EndBatch() error
 	GetAllItems(ordering string) ([]Item, error)
@@ -52,6 +52,27 @@ type SQLiteStore struct {
 	batch *sql.Tx
 }
 
+func NewInMemorySQLiteStore() (*SQLiteStore, error) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		return nil, fmt.Errorf("NewInMemorySQLiteStore: %w", err)
+	}
+
+	err = dbSetup(db)
+	if err != nil {
+		return nil, fmt.Errorf("NewInMemorySQLiteStore: %w", err)
+	}
+
+	err = runMigrations(db)
+	if err != nil {
+		return nil, fmt.Errorf("NewInMemorySQLiteStore: %w", err)
+	}
+
+	return &SQLiteStore{
+		db: db,
+	}, nil
+}
+
 func NewSQLiteStore(basePath string, dbName string) (*SQLiteStore, error) {
 	dbpath := filepath.Join(basePath, dbName)
 
@@ -59,7 +80,7 @@ func NewSQLiteStore(basePath string, dbName string) (*SQLiteStore, error) {
 
 	db, err := sql.Open("sqlite3", dbpath)
 	if err != nil {
-		return nil, fmt.Errorf("NewSQLiteCache: %w", err)
+		return nil, fmt.Errorf("NewSQLiteStore: %w", err)
 	}
 
 	// if there was no db file before we create the connection then we want to run
@@ -67,13 +88,13 @@ func NewSQLiteStore(basePath string, dbName string) (*SQLiteStore, error) {
 	if info == nil {
 		err = dbSetup(db)
 		if err != nil {
-			return nil, fmt.Errorf("NewSQLiteCache: %w", err)
+			return nil, fmt.Errorf("NewSQLiteStore: %w", err)
 		}
 	}
 
 	err = runMigrations(db)
 	if err != nil {
-		return nil, fmt.Errorf("NewSQLiteCache: %w", err)
+		return nil, fmt.Errorf("NewSQLiteStore: %w", err)
 	}
 
 	return &SQLiteStore{
@@ -177,7 +198,7 @@ func (sls *SQLiteStore) EndBatch() error {
 	return nil
 }
 
-func (sls *SQLiteStore) UpsertItem(item Item) error {
+func (sls *SQLiteStore) UpsertItem(item *Item) error {
 	if sls.batch != nil {
 		return sls.upsertItem(sls.batch, item)
 	}
@@ -189,7 +210,7 @@ type statementPreparer interface {
 	Prepare(query string) (*sql.Stmt, error)
 }
 
-func (sls *SQLiteStore) upsertItem(db statementPreparer, item Item) error {
+func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
 	stmt, err := db.Prepare(`select count(id), id from items where feedurl = ? and title = ?;`)
 	if err != nil {
 		return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
@@ -201,17 +222,21 @@ func (sls *SQLiteStore) upsertItem(db statementPreparer, item Item) error {
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("store.go: write %w", err)
 	}
-
 	if count == 0 {
 		stmt, err = db.Prepare(`insert into items (feedurl, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?)`)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
 
-		_, err = stmt.Exec(item.FeedURL, item.Link, item.Title, item.Content, item.Author, item.PublishedAt, time.Now(), time.Now())
+		result, err := stmt.Exec(item.FeedURL, item.Link, item.Title, item.Content, item.Author, item.PublishedAt, time.Now(), time.Now())
 		if err != nil {
 			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
+		lastID, err := result.LastInsertId()
+		if err != nil {
+			return fmt.Errorf("sqlite.go: No inserted ID: %w", err)
+		}
+		item.ID = int(lastID)
 	} else {
 		stmt, err = db.Prepare(`update items set content = ?, updatedat = ? where id = ?`)
 		if err != nil {
@@ -223,7 +248,6 @@ func (sls *SQLiteStore) upsertItem(db statementPreparer, item Item) error {
 			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
 	}
-
 	return nil
 }
 
@@ -327,7 +351,6 @@ func (sls SQLiteStore) GetAllFeedURLs() ([]string, error) {
 }
 
 func (sls SQLiteStore) DeleteByFeedURL(feedurl string, incFavourites bool) error {
-
 	var stmt *sql.Stmt
 	if incFavourites {
 		stmt, _ = sls.db.Prepare(`delete from items where feedurl = ?;`)

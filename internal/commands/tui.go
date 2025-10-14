@@ -191,13 +191,7 @@ func (c *Commands) TUI() error {
 
 	var errorItems []ErrorItem
 	// if no feeds in store, fetchAllFeeds, which will return previews
-	if len(c.config.PreviewFeeds) > 0 {
-		its, errorItems, err = c.fetchAllFeeds()
-		if err != nil {
-			return fmt.Errorf("[commands.go] TUI: %w", err)
-		}
-		// if no items, fetchAllFeeds and GetAllFeeds
-	} else if len(its) == 0 {
+	if len(c.config.PreviewFeeds) > 0 || len(its) == 0 {
 		_, errorItems, err = c.fetchAllFeeds()
 		if err != nil {
 			return fmt.Errorf("[commands.go] TUI: %w", err)
@@ -217,7 +211,6 @@ func (c *Commands) TUI() error {
 	}
 
 	prog, err := Render(items, c, es, c.config)
-
 	if err != nil {
 		return fmt.Errorf("commands.TUI: %w", err)
 	}
