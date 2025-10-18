@@ -299,6 +299,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 				content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 				if err != nil {
+					// LKS: there should be an error message here
 					return m, tea.Quit
 				}
 

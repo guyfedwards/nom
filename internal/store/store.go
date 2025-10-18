@@ -21,6 +21,7 @@ type Item struct {
 	FeedURL     string
 	FeedName    string // added from config if set
 	Link        string
+	GUID        string
 	Content     string
 	ReadAt      time.Time
 	PublishedAt time.Time
@@ -135,6 +136,7 @@ func runMigrations(db *sql.DB) (err error) {
 	// Index based so all new migrations must go at the end of the array
 	migrations := []string{
 		`alter table items add favourite boolean not null default 0;`,
+		`alter table items add guid text`,
 	}
 
 	tx, _ := db.Begin()
@@ -211,24 +213,24 @@ type statementPreparer interface {
 }
 
 func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
-	stmt, err := db.Prepare(`select count(id), id from items where feedurl = ? and title = ?;`)
+	stmt, err := db.Prepare(`select count(id), id from items where feedurl = ? and link = ?;`)
 	if err != nil {
 		return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 	}
 
 	var count int
 	var id sql.NullInt32
-	err = stmt.QueryRow(item.FeedURL, item.Title).Scan(&count, &id)
+	err = stmt.QueryRow(item.FeedURL, item.Link).Scan(&count, &id)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("store.go: write %w", err)
 	}
 	if count == 0 {
-		stmt, err = db.Prepare(`insert into items (feedurl, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?)`)
+		stmt, err = db.Prepare(`insert into items (feedurl, guid, link, title, content, author, publishedat, createdat, updatedat) values (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
 
-		result, err := stmt.Exec(item.FeedURL, item.Link, item.Title, item.Content, item.Author, item.PublishedAt, time.Now(), time.Now())
+		result, err := stmt.Exec(item.FeedURL, item.GUID, item.Link, item.Title, item.Content, item.Author, item.PublishedAt, time.Now(), time.Now())
 		if err != nil {
 			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
@@ -238,12 +240,12 @@ func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
 		}
 		item.ID = int(lastID)
 	} else {
-		stmt, err = db.Prepare(`update items set content = ?, updatedat = ? where id = ?`)
+		stmt, err = db.Prepare(`update items set title = ?, content = ?, updatedat = ? where id = ?`)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: could not prepare query: %w", err)
 		}
 
-		_, err = stmt.Exec(item.Content, time.Now(), id)
+		_, err = stmt.Exec(item.Title, item.Content, time.Now(), id)
 		if err != nil {
 			return fmt.Errorf("sqlite.go: Upsert failed: %w", err)
 		}
@@ -254,7 +256,7 @@ func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
 // TODO: pagination
 func (sls SQLiteStore) GetAllItems(ordering string) ([]Item, error) {
 	itemStmt := `
-		select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat) %s;
+		select id, feedurl, guid, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat) %s;
 	`
 
 	var stmt string
@@ -277,12 +279,14 @@ func (sls SQLiteStore) GetAllItems(ordering string) ([]Item, error) {
 		var readAtNull sql.NullTime
 		var publishedAtNull sql.NullTime
 		var linkNull sql.NullString
+		var guidNull sql.NullString
 
-		if err := rows.Scan(&item.ID, &item.FeedURL, &linkNull, &item.Title, &item.Content, &item.Author, &readAtNull, &item.Favourite, &publishedAtNull, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.FeedURL, &guidNull, &linkNull, &item.Title, &item.Content, &item.Author, &readAtNull, &item.Favourite, &publishedAtNull, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			fmt.Println("errrerre: ", err)
 			continue
 		}
 
+		item.GUID = guidNull.String
 		item.Link = linkNull.String
 		item.ReadAt = readAtNull.Time
 		item.PublishedAt = publishedAtNull.Time
@@ -368,21 +372,23 @@ func (sls SQLiteStore) DeleteByFeedURL(feedurl string, incFavourites bool) error
 
 func (sls SQLiteStore) GetItemByID(ID int) (Item, error) {
 	var stmt *sql.Stmt
-	stmt, _ = sls.db.Prepare(`select id, feedurl, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items where id = ?;`)
+	stmt, _ = sls.db.Prepare(`select id, feedurl, guid, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items where id = ?;`)
 
 	var i Item
 	var readAtNull sql.NullTime
 	var publishedAtNull sql.NullTime
 	var linkNull sql.NullString
+	var guidNull sql.NullString
 
 	r := stmt.QueryRow(ID)
 
-	err := r.Scan(&i.ID, &i.FeedURL, &linkNull, &i.Title, &i.Content, &i.Author, &readAtNull, &i.Favourite, &publishedAtNull, &i.CreatedAt, &i.UpdatedAt)
+	err := r.Scan(&i.ID, &i.FeedURL, &guidNull, &linkNull, &i.Title, &i.Content, &i.Author, &readAtNull, &i.Favourite, &publishedAtNull, &i.CreatedAt, &i.UpdatedAt)
 	if err != nil {
 		return Item{}, fmt.Errorf("[store.go] GetItemByID: %w", err)
 	}
 
 	i.Link = linkNull.String
+	i.GUID = guidNull.String
 	i.ReadAt = readAtNull.Time
 	i.PublishedAt = publishedAtNull.Time
 
