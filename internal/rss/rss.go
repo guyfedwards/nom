@@ -14,6 +14,7 @@ import (
 type Item struct {
 	Title       string    `xml:"title"`
 	Link        string    `xml:"link"`
+	GUID        string    `xml:"guid"`
 	Description string    `xml:"description"`
 	Author      string    `xml:"author"`
 	Categories  []string  `xml:"categories"`
@@ -70,6 +71,7 @@ func feedToRSS(f config.Feed, feed *gofeed.Feed) RSS {
 		ni := Item{
 			Title: it.Title,
 			Link:  it.Link,
+			GUID:  it.GUID,
 		}
 
 		if it.Description != "" {

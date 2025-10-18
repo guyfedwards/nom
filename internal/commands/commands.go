@@ -244,6 +244,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 				FeedURL:     result.url,
 				FeedName:    r.FeedName,
 				Link:        r.Link,
+				GUID:        r.GUID,
 				PublishedAt: r.PubDate,
 				Title:       r.Title,
 			}
