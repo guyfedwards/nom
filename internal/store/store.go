@@ -23,6 +23,7 @@ type Item struct {
 	Link        string
 	GUID        string
 	Content     string
+	Tags        []string
 	ReadAt      time.Time
 	PublishedAt time.Time
 	UpdatedAt   time.Time

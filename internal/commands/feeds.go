@@ -70,6 +70,7 @@ func (c Commands) GetAllFeeds() ([]store.Item, error) {
 		for _, f := range c.config.Feeds {
 			if f.URL == is[i].FeedURL {
 				is[i].FeedName = f.Name
+				is[i].Tags = f.Tags
 			}
 		}
 	}

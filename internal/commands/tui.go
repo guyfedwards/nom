@@ -35,9 +35,12 @@ type TUIItem struct {
 	ID        int
 	Read      bool
 	Favourite bool
+	Tags      []string
 }
 
-func (i TUIItem) FilterValue() string { return fmt.Sprintf("%s||%s", i.Title, i.FeedName) }
+func (i TUIItem) FilterValue() string {
+	return fmt.Sprintf("%s||%s||%s", i.Title, i.FeedName, strings.Join(i.Tags, "||"))
+}
 
 type model struct {
 	selectedArticle *int
@@ -170,6 +173,7 @@ func ItemToTUIItem(i store.Item) TUIItem {
 		URL:       i.Link,
 		Read:      i.Read(),
 		Favourite: i.Favourite,
+		Tags:      i.Tags,
 	}
 }
 
@@ -244,7 +248,7 @@ func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Conf
 
 	l.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Theme.FilterColor))
 
-	l.Filter = CustomFilter(cfg.Filtering)
+	l.Filter = CustomFilter(*cfg)
 
 	ListKeyMap.SetOverrides(&l)
 
