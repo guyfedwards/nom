@@ -13,16 +13,18 @@ import (
 	"github.com/guyfedwards/nom/v2/internal/config"
 )
 
+type FilterTerm struct {
+	Title     string
+	FeedNames []string
+	Tags      []string
+}
+
 // Struct to aid in filtering items into ranks for BubbleTea
 type Filterer struct {
 	FeedNames []string
 	Tags      []string
-	Term      struct {
-		Title     string
-		FeedNames []string
-		Tags      []string
-	}
-	Config config.Config
+	Term      FilterTerm
+	Config    config.Config
 }
 
 // Generalized function for filtering over a list of options (Used for filtering by feed name and tags)
@@ -59,15 +61,13 @@ func (f *Filterer) FilterAgainstStrings(filterValues []string, targetFilterValue
 
 // Breaks what's returned from TUIItem.FilterValue() into a TUIItem.
 func (f *Filterer) GetItem(filterValue string) TUIItem {
-	var i TUIItem
-
 	splits := strings.Split(filterValue, "||")
 
-	i.Title = splits[0]
-	i.FeedName = strings.ToLower(splits[1])
-	i.Tags = splits[2:]
-
-	return i
+	return TUIItem{
+		Title:    splits[0],
+		FeedName: strings.ToLower(splits[1]),
+		Tags:     splits[2:],
+	}
 }
 
 // Extracts `tag:.*` from the stored f.Term.Title
@@ -138,12 +138,12 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 	}
 
 	var ranks fuzzy.Matches
-	if len(f.FeedNames) == 0 && len(f.Tags) == 0 {
-		ranks = fuzzy.Find(f.Term.Title, targetTitles)
-	} else if len(f.FeedNames) > 0 {
+	if len(f.FeedNames) > 0 {
 		ranks = f.FilterAgainstStrings(f.FeedNames, targetFeedNames)
-	} else {
+	} else if len(f.Tags) > 0 {
 		ranks = f.FilterAgainstStrings(f.Tags, targetTags)
+	} else {
+		ranks = fuzzy.Find(f.Term.Title, targetTitles)
 	}
 
 	sort.Stable(ranks)
@@ -152,10 +152,13 @@ func (f *Filterer) Filter(targets []string) []fuzzy.Match {
 }
 
 func NewFilterer(term string, config config.Config) Filterer {
-	var f Filterer
+	f := Filterer{
+		Config: config,
+		Term: FilterTerm{
+			Title: term,
+		},
+	}
 
-	f.Config = config
-	f.Term.Title = term
 	f.FeedNames = f.ExtractFiltersFor("feedname", "feed", "f")
 	f.Tags = f.ExtractFiltersFor("tag", "t")
 
