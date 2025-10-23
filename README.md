@@ -60,7 +60,7 @@ feeds:
 You can also add feeds with the `add` command:
 
 ```sh
-nom add <url> <optional feed_name>
+nom add [-n <feed name>] [-t tag [...]] <url>
 ```
 
 Feeds are editable within `nom` by pressing `E` to open the configuration in your editor. You can configure which editor Nom will use by setting (in order of preference) your `$NOMEDITOR`, `$VISUAL`, or `$EDITOR` environment variable. After editing feeds, you will need to then refresh with `r`.
