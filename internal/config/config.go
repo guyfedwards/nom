@@ -117,6 +117,18 @@ func New(configPath string, pager string, previewFeeds []string, version string)
 		}
 
 		configPath = filepath.Join(userConfigDir, DefaultConfigDirName, DefaultConfigFileName)
+
+		// Check XDG_CONFIG_HOME, but fallback to default config dir for OS if the config file doesn't exist there
+		xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+		if xdgConfigHome != "" {
+			tmpConfPath := filepath.Join(xdgConfigHome, DefaultConfigDirName, DefaultConfigFileName)
+			_, err := os.Stat(tmpConfPath)
+			if err != nil && !os.IsNotExist(err) {
+				return nil, err
+			} else if err == nil {
+				configPath = tmpConfPath
+			}
+		}
 	} else {
 		configPath = updateConfigPathIfDir(configPath)
 	}
