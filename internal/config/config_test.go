@@ -27,6 +27,15 @@ func TestNewDefault(t *testing.T) {
 	test.Equal(t, fmt.Sprintf("%s/nom/", ucd), c.ConfigDir, "Wrong default ConfigDir set")
 }
 
+func TestNewDefaultWithXDGConfigHome(t *testing.T) {
+	configHome := "/home/nommer/.config"
+	os.Setenv("XDG_CONFIG_HOME", configHome)
+	c, _ := New("", "", []string{}, "")
+
+	test.Equal(t, fmt.Sprintf("%s/nom/config.yml", configHome), c.ConfigPath, "Wrong default XDG set")
+	test.Equal(t, fmt.Sprintf("%s/nom/", configHome), c.ConfigDir, "Wrong XDG ConfigDir set")
+}
+
 func TestConfigCustomPath(t *testing.T) {
 	c, _ := New("foo/bar.yml", "", []string{}, "")
 
