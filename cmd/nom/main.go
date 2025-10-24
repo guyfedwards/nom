@@ -26,9 +26,11 @@ var (
 // Setup subcommands
 
 type Add struct {
+	Name       string   `short:"n" long:"name" description:"Feed name"`
+	Tags       []string `short:"t" long:"tag" description:"Tag to apply to feed (may be specified multiple times)"`
 	Positional struct {
 		Url  string `positional-arg-name:"URL" required:"yes"`
-		Name string `positional-arg-name:"NAME"`
+		Name string `positional-arg-name:"NAME" required:"no"`
 	} `positional-args:"yes"`
 }
 
@@ -37,7 +39,12 @@ func (r *Add) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	return cmds.Add(r.Positional.Url, r.Positional.Name)
+
+	name := r.Name
+	if name == "" {
+		name = r.Positional.Name
+	}
+	return cmds.Add(r.Positional.Url, name, r.Tags)
 }
 
 type Config struct{}
@@ -107,11 +114,7 @@ func (r *Import) Execute(args []string) error {
 		return err
 	}
 
-	err = cmds.ImportFeeds(r.Positional.Source)
-	if err != nil {
-		return err
-	}
-	return nil
+	return cmds.ImportFeeds(r.Positional.Source)
 }
 
 func getCmds() (*commands.Commands, error) {

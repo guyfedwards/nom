@@ -44,20 +44,23 @@ nom -c my-custom-config.yml
 
 ### Feeds
 
-Feeds are added to the configuration file and have a url and an optional name:
+Feeds are listed in the `feeds` section of the configuration file. They have a URL, an option name, and an optional list of tags:
 
 ```yaml
 feeds:
 - url: https://dropbox.tech/feed
-  # name will be prefixed to all entries in the list
-  name: dropbox
+  name: DropBox
 - url: https://snyk.io/blog/feed
+  name: Snyk
+  tags:
+    - ai
+    - tech
 ```
 
 You can also add feeds with the `add` command:
 
 ```sh
-nom add <url> <optional feed_name>
+nom add [-n <feed name>] [-t tag [...]] <url>
 ```
 
 Feeds are editable within `nom` by pressing `E` to open the configuration in your editor. You can configure which editor Nom will use by setting (in order of preference) your `$NOMEDITOR`, `$VISUAL`, or `$EDITOR` environment variable. After editing feeds, you will need to then refresh with `r`.
@@ -65,7 +68,7 @@ Feeds are editable within `nom` by pressing `E` to open the configuration in you
 Alternatively you can import feeds from an OPML file:
 
 ```sh
-nom import <path/to/opml|url/to/opm;
+nom import <path/to/opml|url/to/opm>
 ```
 
 #### YouTube feeds
@@ -209,16 +212,51 @@ database: news.db
 
 ## Filtering
 
-Within the `nom` view, you can filter by title pressing the `/` character. Filters can be applied easily. Here's some examples:
+Within the `nom` view, you can filter by title pressing the `/` character. Nom supports simple keyword searches as well as searches using the `feed:` and `tag:` qualifiers.
 
-- `f:my_feed feed:my_second_feed` - matches `my_feed` and `my_second_feed`
-- `feedname:"my feed - with spaces"` - matches `my feed - with spaces`
-- `feed:'my feed, with single quotes!'` - matches `my feed, with single quotes!`
-- `feed:my\ feed\ with\ escaped\ spaces!` - matches `my feed with escaped spaces!`
+### Simple keyword searches
+
+- `example` will match any titles that contain the word `example`.
+-  If you have `defaultIncludeFeedName: true` in your nom configuration, this will also match any items whose feed name contains `example`.
+
+### Feed name searches
+
+You can limit results to feeds with a certain pattern in their name using the `feed:` qualifier:
+
+- `feed:example` or `f:example` will match any titles from a feed that contains `example` in the feed name.
+- If your feed name contains spaces, you can quote the name using single or double quotes:
+
+  - `feed:"example feed"`
+  - `feed:'example feed'`
+
+  Or you can backslash-escape the spaces:
+
+  - `feed:example\ feed`
+
+### Tag searches
+
+You can limit results to feed that have certain tags using the `tag:` qualifier:
+
+- `tag:example` or `t:example` will match titles from feed that has the tag `example`.
 
 ### Include feedname in filtering
 
 If you want to include the feed name in the default filtering query, use `config.filtering.defaultIncludeFeedName: true`. This simplifies the above `f:xxx` queries but means that you can't filter by multiple feeds at once, e.g. `f:xxx f:yyy`.
+
+### Filter styles cannot be combined
+
+In the current implementation, you *cannot* combine different types of filters. That is, you can do this:
+
+- `feed:foo feed:bar`
+- `tag:foo tag:bar`
+
+But you cannot combine `feed:` and `tag:` queries:
+
+- `feed:foo tag:news` will return all results that match `feed:foo` and will ignore the `tag:` qualifier.
+
+And you cannot combine simple keyword searches with any qualifiers:
+
+- `tag:news boston` will return all results that match `tag:news` and will ignore the additional keyword.
 
 ## Building and Running via Docker
 

@@ -91,8 +91,8 @@ func (c Commands) List() error {
 	return outputToPager(output)
 }
 
-func (c Commands) Add(url string, name string) error {
-	err := c.config.AddFeed(config.Feed{URL: url, Name: name})
+func (c Commands) Add(url string, name string, tags []string) error {
+	err := c.config.AddFeed(config.Feed{URL: url, Name: name, Tags: tags})
 	if err != nil {
 		return fmt.Errorf("commands Add: %w", err)
 	}
