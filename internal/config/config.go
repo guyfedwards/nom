@@ -25,23 +25,6 @@ type Feed struct {
 	Tags []string `yaml:"tags,omitempty"`
 }
 
-type MinifluxBackend struct {
-	Host   string `yaml:"host"`
-	APIKey string `yaml:"api_key"`
-}
-
-type FreshRSSBackend struct {
-	Host       string `yaml:"host"`
-	User       string `yaml:"user"`
-	Password   string `yaml:"password"`
-	PrefixCats bool   `yaml:"prefixCats"`
-}
-
-type Backends struct {
-	Miniflux *MinifluxBackend `yaml:"miniflux,omitempty"`
-	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
-}
-
 type Opener struct {
 	Regex    string `yaml:"regex"`
 	Cmd      string `yaml:"cmd"`
@@ -235,7 +218,7 @@ func (c *Config) Load() error {
 
 	if fileConfig.Backends != nil {
 		if fileConfig.Backends.Miniflux != nil {
-			mffeeds, err := getMinifluxFeeds(fileConfig.Backends.Miniflux)
+			mffeeds, err := fileConfig.Backends.Miniflux.GetFeeds()
 			if err != nil {
 				return err
 			}
@@ -244,7 +227,7 @@ func (c *Config) Load() error {
 		}
 
 		if fileConfig.Backends.FreshRSS != nil {
-			freshfeeds, err := getFreshRSSFeeds(fileConfig.Backends.FreshRSS)
+			freshfeeds, err := fileConfig.Backends.FreshRSS.GetFeeds()
 			if err != nil {
 				return err
 			}

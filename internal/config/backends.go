@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -10,8 +11,25 @@ import (
 	miniflux "miniflux.app/client"
 )
 
-func getMinifluxFeeds(config *MinifluxBackend) ([]Feed, error) {
-	mf := miniflux.New(config.Host, config.APIKey)
+type MinifluxBackend struct {
+	Host   string `yaml:"host"`
+	APIKey string `yaml:"api_key"`
+}
+
+type FreshRSSBackend struct {
+	Host       string `yaml:"host"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	PrefixCats bool   `yaml:"prefixCats"`
+}
+
+type Backends struct {
+	Miniflux *MinifluxBackend `yaml:"miniflux,omitempty"`
+	FreshRSS *FreshRSSBackend `yaml:"freshrss,omitempty"`
+}
+
+func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {
+	mf := miniflux.New(mfb.Host, mfb.APIKey)
 
 	// Fetch all feeds.
 	feeds, err := mf.Feeds()
@@ -52,8 +70,8 @@ func (frss FreshRSSFeed) GetCats() string {
 	return ret
 }
 
-func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
-	resp, err := http.Get(fmt.Sprintf("%v/api/greader.php/accounts/ClientLogin?Email=%v&Passwd=%v", config.Host, config.User, config.Password))
+func (frp *FreshRSSBackend) GetFeeds() ([]Feed, error) {
+	resp, err := http.Get(fmt.Sprintf("%v/api/greader.php/accounts/ClientLogin?Email=%v&Passwd=%v", frp.Host, frp.User, frp.Password))
 	if err != nil {
 		return []Feed{}, err
 	}
@@ -71,7 +89,7 @@ func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
 	lines := strings.Split(string(body), "\n")
 	kv := strings.Split(lines[0], "=")
 
-	url := fmt.Sprintf("%v/api/greader.php/reader/api/0/subscription/list?output=json", config.Host)
+	url := fmt.Sprintf("%v/api/greader.php/reader/api/0/subscription/list?output=json", frp.Host)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return []Feed{}, err
@@ -84,7 +102,7 @@ func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
 		return []Feed{}, err
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return []Feed{}, err
 	}
@@ -99,9 +117,10 @@ func getFreshRSSFeeds(config *FreshRSSBackend) ([]Feed, error) {
 
 	for _, f := range b.Subscriptions {
 		name := ""
-		if config.PrefixCats {
+		if frp.PrefixCats {
 			name = f.GetCats()
 		}
+
 		ret = append(ret, Feed{URL: f.URL, Name: name})
 	}
 
