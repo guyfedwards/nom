@@ -147,6 +147,8 @@ backends:
   miniflux:
     - host: http://myminiflux.foo
       api_key: jafksdljfladjfk
+    - host: http://yourminiflux.foo
+      api_key: adfhdlsajfsifdi
   freshrss:
     - host: http://myfreshrss.bar
       user: admin
