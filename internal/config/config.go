@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -14,6 +15,7 @@ import (
 
 var (
 	ErrFeedAlreadyExists  = errors.New("config.AddFeed: feed already exists")
+	ErrOutdatedConfigV3   = errors.New("outdated config, see docs for v3 changes")
 	DefaultConfigDirName  = "nom"
 	DefaultConfigFileName = "config.yml"
 	DefaultDatabaseName   = "nom.db"
@@ -161,6 +163,10 @@ func (c *Config) Load() error {
 	var fileConfig Config
 	err = yaml.Unmarshal(rawData, &fileConfig)
 	if err != nil {
+		if isBackendArrayError(err) {
+			return ErrOutdatedConfigV3
+		}
+
 		return fmt.Errorf("config.Load: %w", err)
 	}
 
@@ -318,4 +324,12 @@ func (c *Config) ImportFeeds() ([]Feed, error) {
 	}
 
 	return nil, nil
+}
+
+const errorPrefix = "cannot unmarshal !!map into "
+
+// somewhat hacky check for a parsing error on the config.backends node
+func isBackendArrayError(e error) bool {
+	return strings.Contains(e.Error(), errorPrefix+"[]config.FreshRSSBackend") ||
+		strings.Contains(e.Error(), errorPrefix+"[]config.MinifluxBackend")
 }

@@ -11,19 +11,26 @@
 
 ![](./.github/demo.gif)
 
+## Migrating to V3
+**NOTE** When upgrading to V3 if you are using `config.backends` for Miniflux or FreshRSS support, you will need to update your config to be arrays. 
+
 ## Install
 
 See [releases](https://github.com/guyfedwards/nom/releases) for binaries. E.g.
 
 ```sh
-curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_darwin_amd64.tar.gz | tar -xzvf -
+curl -L https://github.com/guyfedwards/nom/releases/download/v3.0.0/nom_3.0.0_darwin_amd64.tar.gz | tar -xzvf -
 ```
 
 To install the `nom` binary into `/usr/local/bin` (or into the location of your choice) in a single step:
 
 ```sh
-curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_darwin_amd64.tar.gz |
-  sudo tar -C /usr/local/bin -xvzf - nom
+curl -L https://github.com/guyfedwards/nom/releases/download/v3.0.0/nom_3.0.0_darwin_amd64.tar.gz |
+sudo tar -C /usr/local/bin -xvzf - nom
+```
+
+```sh
+nom -c my-custom-config.yml
 ```
 
 ## Usage
@@ -32,14 +39,6 @@ curl -L https://github.com/guyfedwards/nom/releases/download/v2.16.2/nom_2.16.2_
 nom # start TUI
 nom add <feed_url> <optional feed_name>
 nom -h # see all available command and options
-```
-
-## Configuration
-
-Configuration lives by default in `$XDG_CONFIG_HOME/nom/config.yml` or `$HOME/Library/Application Support/nom/config.yml` on darwin. You can customise the location of the configuration file with the `--config-path` (`-c`) flag:
-
-```sh
-nom -c my-custom-config.yml
 ```
 
 ### Feeds
