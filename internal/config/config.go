@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -14,6 +15,7 @@ import (
 
 var (
 	ErrFeedAlreadyExists  = errors.New("config.AddFeed: feed already exists")
+	ErrOutdatedConfigV3   = errors.New("outdated config, see docs for v3 changes")
 	DefaultConfigDirName  = "nom"
 	DefaultConfigFileName = "config.yml"
 	DefaultDatabaseName   = "nom.db"
@@ -161,7 +163,11 @@ func (c *Config) Load() error {
 	var fileConfig Config
 	err = yaml.Unmarshal(rawData, &fileConfig)
 	if err != nil {
-		return fmt.Errorf("config.Read: %w", err)
+		if isBackendArrayError(err) {
+			return ErrOutdatedConfigV3
+		}
+
+		return fmt.Errorf("config.Load: %w", err)
 	}
 
 	c.ShowRead = fileConfig.ShowRead
@@ -217,22 +223,26 @@ func (c *Config) Load() error {
 	}
 
 	if fileConfig.Backends != nil {
-		if fileConfig.Backends.Miniflux != nil {
-			mffeeds, err := fileConfig.Backends.Miniflux.GetFeeds()
-			if err != nil {
-				return err
-			}
+		if len(fileConfig.Backends.Miniflux) > 0 {
+			for _, be := range fileConfig.Backends.Miniflux {
+				mffeeds, err := be.GetFeeds()
+				if err != nil {
+					return err
+				}
 
-			c.Feeds = append(c.Feeds, mffeeds...)
+				c.Feeds = append(c.Feeds, mffeeds...)
+			}
 		}
 
-		if fileConfig.Backends.FreshRSS != nil {
-			freshfeeds, err := fileConfig.Backends.FreshRSS.GetFeeds()
-			if err != nil {
-				return err
-			}
+		if len(fileConfig.Backends.FreshRSS) > 0 {
+			for _, be := range fileConfig.Backends.FreshRSS {
+				freshfeeds, err := be.GetFeeds()
+				if err != nil {
+					return err
+				}
 
-			c.Feeds = append(c.Feeds, freshfeeds...)
+				c.Feeds = append(c.Feeds, freshfeeds...)
+			}
 		}
 	}
 
@@ -314,4 +324,12 @@ func (c *Config) ImportFeeds() ([]Feed, error) {
 	}
 
 	return nil, nil
+}
+
+const errorPrefix = "cannot unmarshal !!map into "
+
+// somewhat hacky check for a parsing error on the config.backends node
+func isBackendArrayError(e error) bool {
+	return strings.Contains(e.Error(), errorPrefix+"[]config.FreshRSSBackend") ||
+		strings.Contains(e.Error(), errorPrefix+"[]config.MinifluxBackend")
 }

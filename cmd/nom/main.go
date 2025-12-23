@@ -126,15 +126,18 @@ func getCmds() (*commands.Commands, error) {
 	if err = cfg.Load(); err != nil {
 		return nil, err
 	}
+
 	var s store.Store
 	if cfg.IsPreviewMode() {
 		s, err = store.NewInMemorySQLiteStore()
 	} else {
 		s, err = store.NewSQLiteStore(cfg.ConfigDir, cfg.Database)
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("main.go: %w", err)
 	}
+
 	cmds := commands.New(cfg, s)
 	return cmds, nil
 }
