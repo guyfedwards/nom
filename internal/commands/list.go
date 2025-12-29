@@ -178,6 +178,13 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, ListKeyMap.oQuit):
+			// if help is showing, close help don't quit
+			if m.list.Help.ShowAll {
+				m.list.Help.ShowAll = false
+				return m, m.UpdateList()
+			}
+
 		case key.Matches(msg, ListKeyMap.Suspend):
 			return m, tea.Suspend
 		case key.Matches(msg, ListKeyMap.Refresh):
