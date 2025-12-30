@@ -42,7 +42,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ViewportKeyMap.OpenInBrowser):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 			if err != nil {
-				return m, nil
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error: failed to get article")
 			}
 
 			it := ItemToTUIItem(current)
@@ -52,11 +53,13 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ViewportKeyMap.Favourite):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 			if err != nil {
-				return m, nil
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error: failed to get article")
 			}
 			err = m.commands.store.ToggleFavourite(current.ID)
 			if err != nil {
-				return m, tea.Quit
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error toggling favourite")
 			}
 
 		case key.Matches(msg, ViewportKeyMap.Read):
@@ -65,11 +68,13 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 			if err != nil {
-				return m, nil
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error: failed to get article")
 			}
 			err = m.commands.store.ToggleRead(current.ID)
 			if err != nil {
-				return m, tea.Quit
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error marking read")
 			}
 
 			if !m.commands.config.ShowRead {
@@ -93,7 +98,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			// trigger refresh to update read indication
 			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 			if err != nil {
-				return m, tea.Quit
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error rendering article")
 			}
 			m.viewport.SetContent(content)
 
@@ -111,7 +117,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 			if err != nil {
-				return m, tea.Quit
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error rendering article")
 			}
 
 			m.viewport.SetContent(content)
@@ -134,7 +141,8 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 			if err != nil {
-				return m, tea.Quit
+				m.selectedArticle = nil
+				return m, m.list.NewStatusMessage("Error rendering article")
 			}
 
 			m.viewport.SetContent(content)
