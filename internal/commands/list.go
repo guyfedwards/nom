@@ -213,7 +213,10 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			m.UpdateList()
+
+			// Update item in place to preserve filter state
+			current.Read = !current.Read
+			cmds = append(cmds, m.list.SetItem(m.list.Index(), current))
 
 		case key.Matches(msg, ListKeyMap.ToggleReads):
 			if m.list.SettingFilter() {
@@ -251,7 +254,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
-			cmds = append(cmds, m.UpdateList())
+			// Update item in place to preserve filter state
+			current.Favourite = !current.Favourite
+			cmds = append(cmds, m.list.SetItem(m.list.Index(), current))
 
 		case key.Matches(msg, ListKeyMap.ToggleFavourites):
 			if m.list.SettingFilter() {
