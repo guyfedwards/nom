@@ -213,7 +213,8 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, tea.Quit
 			}
-			m.UpdateList()
+
+			cmds = append(cmds, m.UpdateList())
 
 		case key.Matches(msg, ListKeyMap.ToggleReads):
 			if m.list.SettingFilter() {
