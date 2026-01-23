@@ -299,6 +299,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				m.list.FilterInput.Blur()
 				break
 			}
+
 			i, ok := m.list.SelectedItem().(TUIItem)
 			if ok {
 				m.selectedArticle = &i.ID
@@ -317,6 +318,10 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, ListKeyMap.EditConfig):
+			if m.list.SettingFilter() {
+				break
+			}
+
 			filePath := m.cfg.ConfigPath
 
 			cmd := strings.Split(getEditor("NOMEDITOR", "VISUAL", "EDITOR"), " ")
