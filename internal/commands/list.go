@@ -84,7 +84,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 func (m *model) UpdateList() tea.Cmd {
 	fs, err := m.commands.GetAllFeeds()
 	if err != nil {
-		return tea.Quit
+		return m.list.NewStatusMessage(fmt.Sprintf("Error: %s", err))
 	}
 
 	cmd := m.list.SetItems(convertItems(fs))
@@ -211,7 +211,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			current := item.(TUIItem)
 			err := m.commands.store.ToggleRead(current.ID)
 			if err != nil {
-				return m, tea.Quit
+				return m, m.list.NewStatusMessage(fmt.Sprintf("Error marking read: %s", err))
 			}
 
 			cmds = append(cmds, m.UpdateList())
@@ -249,7 +249,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			current := item.(TUIItem)
 			err := m.commands.store.ToggleFavourite(current.ID)
 			if err != nil {
-				return m, tea.Quit
+				return m, m.list.NewStatusMessage(fmt.Sprintf("Error toggling favourite: %s", err))
 			}
 
 			cmds = append(cmds, m.UpdateList())
@@ -308,8 +308,8 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 				content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 				if err != nil {
-					// LKS: there should be an error message here
-					return m, tea.Quit
+					m.selectedArticle = nil
+					return m, m.list.NewStatusMessage(fmt.Sprintf("Error opening article: %s", err))
 				}
 
 				m.viewport.SetContent(content)

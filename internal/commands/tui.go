@@ -98,7 +98,8 @@ func (m model) OpenLink(url string) tea.Cmd {
 	for _, o := range m.cfg.Openers {
 		match, err := regexp.MatchString(o.Regex, url)
 		if err != nil {
-			return tea.Quit
+			log.Printf("[tui.go] OpenLink: invalid regex pattern: %v", err)
+			continue
 		}
 
 		if match {

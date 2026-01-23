@@ -160,11 +160,13 @@ func main() {
 	_, err := parser.Parse()
 	// check for help flag
 	if err != nil {
-		if flagErr, ok := err.(*flags.Error); ok && flagErr.Type != flags.ErrHelp {
-			parser.WriteHelp(os.Stdout)
+		if flagErr, ok := err.(*flags.Error); ok && flagErr.Type == flags.ErrHelp {
+			os.Exit(0)
 		}
-
-		os.Exit(0)
+		// For actual errors, print help and exit with error code
+		fmt.Fprintf(os.Stderr, "Error: %s\n\n", err)
+		parser.WriteHelp(os.Stderr)
+		os.Exit(1)
 	}
 
 	// no subcommand or help flag, run the TUI

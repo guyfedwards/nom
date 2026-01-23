@@ -251,7 +251,7 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 
 			err := c.store.UpsertItem(&i)
 			if err != nil {
-				log.Fatalf("[commands.go] fetchAllFeeds: %e", err)
+				log.Printf("[commands.go] fetchAllFeeds: failed to upsert item: %v", err)
 				continue
 			}
 
@@ -381,7 +381,9 @@ func htmlToMd(html string) string {
 
 	mdown, err := converter.ConvertString(html)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("[commands.go] htmlToMd: failed to convert HTML to markdown: %v", err)
+		// Return the original HTML if conversion fails
+		return html
 	}
 
 	return mdown
