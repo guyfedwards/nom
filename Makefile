@@ -20,7 +20,7 @@ backends:
 
 # Copied from https://github.com/goreleaser/goreleaser-cross-example/blob/master/Makefile
 PACKAGE_NAME          := github.com/guyfedwards/nom
-GOLANG_CROSS_VERSION  ?= v1.25.0
+GOLANG_CROSS_VERSION  ?= v1.25.7
 
 SYSROOT_DIR     ?= sysroots
 SYSROOT_ARCHIVE ?= sysroots.tar.bz2
