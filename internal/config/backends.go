@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	miniflux "miniflux.app/client"
+	miniflux "miniflux.app/v2/client"
 )
 
 type MinifluxBackend struct {
@@ -29,7 +29,7 @@ type Backends struct {
 }
 
 func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {
-	mf := miniflux.New(mfb.Host, mfb.APIKey)
+	mf := miniflux.NewClient(mfb.Host, mfb.APIKey)
 
 	// Fetch all feeds.
 	feeds, err := mf.Feeds()
@@ -40,7 +40,7 @@ func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {
 	var ret []Feed
 
 	for _, f := range feeds {
-		ret = append(ret, Feed{URL: f.FeedURL})
+		ret = append(ret, Feed{URL: f.FeedURL, Tags: []string{f.Category.Title}})
 	}
 
 	return ret, nil

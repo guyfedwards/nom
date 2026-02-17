@@ -12,15 +12,15 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/sahilm/fuzzy v0.1.1
-	golang.org/x/term v0.21.0
+	golang.org/x/term v0.40.0
 	gopkg.in/yaml.v3 v3.0.1
-	miniflux.app v0.0.0-20230118040013-65febebd40b2
+	miniflux.app/v2 v2.2.17
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.9.2 // indirect
+	github.com/PuerkitoBio/goquery v1.11.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
-	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
@@ -46,8 +46,8 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/yuin/goldmark v1.7.1 // indirect
 	github.com/yuin/goldmark-emoji v1.0.2 // indirect
-	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 )
