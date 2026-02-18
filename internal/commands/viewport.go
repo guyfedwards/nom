@@ -51,7 +51,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 			cmds = append(cmds, cmd)
 			if !current.Read() && m.commands.config.AutoRead {
-				markRead(m)
+				if cmd := markRead(&m); cmd != nil {
+					cmds = append(cmds, cmd)
+				}
 			}
 
 		case key.Matches(msg, ViewportKeyMap.Favourite):
@@ -67,7 +69,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, ViewportKeyMap.Read):
-			markRead(m)
+			if cmd := markRead(&m); cmd != nil {
+				cmds = append(cmds, cmd)
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			navIndex := m.getPrevIndex()
@@ -195,19 +199,19 @@ func (m model) viewportHelp() string {
 	return helpStyle.Render(m.help.View(ViewportKeyMap))
 }
 
-func markRead(m model) (tea.Model, tea.Cmd) {
+func markRead(m *model) tea.Cmd {
 	if m.commands.config.AutoRead {
-		return m, nil
+		return nil
 	}
 	current, err := m.commands.store.GetItemByID(*m.selectedArticle)
 	if err != nil {
 		m.selectedArticle = nil
-		return m, m.list.NewStatusMessage("Error: failed to get article")
+		return m.list.NewStatusMessage("Error: failed to get article")
 	}
 	err = m.commands.store.ToggleRead(current.ID)
 	if err != nil {
 		m.selectedArticle = nil
-		return m, m.list.NewStatusMessage("Error marking read")
+		return m.list.NewStatusMessage("Error marking read")
 	}
 
 	if !m.commands.config.ShowRead {
@@ -232,8 +236,8 @@ func markRead(m model) (tea.Model, tea.Cmd) {
 	content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
 	if err != nil {
 		m.selectedArticle = nil
-		return m, m.list.NewStatusMessage("Error rendering article")
+		return m.list.NewStatusMessage("Error rendering article")
 	}
 	m.viewport.SetContent(content)
-	return m, nil
+	return nil
 }

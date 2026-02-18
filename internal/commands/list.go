@@ -195,7 +195,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, refreshList(m))
 
 		case key.Matches(msg, ListKeyMap.Read):
-			markReadList(&m, &cmds)
+			if cmd := markReadList(&m, &cmds); cmd != nil {
+				cmds = append(cmds, cmd)
+			}
 
 		case key.Matches(msg, ListKeyMap.ToggleReads):
 			if m.list.SettingFilter() {
@@ -264,7 +266,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			cmd = m.OpenLink(current.URL)
 			cmds = append(cmds, cmd)
 			if !current.Read && m.commands.config.AutoRead {
-				markReadList(&m, &cmds)
+				if cmd := markReadList(&m, &cmds); cmd != nil {
+					cmds = append(cmds, cmd)
+				}
 			}
 
 		case key.Matches(msg, ListKeyMap.Sort):
@@ -355,26 +359,26 @@ func getEditor(vars ...string) string {
 	return "nano"
 }
 
-func markReadList(m *model, cmds *[]tea.Cmd) (tea.Model, tea.Cmd) {
+func markReadList(m *model, cmds *[]tea.Cmd) tea.Cmd {
 	if m.list.SettingFilter() {
-		return m, nil
+		return nil
 	}
 
 	if len(m.list.Items()) == 0 {
-		return m, m.list.NewStatusMessage("No items to mark.")
+		return m.list.NewStatusMessage("No items to mark.")
 	}
 
 	item := m.list.SelectedItem()
 	if item == nil {
-		return m, m.list.NewStatusMessage("No item selected.")
+		return m.list.NewStatusMessage("No item selected.")
 	}
 
 	current := item.(TUIItem)
 	err := m.commands.store.ToggleRead(current.ID)
 	if err != nil {
-		return m, m.list.NewStatusMessage(fmt.Sprintf("Error marking read: %s", err))
+		return m.list.NewStatusMessage(fmt.Sprintf("Error marking read: %s", err))
 	}
 
 	*cmds = append(*cmds, m.UpdateList())
-	return m, nil
+	return nil
 }
