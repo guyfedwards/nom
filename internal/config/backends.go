@@ -39,7 +39,7 @@ func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {
 	var ret []Feed
 
 	for _, f := range feeds {
-		ret = append(ret, Feed{URL: f.FeedURL, Tags: []string{f.Category.Title}})
+		ret = append(ret, Feed{URL: f.FeedURL, Name: f.Title, Tags: []string{f.Category.Title}})
 	}
 
 	return ret, nil
