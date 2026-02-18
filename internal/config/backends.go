@@ -59,14 +59,14 @@ type FreshRSSFeed struct {
 }
 
 func (frss FreshRSSFeed) GetCats() string {
-	ret := ""
+	var ret strings.Builder
 	for i, v := range frss.Categories {
 		if i != 0 {
-			ret += ","
+			ret.WriteByte(',')
 		}
-		ret += v.Label
+		ret.WriteString(v.Label)
 	}
-	return ret
+	return ret.String()
 }
 
 func (frp *FreshRSSBackend) GetFeeds() ([]Feed, error) {
