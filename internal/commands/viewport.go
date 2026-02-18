@@ -48,7 +48,13 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 			it := ItemToTUIItem(current)
 			cmd = m.OpenLink(it.URL)
+
 			cmds = append(cmds, cmd)
+			if !current.Read() && m.commands.config.AutoRead {
+				if cmd := markRead(&m); cmd != nil {
+					cmds = append(cmds, cmd)
+				}
+			}
 
 		case key.Matches(msg, ViewportKeyMap.Favourite):
 			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
@@ -63,45 +69,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, ViewportKeyMap.Read):
-			if m.commands.config.AutoRead {
-				return m, nil
+			if cmd := markRead(&m); cmd != nil {
+				cmds = append(cmds, cmd)
 			}
-			current, err := m.commands.store.GetItemByID(*m.selectedArticle)
-			if err != nil {
-				m.selectedArticle = nil
-				return m, m.list.NewStatusMessage("Error: failed to get article")
-			}
-			err = m.commands.store.ToggleRead(current.ID)
-			if err != nil {
-				m.selectedArticle = nil
-				return m, m.list.NewStatusMessage("Error marking read")
-			}
-
-			if !m.commands.config.ShowRead {
-				index := m.list.Index()
-
-				if m.lastRead != nil && current.ID == (*m.lastRead).(TUIItem).ID {
-					// un-read re-add post back to list
-					m.list.InsertItem(index, *m.lastRead)
-					m.lastReadIndex = index
-					m.lastRead = nil
-				} else {
-					// remove post and store backup for un-read
-					items := m.list.Items()
-					item := items[index]
-					m.list.RemoveItem(index)
-					m.lastReadIndex = index
-					m.lastRead = &item
-				}
-			}
-
-			// trigger refresh to update read indication
-			content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
-			if err != nil {
-				m.selectedArticle = nil
-				return m, m.list.NewStatusMessage("Error rendering article")
-			}
-			m.viewport.SetContent(content)
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			navIndex := m.getPrevIndex()
@@ -227,4 +197,47 @@ func viewportView(m model) string {
 
 func (m model) viewportHelp() string {
 	return helpStyle.Render(m.help.View(ViewportKeyMap))
+}
+
+func markRead(m *model) tea.Cmd {
+	if m.commands.config.AutoRead {
+		return nil
+	}
+	current, err := m.commands.store.GetItemByID(*m.selectedArticle)
+	if err != nil {
+		m.selectedArticle = nil
+		return m.list.NewStatusMessage("Error: failed to get article")
+	}
+	err = m.commands.store.ToggleRead(current.ID)
+	if err != nil {
+		m.selectedArticle = nil
+		return m.list.NewStatusMessage("Error marking read")
+	}
+
+	if !m.commands.config.ShowRead {
+		index := m.list.Index()
+
+		if m.lastRead != nil && current.ID == (*m.lastRead).(TUIItem).ID {
+			// un-read re-add post back to list
+			m.list.InsertItem(index, *m.lastRead)
+			m.lastReadIndex = index
+			m.lastRead = nil
+		} else {
+			// remove post and store backup for un-read
+			items := m.list.Items()
+			item := items[index]
+			m.list.RemoveItem(index)
+			m.lastReadIndex = index
+			m.lastRead = &item
+		}
+	}
+
+	// trigger refresh to update read indication
+	content, err := m.commands.GetGlamourisedArticle(*m.selectedArticle)
+	if err != nil {
+		m.selectedArticle = nil
+		return m.list.NewStatusMessage("Error rendering article")
+	}
+	m.viewport.SetContent(content)
+	return nil
 }
