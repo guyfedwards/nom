@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -80,7 +79,7 @@ func (frp *FreshRSSBackend) GetFeeds() ([]Feed, error) {
 		return []Feed{}, fmt.Errorf("could not login to freshrss, statusCode: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return []Feed{}, err
 	}
