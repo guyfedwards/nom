@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -40,7 +39,7 @@ func (mfb *MinifluxBackend) GetFeeds() ([]Feed, error) {
 	var ret []Feed
 
 	for _, f := range feeds {
-		ret = append(ret, Feed{URL: f.FeedURL, Tags: []string{f.Category.Title}})
+		ret = append(ret, Feed{URL: f.FeedURL, Name: f.Title, Tags: []string{f.Category.Title}})
 	}
 
 	return ret, nil
@@ -60,14 +59,14 @@ type FreshRSSFeed struct {
 }
 
 func (frss FreshRSSFeed) GetCats() string {
-	ret := ""
+	var ret strings.Builder
 	for i, v := range frss.Categories {
 		if i != 0 {
-			ret += ","
+			ret.WriteByte(',')
 		}
-		ret += v.Label
+		ret.WriteString(v.Label)
 	}
-	return ret
+	return ret.String()
 }
 
 func (frp *FreshRSSBackend) GetFeeds() ([]Feed, error) {
@@ -80,7 +79,7 @@ func (frp *FreshRSSBackend) GetFeeds() ([]Feed, error) {
 		return []Feed{}, fmt.Errorf("could not login to freshrss, statusCode: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return []Feed{}, err
 	}
