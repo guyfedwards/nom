@@ -24,6 +24,7 @@ GOLANG_CROSS_VERSION  ?= v1.25.7
 
 SYSROOT_DIR     ?= sysroots
 SYSROOT_ARCHIVE ?= sysroots.tar.bz2
+export DOCKER_API_VERSION := 1.44
 
 .PHONY: sysroot-pack
 sysroot-pack:
@@ -43,7 +44,7 @@ release-dry-run:
 		-v `pwd`/sysroot:/sysroot \
 		-w /go/src/$(PACKAGE_NAME) \
 		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		--rm-dist --skip-validate --skip-publish
+		--clean --skip=validate,publish
 
 .PHONY: release
 release:
@@ -60,4 +61,4 @@ release:
 		-v `pwd`/sysroot:/sysroot \
 		-w /go/src/$(PACKAGE_NAME) \
 		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		release --rm-dist
+		release --clean
