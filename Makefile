@@ -24,6 +24,7 @@ GOLANG_CROSS_VERSION  ?= v1.25.7
 
 SYSROOT_DIR     ?= sysroots
 SYSROOT_ARCHIVE ?= sysroots.tar.bz2
+export DOCKER_API_VERSION := 1.44
 
 .PHONY: sysroot-pack
 sysroot-pack:
@@ -35,7 +36,6 @@ sysroot-unpack:
 
 .PHONY: release-dry-run
 release-dry-run:
-	export DOCKER_API_VERSION=1.44
 	@docker run \
 		--rm \
 		-e CGO_ENABLED=1 \
@@ -48,7 +48,6 @@ release-dry-run:
 
 .PHONY: release
 release:
-	export DOCKER_API_VERSION=1.44
 	@if [ ! -f ".release-env" ]; then \
 		echo "\033[91m.release-env is required for release\033[0m";\
 		exit 1;\
