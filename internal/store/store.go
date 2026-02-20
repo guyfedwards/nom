@@ -257,7 +257,7 @@ func (sls *SQLiteStore) upsertItem(db statementPreparer, item *Item) error {
 // TODO: pagination
 func (sls SQLiteStore) GetAllItems(ordering string) ([]Item, error) {
 	itemStmt := `
-		select id, feedurl, guid, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by coalesce(publishedat, createdat) %s;
+		select id, feedurl, guid, link, title, content, author, readat, favourite, publishedat, createdat, updatedat from items order by readat is not null asc, coalesce(publishedat, createdat) %s;
 	`
 
 	var stmt string
