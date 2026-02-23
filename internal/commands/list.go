@@ -181,6 +181,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.errors = msg.errors
 		cmds = append(cmds, m.list.NewStatusMessage("Refreshed."))
 	case listUpdate:
+		if m.isRefreshing == true {
+			m.isRefreshing = false
+		}
 		if m.list.SettingFilter() {
 			break
 		}
@@ -189,6 +192,18 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 	case tea.ResumeMsg:
 		return m, nil
+	case tickLoadMsg:
+		if m.isRefreshing {
+			loadchar := []rune{'⏐', '/', 'ー', '\\'}
+			frame := int(msg)
+			nextFrame := (frame + 1) % len(loadchar)
+			status := fmt.Sprintf("Refreshing... %c", loadchar[frame])
+
+			cmds = append(cmds,
+				m.list.NewStatusMessage(status),
+				m.TickLoad(nextFrame),
+			)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, ListKeyMap.oQuit):
@@ -201,18 +216,14 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ListKeyMap.Suspend):
 			return m, tea.Suspend
 		case key.Matches(msg, ListKeyMap.Refresh):
-			if m.list.SettingFilter() || m.list.IsFiltered() {
+			if m.isRefreshing || m.list.SettingFilter() || m.list.IsFiltered() {
 				break
 			}
 
-			if m.refreshing {
-				break
-			}
-
-			m.refreshing = true
+			m.isRefreshing = true
 			m.list.Title = "Refreshing..."
 			m.list.Styles.Title = m.list.Styles.Title.Width(lipgloss.Width("Refreshing...") + 2)
-			cmds = append(cmds, refreshList(m))
+			cmds = append(cmds, refreshList(m), m.TickLoad(0))
 
 		case key.Matches(msg, ListKeyMap.Read):
 			if cmd := markReadList(&m, &cmds); cmd != nil {
