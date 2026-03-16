@@ -168,6 +168,9 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	case statusUpdate:
 		cmds = append(cmds, m.list.NewStatusMessage(msg.status))
 	case listUpdate:
+		if m.isRefreshing == true {
+			m.isRefreshing = false
+		}
 		if m.list.SettingFilter() {
 			break
 		}
@@ -176,6 +179,18 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 	case tea.ResumeMsg:
 		return m, nil
+	case tickLoadMsg:
+		if m.isRefreshing {
+			loadchar := []rune{'⏐', '/', 'ー', '\\'}
+			frame := int(msg)
+			nextFrame := (frame + 1) % len(loadchar)
+			status := fmt.Sprintf("Refreshing... %c", loadchar[frame])
+
+			cmds = append(cmds,
+				m.list.NewStatusMessage(status),
+				m.TickLoad(nextFrame),
+			)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, ListKeyMap.oQuit):
@@ -188,11 +203,12 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ListKeyMap.Suspend):
 			return m, tea.Suspend
 		case key.Matches(msg, ListKeyMap.Refresh):
-			if m.list.SettingFilter() || m.list.IsFiltered() {
+			if m.isRefreshing || m.list.SettingFilter() || m.list.IsFiltered() {
 				break
 			}
 
-			cmds = append(cmds, refreshList(m))
+			m.isRefreshing = true
+			cmds = append(cmds, refreshList(m), m.TickLoad(0))
 
 		case key.Matches(msg, ListKeyMap.Read):
 			if cmd := markReadList(&m, &cmds); cmd != nil {

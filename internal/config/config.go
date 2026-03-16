@@ -35,6 +35,7 @@ type Opener struct {
 
 type Theme struct {
 	Glamour           string `yaml:"glamour,omitempty"`
+	CustomPath        string `yaml:"custom_path,omitempty"`
 	TitleColor        string `yaml:"titleColor,omitempty"`
 	TitleColorFg      string `yaml:"titleColorFg,omitempty"`
 	FilterColor       string `yaml:"filterColor,omitempty"`
@@ -198,6 +199,10 @@ func (c *Config) Load() error {
 
 	if fileConfig.Theme.Glamour != "" {
 		c.Theme.Glamour = fileConfig.Theme.Glamour
+	}
+
+	if fileConfig.Theme.CustomPath != "" {
+		c.Theme.CustomPath = fileConfig.Theme.CustomPath
 	}
 
 	if fileConfig.Theme.SelectedItemColor != "" {

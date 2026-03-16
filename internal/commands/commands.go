@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -19,6 +20,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/ansi"
+	"github.com/charmbracelet/glamour/styles"
 	"gopkg.in/yaml.v3"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
@@ -325,17 +327,28 @@ func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
 func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
 	switch theme.Glamour {
 	case "light":
-		sc = glamour.LightStyleConfig
+		sc = styles.LightStyleConfig
 	case "dracula":
-		sc = glamour.DraculaStyleConfig
+		sc = styles.DraculaStyleConfig
 	case "pink":
-		sc = glamour.PinkStyleConfig
+		sc = styles.PinkStyleConfig
 	case "ascii":
-		sc = glamour.ASCIIStyleConfig
+		sc = styles.ASCIIStyleConfig
 	case "notty":
-		sc = glamour.NoTTYStyleConfig
+		sc = styles.NoTTYStyleConfig
+	case "custom":
+		sc = styles.DarkStyleConfig
+		data, err := os.ReadFile(theme.CustomPath)
+		if err != nil {
+			log.Println(err)
+			sc = styles.DarkStyleConfig
+		}
+		if err := json.Unmarshal(data, &sc); err != nil {
+			log.Println(err)
+			sc = styles.DarkStyleConfig
+		}
 	default:
-		sc = glamour.DarkStyleConfig
+		sc = styles.DarkStyleConfig
 	}
 
 	sc.H1.BackgroundColor = &theme.TitleColor

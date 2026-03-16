@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -52,6 +53,7 @@ type model struct {
 	viewport        viewport.Model
 	lastRead        *list.Item
 	lastReadIndex   int
+	isRefreshing    bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -164,6 +166,14 @@ func (m model) OpenInBrowser(url string) error {
 	}
 
 	return nil
+}
+
+type tickLoadMsg int
+
+func (m model) TickLoad(frame int) tea.Cmd {
+	return tea.Tick(time.Millisecond*150, func(t time.Time) tea.Msg {
+		return tickLoadMsg(frame)
+	})
 }
 
 func ItemToTUIItem(i store.Item) TUIItem {
