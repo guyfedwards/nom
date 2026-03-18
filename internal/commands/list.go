@@ -111,6 +111,11 @@ func sortList(m model) func() tea.Msg {
 	}
 }
 
+type refreshDone struct {
+	items  []list.Item
+	errors []string
+}
+
 func refreshList(m model) func() tea.Msg {
 	return func() tea.Msg {
 		var errorItems []ErrorItem
@@ -141,10 +146,9 @@ func refreshList(m model) func() tea.Msg {
 			es = append(es, fmt.Sprintf("Error fetching %s: %s", e.FeedURL, e.Err))
 		}
 
-		m.errors = es
-		return listUpdate{
+		return refreshDone{
 			items:  convertItems(items),
-			status: "Refreshed.",
+			errors: es,
 		}
 	}
 }
@@ -167,6 +171,15 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case statusUpdate:
 		cmds = append(cmds, m.list.NewStatusMessage(msg.status))
+	case refreshDone:
+		m.refreshing = false
+		m.list.Title = defaultTitle
+		m.list.Styles.Title = m.list.Styles.Title.Width(lipgloss.Width(defaultTitle) + 2)
+		if !m.list.SettingFilter() {
+			m.list.SetItems(msg.items)
+		}
+		m.errors = msg.errors
+		cmds = append(cmds, m.list.NewStatusMessage("Refreshed."))
 	case listUpdate:
 		if m.list.SettingFilter() {
 			break
@@ -192,6 +205,13 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 				break
 			}
 
+			if m.refreshing {
+				break
+			}
+
+			m.refreshing = true
+			m.list.Title = "Refreshing..."
+			m.list.Styles.Title = m.list.Styles.Title.Width(lipgloss.Width("Refreshing...") + 2)
 			cmds = append(cmds, refreshList(m))
 
 		case key.Matches(msg, ListKeyMap.Read):
