@@ -172,7 +172,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 	case statusUpdate:
 		cmds = append(cmds, m.list.NewStatusMessage(msg.status))
 	case refreshDone:
-		m.refreshing = false
+		m.isRefreshing = false
 		m.list.Title = defaultTitle
 		m.list.Styles.Title = m.list.Styles.Title.Width(lipgloss.Width(defaultTitle) + 2)
 		if !m.list.SettingFilter() {
@@ -181,7 +181,7 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		m.errors = msg.errors
 		cmds = append(cmds, m.list.NewStatusMessage("Refreshed."))
 	case listUpdate:
-		if m.isRefreshing == true {
+		if m.isRefreshing {
 			m.isRefreshing = false
 		}
 		if m.list.SettingFilter() {
@@ -221,8 +221,6 @@ func updateList(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 			}
 
 			m.isRefreshing = true
-			m.list.Title = "Refreshing..."
-			m.list.Styles.Title = m.list.Styles.Title.Width(lipgloss.Width("Refreshing...") + 2)
 			cmds = append(cmds, refreshList(m), m.TickLoad(0))
 
 		case key.Matches(msg, ListKeyMap.Read):
