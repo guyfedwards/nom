@@ -10,3 +10,9 @@ dist/
 ._*
 github_token
 /nom
+
+# local dev/docker artifacts referenced in README docs
+config.yml
+my-nom-config.yml
+nom.db
+nom-data/

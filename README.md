@@ -260,6 +260,14 @@ And you cannot combine simple keyword searches with any qualifiers:
 
 ## Building and Running via Docker
 
+> **Windows (Git Bash):** Git Bash rewrites `/app/...` paths in `-v` flags as if they were local Windows paths, which breaks volume mounts. Prefix `docker run` commands with `MSYS_NO_PATHCONV=1` to disable this, e.g.:
+> ```sh
+> MSYS_NO_PATHCONV=1 docker run --rm -it \
+>   -v "$(pwd)/my-nom-config.yml":/app/docker-config.yml \
+>   -v "$(pwd)/nom-data":/data \
+>   ghcr.io/guyfedwards/nom:master
+> ```
+
 Build nom image
 
 ```sh
@@ -298,6 +306,25 @@ Available tags:
 - `master` - latest build from the main branch
 - `x.y.z` / `x.y` - pinned release versions (e.g. `3.0.0`)
 - `sha-<short-sha>` - exact commit builds
+
+### Persisting the database
+
+The container has no `XDG_CONFIG_HOME`, so nom resolves the sqlite file relative to its working directory by default. To persist read state and cached articles across container restarts, mount a directory and point `database` at an absolute path inside it in your config:
+
+```yaml
+# my-nom-config.yml
+database: /data/nom.db
+```
+
+```sh
+mkdir -p nom-data
+docker run --rm -it \
+  -v $PWD/my-nom-config.yml:/app/docker-config.yml \
+  -v $PWD/nom-data:/data \
+  ghcr.io/guyfedwards/nom:master
+```
+
+Don't `touch` the db file yourself and bind-mount it directly - nom only runs its initial table setup when the file doesn't exist yet, so a pre-created empty file leaves the database schemaless.
 
 ## Dev setup
 
