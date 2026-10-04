@@ -2,7 +2,7 @@
 
 > Feed me
 
-`nom` is a terminal based RSS feed reader using [Glow](https://github.com/charmbracelet/glow) styled markdown to improve the reading experience and a simple TUI using [Bubbletea](https://github.com/charmbracelet/bubbletea).
+`nom` is a terminal based RSS feed reader that shows articles as styled markdown, with their pictures, in a simple TUI built with [Limoni](https://github.com/thebanri/limoni).
 
 - Local sync and offline reading
 - Backend connections (miniflux, freshrss supported)
@@ -125,7 +125,7 @@ refreshinterval: 5
 
 ### Theme
 
-Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty". See [here](https://github.com/charmbracelet/glamour/tree/master/styles/gallery) for previews and more info.
+Theme allows some basic color overrides in the feed view and then setting a custom markdown render theme for the overall markdown view. `theme.glamour` can be one of "dark", "dracula", "light", "pink", "ascii" or "notty", the names of [glamour's styles](https://github.com/charmbracelet/glamour/tree/master/styles/gallery), whose colours the article view uses. With "custom", the colours are read from the glamour style file at `theme.customPath`.
 Colors can be hex or ASCII codes, they will be coerced depending on your terminal color settings.
 
 ```yaml
@@ -135,6 +135,14 @@ theme:
   titleColorFg: "231"
   selectedItemColor: "170"
   filterColor: "#555555"
+```
+
+### Images (default: true)
+
+An article's pictures are downloaded and shown in the article view: with the kitty, iTerm2 or Sixel image protocol where the terminal has one, and in coloured half blocks where it does not. Set `images: false` to keep nom from downloading them; their alt text is shown instead.
+
+```yaml
+images: false
 ```
 
 ### Backends

@@ -3,6 +3,8 @@ package config
 import (
 	"crypto/tls"
 	"fmt"
+	"net/http"
+	"time"
 )
 
 // CloudFlare blocks requests unless a minimum TLSVersion is specified.
@@ -26,4 +28,16 @@ func TLSVersion(configStr string) (uint16, error) {
 		return version, nil
 	}
 	return 0, fmt.Errorf("unsupported tls version: %s", configStr)
+}
+
+// HTTPClient is a client set up as feeds are fetched: the proxy from the
+// environment and the configured minimum TLS version.
+func (c *Config) HTTPClient() *http.Client {
+	tr := &http.Transport{Proxy: http.ProxyFromEnvironment}
+	if c.HTTPOptions != nil {
+		if version, err := TLSVersion(c.HTTPOptions.MinTLSVersion); err == nil {
+			tr.TLSClientConfig = &tls.Config{MinVersion: version}
+		}
+	}
+	return &http.Client{Transport: tr, Timeout: 30 * time.Second}
 }

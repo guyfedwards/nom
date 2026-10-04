@@ -1,219 +1,208 @@
 package commands
 
 import (
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/viewport"
+	"slices"
+	"strings"
+
+	"github.com/thebanri/limoni"
 )
 
-// ListKeyMapT shows either (o)verrides or new keybinds
-type ListKeyMapT struct {
-	Open                  key.Binding
-	Read                  key.Binding
-	Favourite             key.Binding
-	ToggleReads           key.Binding
-	MarkAllRead           key.Binding
-	ToggleFavourites      key.Binding
-	Refresh               key.Binding
-	OpenInBrowser         key.Binding
-	Sort                  key.Binding
-	oQuit                 key.Binding
-	oForceQuit            key.Binding
-	oClearFilter          key.Binding
-	oCancelWhileFiltering key.Binding
-	oNextPage             key.Binding
-	oPrevPage             key.Binding
-	EditConfig            key.Binding
-	Suspend               key.Binding
+// binding is a set of keys for one action, and how the help shows it.
+type binding struct {
+	keys []string
+	key  string // the keys as the help writes them
+	desc string
 }
 
-// ViewportKeyMapT shows *all* keybinds, pulling from viewport.DefaultKeyMap()
-type ViewportKeyMapT struct {
-	Quit          key.Binding
-	Escape        key.Binding
-	OpenInBrowser key.Binding
-	Favourite     key.Binding
-	Read          key.Binding
-	GotoStart     key.Binding
-	GotoEnd       key.Binding
-	Next          key.Binding
-	Prev          key.Binding
-	ShowFullHelp  key.Binding
-	CloseFullHelp key.Binding
-	Suspend       key.Binding
+func bind(help, desc string, keys ...string) binding {
+	return binding{keys: keys, key: help, desc: desc}
 }
 
-// ListKeyMap shows either (o)verrides or new keybinds
-var ListKeyMap = ListKeyMapT{
-	Open: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "open"),
-	),
-	Favourite: key.NewBinding(
-		key.WithKeys("f"),
-		key.WithHelp("f", "favourite"),
-	),
-	ToggleFavourites: key.NewBinding(
-		key.WithKeys("F"),
-		key.WithHelp("F", "toggle show favourite"),
-	),
-	Read: key.NewBinding(
-		key.WithKeys("m"),
-		key.WithHelp("m", "mark read"),
-	),
-	ToggleReads: key.NewBinding(
-		key.WithKeys("M"),
-		key.WithHelp("M", "toggle show read"),
-	),
-	MarkAllRead: key.NewBinding(
-		key.WithKeys("alt+m"),
-		key.WithHelp("alt+m", "mark all read"),
-	),
-	Refresh: key.NewBinding(
-		key.WithKeys("r"),
-		key.WithHelp("r", "refresh"),
-	),
-	OpenInBrowser: key.NewBinding(
-		key.WithKeys("o"),
-		key.WithHelp("o", "open in browser"),
-	),
-	Sort: key.NewBinding(
-		key.WithKeys("s"),
-		key.WithHelp("s", "sort"),
-	),
-	EditConfig: key.NewBinding(
-		key.WithKeys("E"),
-		key.WithHelp("E", "edit config in $EDITOR"),
-	),
-	Suspend: key.NewBinding(
-		key.WithKeys("ctrl+z"),
-		key.WithHelp("ctrl+z", "suspend"),
-	),
-	// o for override
-	oQuit: key.NewBinding(
-		key.WithKeys("q", "esc"),
-		key.WithHelp("q/esc", "quit"),
-	),
-	oForceQuit: key.NewBinding(
-		key.WithKeys("ctrl+c"),
-		key.WithHelp("ctrl+c", "quit"),
-	),
-	oClearFilter: key.NewBinding(
-		key.WithKeys("esc", "q"),
-		key.WithHelp("esc/q", "clear filter"),
-	),
-	oCancelWhileFiltering: key.NewBinding(
-		key.WithKeys("esc"),
-		key.WithHelp("esc", "cancel"),
-	),
-	oPrevPage: key.NewBinding(
-		key.WithKeys("left", "h", "pgup"),
-		key.WithHelp("←/h/pgup", "prev page"),
-	),
-	oNextPage: key.NewBinding(
-		key.WithKeys("right", "l", "pgdown"),
-		key.WithHelp("→/l/pgdn", "next page"),
-	),
+func (b binding) matches(name string) bool { return slices.Contains(b.keys, name) }
+
+// keyName names a key press the way the bindings do: "j", "enter",
+// "ctrl+c", "alt+m", "pgdown".
+func keyName(k limoni.KeyEvent) string {
+	var name string
+	switch k.Type {
+	case limoni.KeyRune:
+		name = string(k.Ch)
+		if k.Ctrl {
+			return "ctrl+" + strings.ToLower(name)
+		}
+	case limoni.KeySpace:
+		name = " "
+	case limoni.KeyEnter:
+		name = "enter"
+	case limoni.KeyEsc:
+		name = "esc"
+	case limoni.KeyBackspace:
+		name = "backspace"
+	case limoni.KeyTab:
+		name = "tab"
+	case limoni.KeyUp:
+		name = "up"
+	case limoni.KeyDown:
+		name = "down"
+	case limoni.KeyLeft:
+		name = "left"
+	case limoni.KeyRight:
+		name = "right"
+	case limoni.KeyHome:
+		name = "home"
+	case limoni.KeyEnd:
+		name = "end"
+	case limoni.KeyPageUp:
+		name = "pgup"
+	case limoni.KeyPageDown:
+		name = "pgdown"
+	case limoni.KeyDelete:
+		name = "delete"
+	}
+	if k.Ctrl && k.Type != limoni.KeyRune {
+		name = "ctrl+" + name
+	}
+	if k.Alt {
+		name = "alt+" + name
+	}
+	return name
 }
 
-// ViewportKeyMapT shows *all* keybinds, pulling from viewport.DefaultKeyMap()
-var ViewportKeyMap = ViewportKeyMapT{
-	Next: key.NewBinding(
-		key.WithKeys("l", "right"),
-		key.WithHelp("l/→", "next"),
-	),
-	Prev: key.NewBinding(
-		key.WithKeys("h", "left"),
-		key.WithHelp("h/←", "prev"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("ctrl+c"),
-		key.WithHelp("ctrl+c", "quit"),
-	),
-	Escape: key.NewBinding(
-		key.WithKeys("esc", "q"),
-		key.WithHelp("q/esc", "escape"),
-	),
-	Suspend: key.NewBinding(
-		key.WithKeys("ctrl+z"),
-		key.WithHelp("ctrl+z", "suspend"),
-	),
-	OpenInBrowser: key.NewBinding(
-		key.WithKeys("o"),
-		key.WithHelp("o", "open in browser"),
-	),
-	Favourite: key.NewBinding(
-		key.WithKeys("f"),
-		key.WithHelp("f", "favourite"),
-	),
-	Read: key.NewBinding(
-		key.WithKeys("m"),
-		key.WithHelp("m", "mark read"),
-	),
-	GotoStart: key.NewBinding(
-		key.WithKeys("g", "home"),
-		key.WithHelp("g", "top"),
-	),
-	GotoEnd: key.NewBinding(
-		key.WithKeys("G", "end"),
-		key.WithHelp("G", "bottom"),
-	),
-	ShowFullHelp: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "more"),
-	),
-	CloseFullHelp: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "close help"),
-	),
+// listKeys are the list's keys: the ones it always had, and nom's own.
+var listKeys = struct {
+	Up, Down, PrevPage, NextPage, Top, Bottom    binding
+	Filter, ClearFilter, CancelFilter, Accept    binding
+	Open, Read, Favourite, ToggleFavourites      binding
+	ToggleReads, MarkAllRead, Refresh            binding
+	OpenInBrowser, Sort, EditConfig, Suspend     binding
+	Quit, ForceQuit, ShowFullHelp, CloseFullHelp binding
+}{
+	Up:               bind("↑/k", "up", "up", "k"),
+	Down:             bind("↓/j", "down", "down", "j"),
+	PrevPage:         bind("←/h/pgup", "prev page", "left", "h", "pgup"),
+	NextPage:         bind("→/l/pgdn", "next page", "right", "l", "pgdown"),
+	Top:              bind("g/home", "go to start", "home", "g"),
+	Bottom:           bind("G/end", "go to end", "end", "G"),
+	Filter:           bind("/", "filter", "/"),
+	ClearFilter:      bind("esc/q", "clear filter", "esc", "q"),
+	CancelFilter:     bind("esc", "cancel", "esc"),
+	Accept:           bind("enter", "apply filter", "enter"),
+	Open:             bind("enter", "open", "enter"),
+	Read:             bind("m", "mark read", "m"),
+	Favourite:        bind("f", "favourite", "f"),
+	ToggleFavourites: bind("F", "toggle show favourite", "F"),
+	ToggleReads:      bind("M", "toggle show read", "M"),
+	MarkAllRead:      bind("alt+m", "mark all read", "alt+m"),
+	Refresh:          bind("r", "refresh", "r"),
+	OpenInBrowser:    bind("o", "open in browser", "o"),
+	Sort:             bind("s", "sort", "s"),
+	EditConfig:       bind("E", "edit config in $EDITOR", "E"),
+	Suspend:          bind("ctrl+z", "suspend", "ctrl+z"),
+	Quit:             bind("q/esc", "quit", "q", "esc"),
+	ForceQuit:        bind("ctrl+c", "quit", "ctrl+c"),
+	ShowFullHelp:     bind("?", "more", "?"),
+	CloseFullHelp:    bind("?", "close help", "?"),
 }
 
-// This show *all* keybinds, as bubbles/viewport doesn't provide a help function
-func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
-	v := viewport.DefaultKeyMap()
-	return [][]key.Binding{
-		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
-		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
-		{k.Next, k.Prev, k.OpenInBrowser, k.Favourite, k.Read},
-		{k.Escape, k.Quit, k.CloseFullHelp},
+// articleKeys are the article view's keys.
+var articleKeys = struct {
+	Up, Down, PageUp, PageDown, HalfPageUp, HalfPageDown binding
+	GotoStart, GotoEnd, Next, Prev                       binding
+	OpenInBrowser, Favourite, Read                       binding
+	Escape, Quit, Suspend, ShowFullHelp, CloseFullHelp   binding
+}{
+	Up:            bind("↑/k", "up", "up", "k"),
+	Down:          bind("↓/j", "down", "down", "j"),
+	PageUp:        bind("b/pgup", "page up", "pgup", "b"),
+	PageDown:      bind("pgdn/space", "page down", "pgdown", " "),
+	HalfPageUp:    bind("u", "½ page up", "u", "ctrl+u"),
+	HalfPageDown:  bind("d", "½ page down", "d", "ctrl+d"),
+	GotoStart:     bind("g", "top", "g", "home"),
+	GotoEnd:       bind("G", "bottom", "G", "end"),
+	Next:          bind("l/→", "next", "l", "right"),
+	Prev:          bind("h/←", "prev", "h", "left"),
+	OpenInBrowser: bind("o", "open in browser", "o"),
+	Favourite:     bind("f", "favourite", "f"),
+	Read:          bind("m", "mark read", "m"),
+	Escape:        bind("q/esc", "escape", "esc", "q"),
+	Quit:          bind("ctrl+c", "quit", "ctrl+c"),
+	Suspend:       bind("ctrl+z", "suspend", "ctrl+z"),
+	ShowFullHelp:  bind("?", "more", "?"),
+	CloseFullHelp: bind("?", "close help", "?"),
+}
+
+// helpLine is bindings written as one line, "key desc • key desc".
+func helpLine(bs ...binding) string {
+	parts := make([]string, len(bs))
+	for i, b := range bs {
+		parts[i] = b.key + " " + b.desc
+	}
+	return strings.Join(parts, " • ")
+}
+
+// helpColumns is bindings written in columns, one binding per row of each.
+func helpColumns(columns ...[]binding) []string {
+	var rows []string
+	widths := make([]int, len(columns))
+	for c, col := range columns {
+		for _, b := range col {
+			widths[c] = max(widths[c], limoni.StringWidth(b.key+" "+b.desc))
+		}
+	}
+	for r := 0; ; r++ {
+		var line strings.Builder
+		any := false
+		for c, col := range columns {
+			cellText := ""
+			if r < len(col) {
+				cellText = col[r].key + " " + col[r].desc
+				any = true
+			}
+			line.WriteString(cellText)
+			if c < len(columns)-1 {
+				line.WriteString(strings.Repeat(" ", widths[c]-limoni.StringWidth(cellText)+4))
+			}
+		}
+		if !any {
+			return rows
+		}
+		rows = append(rows, strings.TrimRight(line.String(), " "))
 	}
 }
 
-// This show *all* keybinds, as bubbles/viewport doesn't provide a help function
-func (k ViewportKeyMapT) ShortHelp() []key.Binding {
-	v := viewport.DefaultKeyMap()
-	return []key.Binding{
-		k.Next, k.Prev, v.Down, v.Up, k.Escape, k.ShowFullHelp,
+func (m *model) listShortHelp() string {
+	k := listKeys
+	if m.filtering {
+		return helpLine(k.CancelFilter, k.Accept)
 	}
-}
-
-// This shows *additional* (or overridden) keybinds alongside built-ins, which *must* take []key.Binding unfortunately.
-func (k ListKeyMapT) FullHelp() []key.Binding {
-	return []key.Binding{
-		k.Open, k.Read, k.Favourite, k.Refresh,
-		k.OpenInBrowser, k.Sort, k.ToggleFavourites, k.ToggleReads,
-		k.MarkAllRead, k.EditConfig,
+	quit := k.Quit
+	if m.filterTerm != "" {
+		quit = k.ClearFilter
 	}
+	return helpLine(k.Up, k.Down, k.Filter, k.Open, quit, k.ShowFullHelp)
 }
 
-// This shows *additional* (or overridden) keybinds alongside built-ins
-func (k ListKeyMapT) ShortHelp() []key.Binding {
-	return []key.Binding{k.Open}
+func (m *model) listFullHelp() []string {
+	k := listKeys
+	return helpColumns(
+		[]binding{k.Up, k.Down, k.PrevPage, k.NextPage, k.Top, k.Bottom},
+		[]binding{k.Filter, k.ClearFilter, k.Quit, k.ForceQuit, k.CloseFullHelp},
+		[]binding{k.Open, k.Read, k.Favourite, k.Refresh, k.OpenInBrowser},
+		[]binding{k.Sort, k.ToggleFavourites, k.ToggleReads, k.MarkAllRead, k.EditConfig},
+	)
 }
 
-func (k ListKeyMapT) SetOverrides(l *list.Model) {
-	l.AdditionalFullHelpKeys = ListKeyMap.FullHelp
-	l.AdditionalShortHelpKeys = ListKeyMap.ShortHelp
-	l.KeyMap.Quit.SetKeys(k.oQuit.Keys()...)
-	l.KeyMap.Quit.SetHelp(k.oQuit.Help().Key, k.oQuit.Help().Desc)
-	l.KeyMap.ForceQuit.SetKeys(k.oForceQuit.Keys()...)
-	l.KeyMap.ForceQuit.SetHelp(k.oForceQuit.Help().Key, k.oForceQuit.Help().Desc)
-	l.KeyMap.ClearFilter.SetKeys(k.oClearFilter.Keys()...)
-	l.KeyMap.ClearFilter.SetHelp(k.oClearFilter.Help().Key, k.oClearFilter.Help().Desc)
-	l.KeyMap.CancelWhileFiltering.SetKeys(k.oCancelWhileFiltering.Keys()...)
-	l.KeyMap.CancelWhileFiltering.SetHelp(k.oCancelWhileFiltering.Help().Key, k.oCancelWhileFiltering.Help().Desc)
-	l.KeyMap.NextPage.SetKeys(k.oNextPage.Keys()...)
-	l.KeyMap.NextPage.SetHelp(k.oNextPage.Help().Key, k.oNextPage.Help().Desc)
-	l.KeyMap.PrevPage.SetKeys(k.oPrevPage.Keys()...)
-	l.KeyMap.PrevPage.SetHelp(k.oPrevPage.Help().Key, k.oPrevPage.Help().Desc)
+func articleShortHelp() string {
+	k := articleKeys
+	return helpLine(k.Next, k.Prev, k.Down, k.Up, k.Escape, k.ShowFullHelp)
+}
+
+func articleFullHelp() []string {
+	k := articleKeys
+	return helpColumns(
+		[]binding{k.Up, k.Down, k.HalfPageUp, k.HalfPageDown},
+		[]binding{k.GotoStart, k.GotoEnd, k.PageUp, k.PageDown},
+		[]binding{k.Next, k.Prev, k.OpenInBrowser, k.Favourite, k.Read},
+		[]binding{k.Escape, k.Quit, k.CloseFullHelp},
+	)
 }

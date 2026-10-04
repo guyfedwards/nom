@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -16,11 +16,8 @@ import (
 	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/glamour/ansi"
-	"github.com/charmbracelet/glamour/styles"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/thebanri/limoni"
 	"gopkg.in/yaml.v3"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
@@ -37,8 +34,8 @@ func New(config *config.Config, store store.Store) *Commands {
 	return &Commands{config, store}
 }
 
-func convertItems(its []store.Item) []list.Item {
-	var items []list.Item
+func convertItems(its []store.Item) []TUIItem {
+	var items []TUIItem
 
 	for _, item := range its {
 		items = append(items, ItemToTUIItem(item))
@@ -264,33 +261,34 @@ func (c Commands) fetchAllFeeds() ([]store.Item, []ErrorItem, error) {
 	return items, errorItems, nil
 }
 
-func (c Commands) Monitor(prog *tea.Program) {
+// Monitor refreshes the feeds every RefreshInterval minutes, sending the
+// TUI what it found, until ctx ends.
+func (c Commands) Monitor(ctx context.Context, send func(limoni.Msg)) {
 	if c.config.RefreshInterval == 0 {
 		return
 	}
 
 	go func() {
 		t := time.NewTicker(time.Duration(c.config.RefreshInterval) * time.Minute)
-		for range t.C {
+		defer t.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+			}
 			err := c.Refresh()
 			if err != nil {
 				log.Println("Refresh failed: ", err)
-				prog.Send(statusUpdate{
-					status: "Refresh failed",
-				})
-			} else {
-				items, err := c.GetAllFeeds()
-				if err != nil {
-					log.Println("Refresh failed: ", err)
-					prog.Send(statusUpdate{
-						status: "Refresh failed",
-					})
-				}
-				prog.Send(listUpdate{
-					items:  convertItems(items),
-					status: "Refreshed.",
-				})
+				send(statusUpdate{status: "Refresh failed"})
+				continue
 			}
+			items, err := c.GetAllFeeds()
+			if err != nil {
+				log.Println("Refresh failed: ", err)
+				send(statusUpdate{status: "Refresh failed"})
+			}
+			send(listUpdate{items: convertItems(items), status: "Refreshed."})
 		}
 	}()
 }
@@ -303,61 +301,25 @@ func (c Commands) CountUnread() int {
 	return count
 }
 
-func (c Commands) GetGlamourisedArticle(ID int) (string, error) {
+// GetArticleMarkdown is the article as the article view shows it: its
+// title, author, date and link, then its content as Markdown.
+func (c Commands) GetArticleMarkdown(ID int) (string, error) {
 	article, err := c.store.GetItemByID(ID)
 	if err != nil {
-		return "", fmt.Errorf("commands.FindGlamourisedArticle: %w", err)
+		return "", fmt.Errorf("commands.GetArticleMarkdown: %w", err)
 	}
 
 	if c.config.AutoRead && !article.Read() {
 		err = c.store.ToggleRead(article.ID)
 		if err != nil {
-			return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
+			return "", fmt.Errorf("[commands.go] GetArticleMarkdown: %w", err)
 		}
 	}
 
-	content, err := glamouriseItem(article, c.config.Theme)
-	if err != nil {
-		return "", fmt.Errorf("[commands.go] GetGlamourisedArticle: %w", err)
-	}
-
-	return content, nil
+	return itemMarkdown(article, c.config.Theme), nil
 }
 
-func getStyleConfigWithOverrides(theme config.Theme) (sc ansi.StyleConfig) {
-	switch theme.Glamour {
-	case "light":
-		sc = styles.LightStyleConfig
-	case "dracula":
-		sc = styles.DraculaStyleConfig
-	case "pink":
-		sc = styles.PinkStyleConfig
-	case "ascii":
-		sc = styles.ASCIIStyleConfig
-	case "notty":
-		sc = styles.NoTTYStyleConfig
-	case "custom":
-		sc = styles.DarkStyleConfig
-		data, err := os.ReadFile(theme.CustomPath)
-		if err != nil {
-			log.Println(err)
-			sc = styles.DarkStyleConfig
-		}
-		if err := json.Unmarshal(data, &sc); err != nil {
-			log.Println(err)
-			sc = styles.DarkStyleConfig
-		}
-	default:
-		sc = styles.DarkStyleConfig
-	}
-
-	sc.H1.BackgroundColor = &theme.TitleColor
-	sc.H1.Color = &theme.TitleColorFg
-
-	return sc
-}
-
-func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
+func itemMarkdown(item store.Item, theme config.Theme) string {
 	var mdown string
 
 	title := item.Title
@@ -375,22 +337,25 @@ func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	mdown += "\n\n"
 	mdown += item.Link
 	mdown += "\n\n"
-	mdown += htmlToMd(item.Content)
+	mdown += htmlToMd(item.Content, item.Link)
 
-	r, _ := glamour.NewTermRenderer(
-		glamour.WithStyles(getStyleConfigWithOverrides(theme)),
-	)
-
-	out, err := r.Render(mdown)
-	if err != nil {
-		return "", fmt.Errorf("GlamouriseItem: %w", err)
-	}
-
-	return out, nil
+	return mdown
 }
 
-func htmlToMd(html string) string {
-	converter := md.NewConverter("", true, nil)
+// htmlToMd converts an article's HTML to Markdown. Relative addresses in it
+// are resolved against base, the article's own address, so that its links
+// work and its pictures can be fetched.
+func htmlToMd(html string, base string) string {
+	baseURL, _ := url.Parse(base)
+	converter := md.NewConverter(md.DomainFromURL(base), true, &md.Options{
+		GetAbsoluteURL: func(_ *goquery.Selection, raw string, _ string) string {
+			ref, err := url.Parse(raw)
+			if err != nil || baseURL == nil || baseURL.Host == "" || strings.HasPrefix(raw, "#") || ref.Scheme == "data" {
+				return raw
+			}
+			return baseURL.ResolveReference(ref).String()
+		},
+	})
 
 	mdown, err := converter.ConvertString(html)
 	if err != nil {

@@ -67,6 +67,15 @@ type Config struct {
 	Theme           Theme        `yaml:"theme,omitempty"`
 	HTTPOptions     *HTTPOptions `yaml:"http,omitempty"`
 	RefreshInterval int          `yaml:"refreshinterval,omitempty"`
+	// Images says whether an article's pictures are downloaded and shown.
+	// Unset is on; see ShowImages.
+	Images *bool `yaml:"images,omitempty"`
+}
+
+// ShowImages reports whether an article's pictures are downloaded and shown:
+// yes unless the config says `images: false`.
+func (c *Config) ShowImages() bool {
+	return c.Images == nil || *c.Images
 }
 
 var DefaultTheme = Theme{
@@ -181,6 +190,7 @@ func (c *Config) Load() error {
 	c.ShowFavourites = fileConfig.ShowFavourites
 	c.Filtering = fileConfig.Filtering
 	c.RefreshInterval = fileConfig.RefreshInterval
+	c.Images = fileConfig.Images
 
 	if fileConfig.HTTPOptions != nil {
 		if _, err := TLSVersion(fileConfig.HTTPOptions.MinTLSVersion); err != nil {

@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/sahilm/fuzzy"
 
 	"github.com/guyfedwards/nom/v2/internal/config"
@@ -19,7 +18,7 @@ type FilterTerm struct {
 	Tags      []string
 }
 
-// Struct to aid in filtering items into ranks for BubbleTea
+// Struct to aid in filtering items into ranks for the TUI
 type Filterer struct {
 	FeedNames []string
 	Tags      []string
@@ -165,18 +164,17 @@ func NewFilterer(term string, config config.Config) Filterer {
 	return f
 }
 
-func CustomFilter(config config.Config) list.FilterFunc {
-	return func(term string, targets []string) []list.Rank {
+// CustomFilter ranks targets — TUIItem.FilterValue strings — against a
+// filter term, best match first, and returns their indices.
+func CustomFilter(config config.Config) func(term string, targets []string) []int {
+	return func(term string, targets []string) []int {
 		filterer := NewFilterer(term, config)
 
 		ranks := filterer.Filter(targets)
 
-		result := make([]list.Rank, len(ranks))
+		result := make([]int, len(ranks))
 		for i, rank := range ranks {
-			result[i] = list.Rank{
-				Index:          rank.Index,
-				MatchedIndexes: rank.MatchedIndexes,
-			}
+			result[i] = rank.Index
 		}
 
 		return result
