@@ -264,6 +264,7 @@ func Render(items []list.Item, cmds *Commands, errors []string, cfg *config.Conf
 	ListKeyMap.SetOverrides(&l)
 
 	vp := viewport.New(78, height)
+	vp.KeyMap = viewportKeys()
 
 	m := model{
 		cfg:      cfg,

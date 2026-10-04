@@ -168,9 +168,18 @@ var ViewportKeyMap = ViewportKeyMapT{
 	),
 }
 
+// viewportKeys is bubbles' viewport key map without "f", which the article
+// view binds to favourite: left in, "f" would favourite and page down.
+func viewportKeys() viewport.KeyMap {
+	k := viewport.DefaultKeyMap()
+	k.PageDown.SetKeys("pgdown", " ")
+	k.PageDown.SetHelp("pgdn/space", "page down")
+	return k
+}
+
 // This show *all* keybinds, as bubbles/viewport doesn't provide a help function
 func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
-	v := viewport.DefaultKeyMap()
+	v := viewportKeys()
 	return [][]key.Binding{
 		{v.Up, v.Down, v.HalfPageUp, v.HalfPageDown},
 		{k.GotoStart, k.GotoEnd, v.PageUp, v.PageDown},
@@ -181,7 +190,7 @@ func (k ViewportKeyMapT) FullHelp() [][]key.Binding {
 
 // This show *all* keybinds, as bubbles/viewport doesn't provide a help function
 func (k ViewportKeyMapT) ShortHelp() []key.Binding {
-	v := viewport.DefaultKeyMap()
+	v := viewportKeys()
 	return []key.Binding{
 		k.Next, k.Prev, v.Down, v.Up, k.Escape, k.ShowFullHelp,
 	}
