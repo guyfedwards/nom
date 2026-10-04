@@ -16,6 +16,7 @@ import (
 	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -375,7 +376,7 @@ func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	mdown += "\n\n"
 	mdown += item.Link
 	mdown += "\n\n"
-	mdown += htmlToMd(item.Content)
+	mdown += htmlToMd(item.Content, item.Link)
 
 	r, _ := glamour.NewTermRenderer(
 		glamour.WithStyles(getStyleConfigWithOverrides(theme)),
@@ -389,8 +390,21 @@ func glamouriseItem(item store.Item, theme config.Theme) (string, error) {
 	return out, nil
 }
 
-func htmlToMd(html string) string {
-	converter := md.NewConverter("", true, nil)
+// htmlToMd converts an article's HTML to Markdown. Relative links and image
+// sources are resolved against base, the article's own address, so that
+// "/blog/x" or "img.png" point where the page they came from points.
+func htmlToMd(html string, base string) string {
+	opts := &md.Options{}
+	if b, err := url.Parse(base); err == nil && b.IsAbs() {
+		opts.GetAbsoluteURL = func(_ *goquery.Selection, raw string, _ string) string {
+			u, err := url.Parse(raw)
+			if err != nil {
+				return raw
+			}
+			return b.ResolveReference(u).String()
+		}
+	}
+	converter := md.NewConverter("", true, opts)
 
 	mdown, err := converter.ConvertString(html)
 	if err != nil {
