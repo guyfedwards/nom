@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/guyfedwards/nom/v2/internal/test"
@@ -68,6 +70,42 @@ func TestOMPLParser(t *testing.T) {
 		for _, child := range outline.Outlines {
 			test.Equal(t, RssOutlineType, child.Type, "invalid outline type: "+string(child.Type))
 			test.Equal(t, feeds[child.Title], child.XMLUrl.String(), "invalid feed")
+		}
+	}
+}
+
+func TestOPMLParserInvalidOutlines(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		outline string
+		wantErr string
+	}{
+		{
+			name:    "invalid URL",
+			outline: `<outline text="Feed" type="rss" xmlUrl="https://example.com/%zz"/>`,
+			wantErr: "invalid URL for `xmlUrl`",
+		},
+		{
+			name:    "invalid type after URL",
+			outline: `<outline text="Feed" xmlUrl="https://example.com/feed" type="invalid"/>`,
+			wantErr: "invalid outline type. got invalid",
+		},
+	} {
+		for depth := 0; depth < 3; depth++ {
+			t.Run(fmt.Sprintf("%s/depth=%d", tt.name, depth), func(t *testing.T) {
+				outline := tt.outline
+				for i := 0; i < depth; i++ {
+					outline = `<outline text="Folder">` + outline + `</outline>`
+				}
+				input := `<opml version="2.0"><body>` + outline + `</body></opml>`
+				result, err := parseOPML([]byte(input))
+				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+					t.Fatalf("expected %q, got result=%+v error=%v", tt.wantErr, result, err)
+				}
+				if result != nil {
+					t.Fatalf("expected no parsed document on failure, got %+v", result)
+				}
+			})
 		}
 	}
 }
