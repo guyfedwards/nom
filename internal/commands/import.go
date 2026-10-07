@@ -74,7 +74,9 @@ func (o *Outline) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		switch tt := token.(type) {
 		case xml.StartElement:
 			var child Outline
-			d.DecodeElement(&child, &tt)
+			if err := d.DecodeElement(&child, &tt); err != nil {
+				return fmt.Errorf("Outline.UnmarshalXML: unable to parse child outline: %w", err)
+			}
 			o.Outlines = append(o.Outlines, child)
 		}
 	}
