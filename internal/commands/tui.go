@@ -74,6 +74,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.Height = msg.Height - footerHeight
 
 		return m, nil
+
+	case list.FilterMatchesMsg:
+		// Opening an article reloads the list, and a filtered list then
+		// refilters in the background. The matches belong to the list
+		// whichever view is showing, or next and prev find no rows.
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(msg)
+		return m, cmd
 	}
 
 	if m.selectedArticle != nil {

@@ -31,7 +31,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, ViewportKeyMap.Escape):
 			// reset cursor if last post is read and quit
 			index := m.list.Index()
-			length := len(m.list.Items())
+			length := len(m.list.VisibleItems())
 			if index >= length && length >= 1 {
 				m.list.Select(index - 1)
 			}
@@ -75,7 +75,9 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, ViewportKeyMap.Prev):
 			navIndex := m.getPrevIndex()
-			items := m.list.Items()
+			// Index counts the filtered rows when a filter is applied, so
+			// index the rows the list shows, not all of them.
+			items := m.list.VisibleItems()
 			if m.isPrevOutOfBounds(navIndex) {
 				return m, nil
 			}
@@ -99,7 +101,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, ViewportKeyMap.Next):
 			navIndex := m.getNextIndex()
-			items := m.list.Items()
+			items := m.list.VisibleItems()
 			if m.isNextOutOfBounds(navIndex, len(items)) {
 				return m, nil
 			}
@@ -141,7 +143,7 @@ func updateViewport(msg tea.Msg, m model) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) isPrevOutOfBounds(i int) bool {
-	if len(m.list.Items()) == 0 {
+	if len(m.list.VisibleItems()) == 0 {
 		return true
 	}
 	return i < 0
@@ -180,7 +182,7 @@ func (m *model) getNextIndex() int {
 
 func (m *model) getPrevIndex() int {
 	current := m.list.Index()
-	if m.commands.config.AutoRead && !m.commands.config.ShowRead && current < len(m.list.Items()) {
+	if m.commands.config.AutoRead && !m.commands.config.ShowRead && current < len(m.list.VisibleItems()) {
 		return m.list.Index()
 	}
 
